@@ -57,7 +57,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const invoice = row.original
       return (
         <div className="flex items-center space-x-2">
-          <span className="font-semibold text-slate-900 dark:text-white">
+          <span className="font-semibold text-gray-900">
             {invoice.invoiceNumber}
           </span>
           {invoice.invoiceUrl && (
@@ -93,10 +93,10 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const vendor = row.getValue("vendorName") as string
       return (
         <div className="max-w-[200px]">
-          <div className="truncate font-semibold text-slate-900 dark:text-white">
+          <div className="truncate font-semibold text-gray-900">
             {vendor}
           </div>
-          <div className="truncate text-xs text-slate-600 dark:text-slate-300">
+          <div className="truncate text-xs text-gray-600">
             {row.original.vendorEmail}
           </div>
         </div>
@@ -190,7 +190,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const category = row.getValue("category") as string | undefined
 
       if (!category) {
-        return <span className="text-sm italic text-slate-500 dark:text-slate-400">Uncategorised</span>
+        return <span className="text-sm italic text-gray-500">Uncategorised</span>
       }
 
       return (
@@ -218,13 +218,13 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const dueDate = row.getValue("dueDate") as Date | undefined
 
       if (!dueDate) {
-        return <div className="text-sm text-slate-500 dark:text-slate-400">—</div>
+        return <div className="text-sm text-gray-500">—</div>
       }
 
       const isOverdue = dueDate < new Date() && row.original.status !== 'paid'
 
       return (
-        <div className={`text-sm font-medium ${isOverdue ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
+        <div className={`text-sm font-medium ${isOverdue ? 'text-red-600' : 'text-gray-700'}`}>
           {dueDate.toLocaleDateString('en-AU')}
         </div>
       )
@@ -248,11 +248,11 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const receivedDate = row.getValue("receivedDate") as Date | undefined
 
       if (!receivedDate) {
-        return <div className="text-sm text-slate-400">—</div>
+        return <div className="text-sm text-gray-400">—</div>
       }
 
       return (
-        <div className="text-sm text-slate-600 dark:text-slate-400">
+        <div className="text-sm text-gray-600">
           {receivedDate.toLocaleDateString('en-AU')}
         </div>
       )

@@ -18,9 +18,9 @@ export function TopVendors({
   return (
     <Card className="glass-card glass-card-hover border-2 shadow-lg hover:shadow-xl transition-all duration-300">
       <CardHeader className="pb-4">
-        <CardTitle className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-3 drop-shadow-sm">
-          <div className="w-4 h-4 bg-gradient-to-r from-amber-600 to-orange-600 rounded-full shadow-md"></div>
-          <span className="text-slate-800 dark:text-white tracking-tight">Top Vendors</span>
+        <CardTitle className="text-xl font-bold text-gray-900 flex items-center space-x-3">
+          <div className="w-4 h-4 bg-amber-600 rounded-full"></div>
+          <span className="text-gray-900">Top Vendors</span>
         </CardTitle>
       </CardHeader>
       <CardContent style={{ height: 300 }}>

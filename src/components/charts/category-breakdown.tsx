@@ -18,9 +18,9 @@ export function CategoryBreakdown({
   return (
     <Card className="glass-card glass-card-hover border-2 shadow-lg hover:shadow-xl transition-all duration-300">
       <CardHeader className="pb-4">
-        <CardTitle className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-3 drop-shadow-sm">
-          <div className="w-4 h-4 bg-gradient-to-r from-blue-600 to-blue-800 rounded-full shadow-md"></div>
-          <span className="text-slate-800 dark:text-white tracking-tight">Category Breakdown</span>
+        <CardTitle className="text-xl font-bold text-gray-900 flex items-center space-x-3">
+          <div className="w-4 h-4 bg-blue-600 rounded-full"></div>
+          <span className="text-gray-900">Category Breakdown</span>
         </CardTitle>
       </CardHeader>
       <CardContent style={{ height: 300 }}>

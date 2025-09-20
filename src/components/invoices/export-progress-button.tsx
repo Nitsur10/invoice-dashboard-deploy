@@ -2,18 +2,13 @@
 
 import * as React from 'react'
 import { Loader2, Download } from 'lucide-react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
-import {
-  enqueueInvoiceExport,
-  fetchInvoiceExportJob,
-  type InvoiceExportJob,
-} from '@/lib/api/invoices'
 import { useInvoiceFilters } from '@/hooks/use-invoices-filters'
 import { serializeInvoiceFilters } from '@/types/invoice-filters'
 
-type ExportButtonState = 'idle' | 'queued' | 'processing' | 'ready' | 'failed'
+type ExportButtonState = 'idle' | 'exporting' | 'failed'
 
 interface ExportProgressButtonProps {
   className?: string
@@ -22,81 +17,67 @@ interface ExportProgressButtonProps {
 
 export function ExportProgressButton({ className, onStatusChange }: ExportProgressButtonProps) {
   const { filters } = useInvoiceFilters()
-  const [job, setJob] = React.useState<InvoiceExportJob | null>(null)
   const [state, setState] = React.useState<ExportButtonState>('idle')
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
 
   const exportMutation = useMutation({
     mutationFn: async () => {
-      setState('queued')
+      setState('exporting')
+      onStatusChange?.({ state: 'exporting', message: 'Generating CSV export...' })
+
       const snapshot = serializeInvoiceFilters(filters)
-      return enqueueInvoiceExport({ filters: snapshot })
+      const response = await fetch('/api/invoices/export', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ filters: snapshot }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error.message || `Export failed: ${response.status} ${response.statusText}`)
+      }
+
+      // Get the CSV blob and filename
+      const blob = await response.blob()
+      const contentDisposition = response.headers.get('Content-Disposition')
+      const filename = contentDisposition?.match(/filename="(.+)"/)?.[1] || 'invoices-export.csv'
+
+      // Create download link
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      link.style.display = 'none'
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      return { filename }
     },
-    onSuccess: (nextJob) => {
+    onSuccess: (result) => {
+      setState('idle')
       setErrorMessage(null)
-      setJob(nextJob)
-      setState(nextJob.status === 'processing' ? 'processing' : 'queued')
-      onStatusChange?.({ state: nextJob.status === 'processing' ? 'processing' : 'queued', message: 'Export job created' })
+      onStatusChange?.({ state: 'idle', message: `CSV downloaded: ${result.filename}` })
     },
     onError: (error: unknown) => {
       setState('failed')
-      const message = error instanceof Error ? error.message : 'Unable to start export'
+      const message = error instanceof Error ? error.message : 'Unable to export CSV'
       setErrorMessage(message)
       onStatusChange?.({ state: 'failed', error: message })
     },
   })
-
-  const jobQuery = useQuery({
-    queryKey: ['invoice-export-job', job?.id],
-    enabled: Boolean(job?.id),
-    queryFn: () => fetchInvoiceExportJob(job!.id),
-    refetchInterval: (latestJob) => {
-      if (!latestJob) return false
-      if (latestJob.status === 'completed' || latestJob.status === 'failed') {
-        return false
-      }
-      return 2000
-    },
-  })
-
-  React.useEffect(() => {
-    if (!jobQuery.data) return
-
-    setJob(jobQuery.data)
-
-    if (jobQuery.data.status === 'completed') {
-      setState('ready')
-      if (jobQuery.data.filePath) {
-        try {
-          window.open(jobQuery.data.filePath, '_blank', 'noopener')
-        } catch (error) {
-          console.warn('Unable to open export file automatically', error)
-        }
-      }
-      onStatusChange?.({ state: 'ready', message: 'Export ready to download' })
-    } else if (jobQuery.data.status === 'failed') {
-      setState('failed')
-      const message = jobQuery.data.errorMessage || 'Export job failed'
-      setErrorMessage(message)
-      onStatusChange?.({ state: 'failed', error: message })
-    } else {
-      setState('processing')
-      onStatusChange?.({ state: 'processing', message: 'Preparing export…' })
-    }
-  }, [jobQuery.data, onStatusChange])
 
   const handleClick = () => {
-    if (state === 'ready' && job?.filePath) {
-      window.open(job.filePath, '_blank', 'noopener')
-      return
-    }
-
     setErrorMessage(null)
     exportMutation.mutate()
   }
 
   const label = getButtonLabel(state)
-  const isDisabled = state === 'queued' || state === 'processing' || exportMutation.isLoading
+  const isDisabled = state === 'exporting' || exportMutation.isLoading
 
   return (
     <div className="flex flex-col gap-1">
@@ -108,7 +89,7 @@ export function ExportProgressButton({ className, onStatusChange }: ExportProgre
         disabled={isDisabled}
         className={className}
       >
-        {state === 'queued' || state === 'processing' ? (
+        {state === 'exporting' ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           <Download className="mr-2 h-4 w-4" />
@@ -126,12 +107,8 @@ export function ExportProgressButton({ className, onStatusChange }: ExportProgre
 
 function getButtonLabel(state: ExportButtonState) {
   switch (state) {
-    case 'queued':
-      return 'Export queued…'
-    case 'processing':
-      return 'Processing export…'
-    case 'ready':
-      return 'Download ready'
+    case 'exporting':
+      return 'Generating CSV...'
     case 'failed':
       return 'Retry export'
     default:

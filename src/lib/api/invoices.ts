@@ -68,19 +68,7 @@ export interface InvoiceSavedViewsResponse {
   views: InvoiceSavedView[]
 }
 
-export type InvoiceExportJobStatus = 'pending' | 'processing' | 'completed' | 'failed'
-
-export interface InvoiceExportJob {
-  id: string
-  status: InvoiceExportJobStatus
-  requestedFilters: Record<string, unknown>
-  rowCount: number | null
-  filePath: string | null
-  errorMessage: string | null
-  createdAt: string
-  startedAt: string | null
-  completedAt: string | null
-}
+// Export types removed - using direct CSV download instead
 
 const API_BASE = ''
 
@@ -274,34 +262,5 @@ export async function deleteInvoiceSavedView(id: string): Promise<void> {
   }
 }
 
-export async function enqueueInvoiceExport(payload: {
-  filters: InvoiceFiltersState
-}): Promise<InvoiceExportJob> {
-  const response = await fetch(`${API_BASE}/api/invoices/export`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  })
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.message ?? 'Failed to enqueue export')
-  }
-
-  return response.json()
-}
-
-export async function fetchInvoiceExportJob(id: string): Promise<InvoiceExportJob> {
-  const response = await fetch(`${API_BASE}/api/invoices/export/${id}`, {
-    cache: 'no-store',
-  })
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.message ?? 'Failed to retrieve export job')
-  }
-
-  return response.json()
-}
+// CSV export is now handled directly via fetch in the component
+// No longer need job-based export functions
