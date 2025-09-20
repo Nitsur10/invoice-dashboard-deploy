@@ -298,7 +298,7 @@ export default function TestPage() {
               <CardTitle>Sample Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <RecentActivity />
+              <RecentActivity dateFrom="2025-05-01T00:00:00.000Z" />
             </CardContent>
           </Card>
         </ErrorBoundary>

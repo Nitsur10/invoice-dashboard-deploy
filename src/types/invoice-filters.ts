@@ -22,7 +22,10 @@ export const defaultInvoiceFilters: InvoiceFiltersState = {
   categories: [],
   vendors: [],
   amountRange: undefined,
-  dateRange: undefined,
+  dateRange: {
+    start: '2025-05-01',
+    end: undefined,
+  },
   savedViewId: undefined,
 }
 
