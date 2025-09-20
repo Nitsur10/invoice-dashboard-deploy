@@ -74,11 +74,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(response);
     }
 
-    // Always clamp to May 1, 2025 to honour reporting baseline when using Supabase data
+    // Only apply date clamping if explicit date filters are provided
+    // This allows the UI to show all data by default
     const minClampDate = '2025-05-01T00:00:00.000Z';
-    if (!resolvedFilters.dateFrom) {
-      resolvedFilters.dateFrom = minClampDate;
-    } else if (new Date(resolvedFilters.dateFrom) < new Date(minClampDate)) {
+    if (resolvedFilters.dateFrom && new Date(resolvedFilters.dateFrom) < new Date(minClampDate)) {
       resolvedFilters.dateFrom = minClampDate;
     }
 

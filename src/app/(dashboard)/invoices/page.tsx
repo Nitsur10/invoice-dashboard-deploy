@@ -307,7 +307,7 @@ export function InvoicesView() {
             <h1 className="rpd-heading-xl rpd-text-gradient">RPD Invoices</h1>
             {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
           </div>
-          <p className="text-slate-600">
+          <p className="text-slate-600 dark:text-slate-400">
             Server-side pagination with real invoice data — {totalCount} total invoices
           </p>
         </div>

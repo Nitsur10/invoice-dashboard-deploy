@@ -82,13 +82,13 @@ export interface InvoiceExportJob {
   completedAt: string | null
 }
 
-const API_BASE = process.env.NODE_ENV === 'development' ? '' : '/api'
+const API_BASE = ''
 
 export async function fetchInvoices(params: InvoicesParams = {}): Promise<InvoicesResponse> {
   const startTime = Date.now()
-  
+
   try {
-    const url = new URL(`${API_BASE}/api/invoices`, 
+    const url = new URL(`${API_BASE}/api/invoices`,
       typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001')
     
     // Add query parameters

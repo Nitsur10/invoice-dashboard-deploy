@@ -42,7 +42,7 @@ export function DashboardStatsProvider({ children }: { children: React.ReactNode
       refetch: statsQuery.refetch,
       params,
       setParams: (updater) => {
-        setParamsState((prev) => (typeof updater === 'function' ? updater(prev) : { ...prev, ...updater }));
+        setParamsState((prev) => (typeof updater === 'function' ? updater(prev) : updater));
       },
     }),
     [params, statsQuery.data, statsQuery.error, statsQuery.isLoading, statsQuery.refetch]

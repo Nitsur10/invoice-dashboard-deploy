@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
+import { DateRangePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { formatDateForSydney } from '@/lib/data';
 
@@ -99,6 +100,35 @@ function DashboardView() {
     }));
   };
 
+  const setQuickDateRange = (range: 'thisMonth' | 'lastMonth' | 'last2Months' | 'sinceStart') => {
+    const now = new Date();
+
+    switch (range) {
+      case 'thisMonth':
+        const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+        const thisMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
+        setDraftFrom(thisMonthStart);
+        setDraftTo(thisMonthEnd);
+        break;
+      case 'lastMonth':
+        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 10);
+        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().slice(0, 10);
+        setDraftFrom(lastMonthStart);
+        setDraftTo(lastMonthEnd);
+        break;
+      case 'last2Months':
+        const twoMonthsStart = new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString().slice(0, 10);
+        const currentEnd = now.toISOString().slice(0, 10);
+        setDraftFrom(twoMonthsStart);
+        setDraftTo(currentEnd);
+        break;
+      case 'sinceStart':
+        setDraftFrom(MIN_DATE);
+        setDraftTo('');
+        break;
+    }
+  };
+
   const clearFilters = () => {
     setDraftFrom(MIN_DATE);
     setDraftTo('');
@@ -142,30 +172,66 @@ function DashboardView() {
                   <span>Filter</span>
                 </Button>
               </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
+            <PopoverContent className="w-96" align="end">
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="dateFrom">From Date</Label>
-                  <Input
-                    id="dateFrom"
-                    type="date"
-                    className="w-full"
-                    value={draftFrom}
-                    min={MIN_DATE}
-                    onChange={(event) => setDraftFrom(event.target.value)}
-                  />
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Quick Date Ranges</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQuickDateRange('thisMonth')}
+                      className="text-xs"
+                    >
+                      This Month
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQuickDateRange('lastMonth')}
+                      className="text-xs"
+                    >
+                      Last Month
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQuickDateRange('last2Months')}
+                      className="text-xs"
+                    >
+                      Last 2 Months
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQuickDateRange('sinceStart')}
+                      className="text-xs"
+                    >
+                      Since May 1st
+                    </Button>
+                  </div>
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="dateTo">To Date</Label>
-                  <Input
-                    id="dateTo"
-                    type="date"
-                    className="w-full"
-                    value={draftTo}
-                    min={draftFrom || MIN_DATE}
-                    onChange={(event) => setDraftTo(event.target.value)}
-                  />
+                  <Label>Custom Date Range</Label>
+                  <div className="space-y-2">
+                    <Input
+                      type="date"
+                      value={draftFrom}
+                      min={MIN_DATE}
+                      onChange={(event) => setDraftFrom(event.target.value)}
+                      className="w-full"
+                    />
+                    <Input
+                      type="date"
+                      value={draftTo}
+                      min={draftFrom || MIN_DATE}
+                      onChange={(event) => setDraftTo(event.target.value)}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
+
                 <div className="flex space-x-2">
                   <Button size="sm" className="rpd-btn-primary flex-1" onClick={applyFilters}>
                     Apply Filter

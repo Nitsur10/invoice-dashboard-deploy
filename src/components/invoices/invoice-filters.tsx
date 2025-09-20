@@ -14,22 +14,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Calendar,
   Filter,
   X,
-  CalendarDays,
   DollarSign,
   Building,
   FileText,
   RefreshCw
 } from 'lucide-react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import { DateRangePicker } from '@/components/ui/date-picker';
 import { Invoice, PaymentStatus, InvoiceCategory } from '@/lib/types';
 import { formatDateForSydney } from '@/lib/data';
 
@@ -243,52 +235,17 @@ export function InvoiceFilters({ invoices, onFilterChange }: InvoiceFiltersProps
             </Button>
           </div>
 
-          {/* Custom Date Pickers */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>From Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarDays className="mr-2 h-4 w-4" />
-                    {startDate ? startDate.toLocaleDateString() : 'Select start date'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <DatePicker
-                    selected={startDate}
-                    onChange={(date) => setStartDate(date)}
-                    inline
-                    showYearDropdown
-                    showMonthDropdown
-                    dropdownMode="select"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <Label>To Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarDays className="mr-2 h-4 w-4" />
-                    {endDate ? endDate.toLocaleDateString() : 'Select end date'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <DatePicker
-                    selected={endDate}
-                    onChange={(date) => setEndDate(date)}
-                    inline
-                    showYearDropdown
-                    showMonthDropdown
-                    dropdownMode="select"
-                    minDate={startDate || undefined}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+          {/* Date Range Picker */}
+          <div className="space-y-2">
+            <Label>Date Range</Label>
+            <DateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={(date) => setStartDate(date || null)}
+              onEndDateChange={(date) => setEndDate(date || null)}
+              startPlaceholder="Select start date"
+              endPlaceholder="Select end date"
+            />
           </div>
         </div>
 

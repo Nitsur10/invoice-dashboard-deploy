@@ -57,7 +57,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const invoice = row.original
       return (
         <div className="flex items-center space-x-2">
-          <span className="font-medium text-slate-900 dark:text-slate-100">
+          <span className="font-semibold text-slate-900 dark:text-white">
             {invoice.invoiceNumber}
           </span>
           {invoice.invoiceUrl && (
@@ -93,10 +93,10 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const vendor = row.getValue("vendorName") as string
       return (
         <div className="max-w-[200px]">
-          <div className="truncate font-medium text-slate-900 dark:text-slate-100">
+          <div className="truncate font-semibold text-slate-900 dark:text-white">
             {vendor}
           </div>
-          <div className="truncate text-xs text-slate-500 dark:text-slate-400">
+          <div className="truncate text-xs text-slate-600 dark:text-slate-300">
             {row.original.vendorEmail}
           </div>
         </div>
@@ -190,7 +190,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const category = row.getValue("category") as string | undefined
 
       if (!category) {
-        return <span className="text-sm italic text-slate-400">Uncategorised</span>
+        return <span className="text-sm italic text-slate-500 dark:text-slate-400">Uncategorised</span>
       }
 
       return (
@@ -218,13 +218,13 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const dueDate = row.getValue("dueDate") as Date | undefined
 
       if (!dueDate) {
-        return <div className="text-sm text-slate-400">—</div>
+        return <div className="text-sm text-slate-500 dark:text-slate-400">—</div>
       }
 
       const isOverdue = dueDate < new Date() && row.original.status !== 'paid'
 
       return (
-        <div className={`text-sm ${isOverdue ? 'text-red-600 font-medium' : 'text-slate-600 dark:text-slate-300'}`}>
+        <div className={`text-sm font-medium ${isOverdue ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
           {dueDate.toLocaleDateString('en-AU')}
         </div>
       )
