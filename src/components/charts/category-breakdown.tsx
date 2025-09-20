@@ -23,14 +23,24 @@ export function CategoryBreakdown({
           <span className="text-gray-900">Category Breakdown</span>
         </CardTitle>
       </CardHeader>
-      <CardContent style={{ height: 300 }}>
+      <CardContent style={{ height: 350 }}>
         {isLoading ? (
           <div className="h-full rounded bg-slate-100 dark:bg-slate-800 animate-pulse" />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={categories}>
-              <XAxis dataKey="name" hide />
-              <YAxis hide />
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 12, fill: '#374151' }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+                interval={0}
+              />
+              <YAxis
+                tick={{ fontSize: 12, fill: '#374151' }}
+                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              />
               <Tooltip 
                 formatter={(v: any) => [`$${Number(v).toLocaleString()}`, 'Amount']} 
                 contentStyle={{
