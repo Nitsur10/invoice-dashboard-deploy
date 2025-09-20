@@ -102,41 +102,52 @@ function DashboardView() {
 
   const setQuickDateRange = (range: 'thisMonth' | 'lastMonth' | 'last2Months' | 'sinceStart') => {
     const now = new Date();
+    let fromDate: string;
+    let toDate: string;
 
     switch (range) {
       case 'thisMonth':
-        const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-        const thisMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
-        setDraftFrom(thisMonthStart);
-        setDraftTo(thisMonthEnd);
+        fromDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+        toDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
         break;
       case 'lastMonth':
-        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 10);
-        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().slice(0, 10);
-        setDraftFrom(lastMonthStart);
-        setDraftTo(lastMonthEnd);
+        fromDate = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 10);
+        toDate = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().slice(0, 10);
         break;
       case 'last2Months':
-        const twoMonthsStart = new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString().slice(0, 10);
-        const currentEnd = now.toISOString().slice(0, 10);
-        setDraftFrom(twoMonthsStart);
-        setDraftTo(currentEnd);
+        fromDate = new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString().slice(0, 10);
+        toDate = now.toISOString().slice(0, 10);
         break;
       case 'sinceStart':
-        setDraftFrom(MIN_DATE);
-        setDraftTo('');
+        fromDate = MIN_DATE;
+        toDate = '';
         break;
+      default:
+        return;
     }
+
+    // Normalize dates
+    const normalizedFrom = fromDate ? (fromDate < MIN_DATE ? MIN_DATE : fromDate) : MIN_DATE;
+    const normalizedTo = toDate && toDate >= normalizedFrom ? toDate : '';
+
+    // Update draft state
+    setDraftFrom(normalizedFrom);
+    setDraftTo(normalizedTo);
+
+    // Immediately apply the filters
+    setParams((prev) => ({
+      ...prev,
+      dateFrom: toIsoStart(normalizedFrom),
+      dateTo: normalizedTo ? toIsoEnd(normalizedTo) : undefined,
+    }));
   };
 
   const clearFilters = () => {
     setDraftFrom(MIN_DATE);
     setDraftTo('');
-    setParams((prev) => ({
-      ...prev,
+    setParams({
       dateFrom: toIsoStart(MIN_DATE),
-      dateTo: undefined,
-    }));
+    });
   };
 
   const dateRangeLabel = (() => {

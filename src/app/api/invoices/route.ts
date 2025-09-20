@@ -118,10 +118,10 @@ export async function GET(request: NextRequest) {
       const amountDue = amountDueRaw == null ? amount : Number(amountDueRaw)
 
       const dueDate = pick(row, ['due_date', 'dueDate', 'payment_due', 'payment_due_date'], null)
-      const status = deriveInvoiceStatus(amountDue, dueDate, now)
-
-      const receivedDate = pick(row, ['created_at', 'createdAt', 'received_date', 'receivedDate'], null)
+      const receivedDate = pick(row, ['invoice_date', 'invoiceDate', 'received_date', 'receivedDate', 'created_at', 'createdAt'], null)
       const issueDate = pick(row, ['invoice_date', 'invoiceDate'], null)
+      const effectiveIssueDate = issueDate || receivedDate
+      const status = deriveInvoiceStatus(amountDue, dueDate, effectiveIssueDate, now)
 
       return {
         id: row.id ?? pick(row, ['invoice_id', 'uuid'], ''),
@@ -245,11 +245,11 @@ function applyFilters(query: any, filters: NormalisedFilters, nowIso: string) {
   }
 
   if (filters.dateFrom) {
-    next = next.gte('created_at', filters.dateFrom)
+    next = next.gte('invoice_date', filters.dateFrom)
   }
 
   if (filters.dateTo) {
-    next = next.lte('created_at', filters.dateTo)
+    next = next.lte('invoice_date', filters.dateTo)
   }
 
   if (filters.categories.length) {
@@ -299,15 +299,20 @@ function buildStatusConditions(statuses: string[], nowIso: string): string[] {
   return result
 }
 
-function deriveInvoiceStatus(amountDue: unknown, dueDate: unknown, now: Date): 'pending' | 'paid' | 'overdue' {
-  const numericalAmount = typeof amountDue === 'number' ? amountDue : amountDue == null ? null : Number(amountDue)
+function deriveInvoiceStatus(amountDue: unknown, dueDate: unknown, issueDate: unknown, now: Date): 'pending' | 'paid' | 'overdue' {
+  const cutoffDate = new Date('2025-05-01T00:00:00.000Z')
+  const issue = issueDate ? new Date(issueDate) : null
 
-  if (numericalAmount === 0) {
+  // If invoice issued before May 1st 2025, default to paid
+  if (issue && issue.getTime() < cutoffDate.getTime()) {
     return 'paid'
   }
 
-  const dueDateValue = dueDate ? new Date(dueDate) : null
+  // For invoices from May 1st onwards, check due date vs current date
+  const numericalAmount = typeof amountDue === 'number' ? amountDue : amountDue == null ? null : Number(amountDue)
+  if (numericalAmount === 0) return 'paid'
 
+  const dueDateValue = dueDate ? new Date(dueDate) : null
   if (numericalAmount != null && numericalAmount > 0 && dueDateValue && dueDateValue.getTime() < now.getTime()) {
     return 'overdue'
   }
@@ -338,7 +343,7 @@ function buildLocalInvoiceResponse(
     amountDue: invoice.amountDue ?? invoice.amount ?? 0,
     issueDate: invoice.issueDate ?? null,
     dueDate: invoice.dueDate ?? null,
-    status: deriveInvoiceStatus(invoice.amountDue ?? invoice.amount ?? 0, invoice.dueDate, now),
+    status: deriveInvoiceStatus(invoice.amountDue ?? invoice.amount ?? 0, invoice.dueDate, invoice.issueDate ?? invoice.receivedDate, now),
     description: invoice.description ?? '',
     category: invoice.category ?? 'Uncategorized',
     paymentTerms: invoice.paymentTerms ?? 'Net 30',
@@ -380,7 +385,7 @@ function filterLocalInvoices(invoices: typeof mockInvoiceData, filters: Normalis
     }
 
     if (filters.statuses.length) {
-      const derivedStatus = deriveInvoiceStatus(invoice.amountDue ?? invoice.amount ?? 0, invoice.dueDate, now)
+      const derivedStatus = deriveInvoiceStatus(invoice.amountDue ?? invoice.amount ?? 0, invoice.dueDate, invoice.issueDate ?? invoice.receivedDate, now)
       if (!filters.statuses.includes(derivedStatus)) {
         return false
       }
@@ -401,7 +406,7 @@ function filterLocalInvoices(invoices: typeof mockInvoiceData, filters: Normalis
     }
 
     if (filters.dateFrom || filters.dateTo) {
-      const created = invoice.receivedDate ?? invoice.issueDate
+      const created = invoice.issueDate ?? invoice.receivedDate
       if (!created) return false
       const createdDate = new Date(created)
 

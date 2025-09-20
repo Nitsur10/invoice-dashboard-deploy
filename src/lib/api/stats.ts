@@ -84,7 +84,7 @@ export async function fetchDashboardStats(params: StatsParams = {}): Promise<Das
     trackAPIPerformance('/api/stats', duration)
     
     // Optional console log in dev
-    // console.log(`[Stats API] Success: ${duration}ms`, { params })
+    // console.log(`[Stats API] Success: ${duration}ms`, { params, url: url.toString() })
 
     return data
   } catch (error) {

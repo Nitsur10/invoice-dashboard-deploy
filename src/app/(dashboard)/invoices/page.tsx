@@ -284,7 +284,7 @@ export function InvoicesView() {
   }, [reset])
 
   return (
-    <div className="container mx-auto space-y-6 py-6">
+    <div className="w-full px-4 space-y-6 py-6">
       <InvoiceFilterDrawer
         open={isFilterDrawerOpen}
         onOpenChange={setFilterDrawerOpen}
@@ -386,7 +386,7 @@ export function InvoicesView() {
         </Alert>
       )}
 
-      <div className="lg:grid lg:grid-cols-[280px,1fr] lg:gap-6">
+      <div className="lg:grid lg:grid-cols-[320px,1fr] lg:gap-6">
         <InvoiceFilterSidebar facets={facetsQuery.data?.facets} isLoading={facetsQuery.isLoading} />
 
         <div className="space-y-6">

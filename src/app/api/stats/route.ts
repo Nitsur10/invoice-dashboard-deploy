@@ -35,11 +35,24 @@ function parseDateParam(value: string | null): string | null {
   return Number.isNaN(d.getTime()) ? null : d.toISOString()
 }
 
-function deriveInvoiceStatus(amountDue: unknown, dueDate: unknown, now: Date): 'pending' | 'paid' | 'overdue' {
+function deriveInvoiceStatus(amountDue: unknown, dueDate: unknown, issueDate: unknown, now: Date): 'pending' | 'paid' | 'overdue' {
+  const cutoffDate = new Date('2025-05-01T00:00:00.000Z')
+  const issue = issueDate ? new Date(issueDate) : null
+
+  // If invoice issued before May 1st 2025, default to paid
+  if (issue && issue.getTime() < cutoffDate.getTime()) {
+    return 'paid'
+  }
+
+  // For invoices from May 1st onwards, check due date vs current date
   const numericalAmount = typeof amountDue === 'number' ? amountDue : amountDue == null ? null : Number(amountDue)
   if (numericalAmount === 0) return 'paid'
+
   const due = dueDate ? new Date(dueDate) : null
-  if (numericalAmount != null && numericalAmount > 0 && due && due.getTime() < now.getTime()) return 'overdue'
+  if (numericalAmount != null && numericalAmount > 0 && due && due.getTime() < now.getTime()) {
+    return 'overdue'
+  }
+
   return 'pending'
 }
 
@@ -53,6 +66,16 @@ export async function GET(request: NextRequest) {
     const minClamp = '2025-05-01T00:00:00.000Z'
     const fromIso = dateFrom ?? minClamp
     const toIso = dateTo
+
+    // Debug logging - updated
+    // console.log('[Stats API] Received params:', {
+    //   dateFrom: url.searchParams.get('dateFrom'),
+    //   dateTo: url.searchParams.get('dateTo'),
+    //   parsedFrom: dateFrom,
+    //   parsedTo: dateTo,
+    //   finalFromIso: fromIso,
+    //   finalToIso: toIso
+    // })
 
     let rows: Array<{ total: number; amount_due?: number | null; due_date?: string | null; category?: string | null; supplier_name?: string | null; created_at?: string | null }>
 
@@ -140,11 +163,46 @@ export async function GET(request: NextRequest) {
       return null as string | null
     }
 
+    let processedCount = 0
+    let filteredCount = 0
+    let missingDateCount = 0
+
     for (const r of rows as any[]) {
       // Apply date filter window using common created/received fields
-      const createdIso = pickDateIso(r, ['created_at', 'createdAt', 'received_date', 'receivedDate', 'invoice_date', 'invoiceDate'])
-      if (fromIso && createdIso && createdIso < fromIso) continue
-      if (toIso && createdIso && createdIso > toIso) continue
+      const createdIso = pickDateIso(r, ['invoice_date', 'invoiceDate', 'received_date', 'receivedDate', 'created_at', 'createdAt'])
+
+      if (!createdIso) {
+        missingDateCount++
+        // console.log(`[Stats API] Invoice missing date fields:`, {
+        //   id: r.id || r.invoice_number || 'unknown',
+        //   available_fields: Object.keys(r).filter(k => k.toLowerCase().includes('date'))
+        // })
+        continue
+      }
+
+      // Debug: log first few records to see the actual date field values
+      // if (totalInvoices < 3) {
+      //   console.log(`[Stats API] Sample record #${totalInvoices + 1}:`, {
+      //     invoice_number: r.invoice_number,
+      //     invoice_date: r.invoice_date,
+      //     created_at: r.created_at,
+      //     createdIso,
+      //     fromIso,
+      //     toIso,
+      //     passesFilter: (!fromIso || createdIso >= fromIso) && (!toIso || createdIso <= toIso)
+      //   });
+      // }
+
+      if (fromIso && createdIso < fromIso) {
+        filteredCount++
+        continue
+      }
+      if (toIso && createdIso > toIso) {
+        filteredCount++
+        continue
+      }
+
+      processedCount++
       totalInvoices += 1
       const amount = Number(pick(r, ['total', 'amount', 'total_amount', 'grand_total'], 0)) || 0
       const amountDueRaw = pick(r, ['amount_due', 'due_amount', 'outstanding', 'balance_due'], null)
@@ -152,7 +210,8 @@ export async function GET(request: NextRequest) {
       totalAmount += amount
 
       const dueDateValue = pick(r, ['due_date', 'dueDate', 'payment_due', 'payment_due_date'], null)
-      const status = deriveInvoiceStatus(amountDue, dueDateValue, now)
+      const issueDateValue = pick(r, ['issue_date', 'issueDate', 'invoice_date', 'invoiceDate', 'created_at', 'createdAt'], null)
+      const status = deriveInvoiceStatus(amountDue, dueDateValue, issueDateValue, now)
       if (status === 'paid') {
         paidAmount += amount
       } else if (status === 'overdue') {
@@ -180,6 +239,17 @@ export async function GET(request: NextRequest) {
     const topVendors = Array.from(byVendor.entries()).map(([vendor, v]) => ({ vendor, count: v.count, amount: v.amount }))
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 10)
+
+    // Summary logging
+    // console.log(`[Stats API] Processing summary:`, {
+    //   totalRows: rows.length,
+    //   processedCount,
+    //   filteredCount,
+    //   missingDateCount,
+    //   finalTotalInvoices: totalInvoices,
+    //   statusCounts: { pending: pendingPayments, overdue: overduePayments, paidInvoices: totalInvoices - pendingPayments - overduePayments },
+    //   dateRange: { fromIso, toIso }
+    // })
 
     const result: DashboardStatsResponse = {
       overview: {
