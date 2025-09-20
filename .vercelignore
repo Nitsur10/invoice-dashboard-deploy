@@ -1,0 +1,52 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+.next
+out
+dist
+
+# Cache
+.cache
+.turbopack
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Large files that shouldn't be deployed
+*.tar.gz
+*.zip
+invoice-dashboard-deploy.tar.gz
+deploy-ready.tar.gz
+
+# Test outputs
+test-results
+playwright-report
+coverage
+
+# IDE files
+.vscode
+.idea
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large assets that are not needed for deployment
+RPD\ Logo\ pack/
+screenshots/
+docs/visuals/
+*.tsbuildinfo
+
+# Development database
+claude-monitor/
+*.db
+
+# Temporary files
+.tmp
+.temp
+*.tmp
+*.temp

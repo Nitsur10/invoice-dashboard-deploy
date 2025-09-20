@@ -1,0 +1,394 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* RPD Brand Theme — Light Navy & Gold */
+    --background: 220 33% 97%;
+    --foreground: 217 52% 16%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 217 52% 16%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 217 52% 16%;
+
+    --primary: 41 45% 53%;
+    --primary-foreground: 220 40% 96%;
+
+    --secondary: 217 39% 20%;
+    --secondary-foreground: 220 40% 96%;
+
+    --muted: 216 33% 91%;
+    --muted-foreground: 217 23% 42%;
+
+    --accent: 218 60% 90%;
+    --accent-foreground: 217 52% 16%;
+
+    --destructive: 4 74% 54%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 218 30% 85%;
+    --input: 218 30% 85%;
+    --ring: 41 45% 53%;
+
+    --radius: 0.75rem;
+
+    /* Brand tokens */
+    --rpd-navy-primary: 217 52% 16%;
+    --rpd-navy-secondary: 217 39% 20%;
+    --rpd-navy-tertiary: 217 34% 28%;
+    --rpd-gold-primary: 41 45% 53%;
+    --rpd-gold-secondary: 41 52% 47%;
+
+    --rpd-text-primary: 217 52% 16%;
+    --rpd-text-secondary: 218 23% 42%;
+    --rpd-text-muted: 220 15% 55%;
+
+    --rpd-border-subtle: 218 40% 90%;
+    --rpd-border-default: 218 30% 85%;
+    --rpd-border-emphasis: 217 28% 70%;
+
+    --rpd-surface-base: 220 33% 97%;
+    --rpd-surface-raised: 0 0% 100%;
+    --rpd-surface-overlay: 218 60% 94%;
+
+    --rpd-shadow-sm: 0 10px 20px -15px rgb(19 36 61 / 0.25);
+    --rpd-shadow-md: 0 25px 40px -20px rgb(19 36 61 / 0.2);
+    --rpd-shadow-lg: 0 35px 65px -25px rgb(19 36 61 / 0.25);
+    --rpd-shadow-xl: 0 45px 80px -30px rgb(19 36 61 / 0.28);
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+  
+  body {
+    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--rpd-surface-overlay)) 100%);
+    color: hsl(var(--foreground));
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background-color: hsl(var(--muted));
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 9999px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--accent));
+  }
+}
+
+@layer components {
+  /* Premium Card Styles */
+  .rpd-card {
+    border: 1px solid hsl(var(--rpd-border-default));
+    border-radius: var(--radius);
+    background: hsl(var(--card));
+    box-shadow: var(--rpd-shadow-sm);
+  }
+
+  .rpd-card-elevated {
+    background: linear-gradient(160deg, hsl(var(--card)) 0%, hsl(var(--rpd-surface-overlay)) 100%);
+    border: 1px solid hsl(var(--rpd-border-default));
+    border-radius: var(--radius);
+    box-shadow: var(--rpd-shadow-md);
+  }
+  
+  /* Button Variants */
+  .rpd-btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/85
+           focus:ring-2 focus:ring-primary focus:ring-offset-2
+           focus:ring-offset-background transition-all duration-200
+           shadow-gold-glow hover:shadow-premium;
+  }
+
+  .rpd-btn-secondary {
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    border: 1px solid hsl(var(--border));
+    transition: all 0.2s ease;
+  }
+
+  .rpd-btn-secondary:hover {
+    background-color: hsl(var(--accent)/0.85);
+  }
+
+  .rpd-btn-ghost {
+    @apply hover:bg-accent/80 hover:text-accent-foreground transition-colors duration-200;
+  }
+  
+  /* Navigation Styles */
+  .rpd-nav-item {
+    @apply flex items-center gap-3 px-4 py-3 text-sm font-medium
+           text-slate-600 hover:text-foreground hover:bg-accent/60
+           rounded-md transition-all duration-200 border-l-2 border-transparent hover:border-primary;
+  }
+
+  .rpd-nav-item.active {
+    @apply text-primary bg-accent border-primary;
+  }
+  
+  /* Form Input Styles */
+  .rpd-input {
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--foreground));
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .rpd-input::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .rpd-input:focus {
+    border-color: hsl(var(--primary));
+    outline: none;
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.12);
+  }
+  
+  /* Data Table Styles */
+  .rpd-table {
+    @apply w-full border-separate border-spacing-0;
+  }
+  
+  .rpd-table th {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--rpd-text-secondary));
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .rpd-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+    font-size: 0.9rem;
+    color: hsl(var(--foreground));
+  }
+
+  .rpd-table tr:hover td {
+    background-color: hsl(var(--accent));
+  }
+  
+  /* Status Badges */
+  .rpd-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .rpd-badge-success {
+    @apply rpd-badge bg-emerald-100 text-emerald-800 border border-emerald-200;
+  }
+
+  .rpd-badge-warning {
+    @apply rpd-badge bg-amber-100 text-amber-800 border border-amber-200;
+  }
+
+  .rpd-badge-error {
+    @apply rpd-badge bg-rose-100 text-rose-800 border border-rose-200;
+  }
+
+  .rpd-badge-info {
+    @apply rpd-badge bg-sky-100 text-sky-800 border border-sky-200;
+  }
+  
+  /* Loading States */
+  .rpd-skeleton {
+    @apply animate-pulse bg-muted rounded;
+  }
+  
+  /* Premium Gradients */
+  .rpd-gradient-bg {
+    background: linear-gradient(140deg, hsl(var(--background)) 0%, hsl(var(--accent)) 40%, hsl(var(--card)) 100%);
+  }
+
+  .rpd-gradient-gold {
+    background: linear-gradient(120deg, hsl(var(--rpd-gold-primary)) 0%, hsl(var(--rpd-gold-secondary)) 100%);
+  }
+  
+  /* Text Styles */
+  .rpd-text-gradient {
+    background: linear-gradient(130deg, hsl(var(--rpd-navy-tertiary)) 0%, hsl(var(--rpd-gold-primary)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  /* Grid Layouts */
+  .rpd-grid-responsive {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+  }
+  
+  .rpd-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .rpd-section-padding {
+    @apply px-6 py-8;
+  }
+  
+  /* Typography */
+  .rpd-heading-xl {
+    @apply text-4xl font-bold tracking-tight text-foreground;
+  }
+  
+  .rpd-heading-lg {
+    @apply text-3xl font-bold tracking-tight text-foreground;
+  }
+  
+  .rpd-heading-md {
+    @apply text-2xl font-semibold tracking-tight text-foreground;
+  }
+  
+  .rpd-body-lg {
+    @apply text-lg text-foreground leading-relaxed;
+  }
+  
+  .rpd-body {
+    @apply text-base text-foreground;
+  }
+  
+  .rpd-body-sm {
+    @apply text-sm text-muted-foreground;
+  }
+
+  /* Invoice filters — react-datepicker overrides */
+  .invoice-date-picker-wrapper {
+    width: 100%;
+  }
+
+.calendar-surface {
+  overflow: visible;
+}
+
+.invoice-date-picker.react-datepicker {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  padding: 0.25rem 0.5rem 0.5rem;
+  box-sizing: border-box;
+}
+
+.calendar-surface .react-datepicker__month-container {
+  width: 100%;
+}
+
+.invoice-date-picker .react-datepicker__month {
+  width: 100%;
+}
+
+.invoice-date-picker .react-datepicker__week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+  .invoice-date-picker .react-datepicker__header {
+    background: transparent;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .invoice-date-picker .react-datepicker__current-month {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+  }
+
+  .invoice-date-picker .react-datepicker__day,
+  .invoice-date-picker .react-datepicker__day-name {
+    color: hsl(var(--rpd-text-secondary));
+  }
+
+  .invoice-date-picker .react-datepicker__day {
+    border-radius: 9999px;
+    line-height: 2.25rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin: 0.125rem;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .invoice-date-picker .react-datepicker__day--keyboard-selected,
+  .invoice-date-picker .react-datepicker__day--selected,
+  .invoice-date-picker .react-datepicker__day--in-selecting-range,
+  .invoice-date-picker .react-datepicker__day--in-range {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.9) 100%);
+    color: hsl(var(--primary-foreground));
+  }
+
+  .invoice-date-picker .react-datepicker__day--outside-month {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .invoice-date-picker .react-datepicker__day:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+}
+
+@layer utilities {
+  /* Enhanced focus styles */
+  .focus-premium:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary)), 0 0 0 4px hsl(var(--background));
+    transition: all 0.2s;
+  }
+  
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  /* Premium shadows */
+  .shadow-premium {
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4);
+  }
+  
+  .shadow-premium-lg {
+    box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.5);
+  }
+  
+  .shadow-gold-glow {
+    box-shadow: 0 0 20px rgba(191, 161, 76, 0.3);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 220 20% 30%;
+    --rpd-border-default: 220 25% 35%;
+    --muted-foreground: 0 0% 80%;
+  }
+}
