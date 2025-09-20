@@ -263,41 +263,43 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
     header: "Actions",
     cell: ({ row }) => {
       const invoice = row.original
-      
+
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0" aria-label={`Open actions menu for invoice ${invoice.invoiceNumber}`}>
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {invoice.invoiceUrl && (
+        <div className="pr-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0" aria-label={`Open actions menu for invoice ${invoice.invoiceNumber}`}>
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {invoice.invoiceUrl && (
+                <DropdownMenuItem
+                  onClick={() => window.open(invoice.invoiceUrl, '_blank')}
+                  className="cursor-pointer"
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  View Invoice
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
-                onClick={() => window.open(invoice.invoiceUrl, '_blank')}
+                onClick={() => navigator.clipboard.writeText(invoice.invoiceNumber)}
                 className="cursor-pointer"
               >
-                <ExternalLink className="mr-2 h-4 w-4" />
-                View Invoice
+                Copy Invoice #
               </DropdownMenuItem>
-            )}
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(invoice.invoiceNumber)}
-              className="cursor-pointer"
-            >
-              Copy Invoice #
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(invoice.vendorEmail)}
-              className="cursor-pointer"
-            >
-              Copy Vendor Email
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(invoice.vendorEmail)}
+                className="cursor-pointer"
+              >
+                Copy Vendor Email
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       )
     },
     enableSorting: false,

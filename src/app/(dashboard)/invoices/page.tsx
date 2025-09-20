@@ -284,7 +284,7 @@ export function InvoicesView() {
   }, [reset])
 
   return (
-    <div className="w-full px-4 space-y-6 py-6">
+    <div className="max-w-8xl mx-auto px-6 space-y-6 py-8">
       <InvoiceFilterDrawer
         open={isFilterDrawerOpen}
         onOpenChange={setFilterDrawerOpen}
@@ -311,7 +311,7 @@ export function InvoicesView() {
             Server-side pagination with real invoice data — {totalCount} total invoices
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-4">
           <Button
             variant="outline"
             size="sm"
@@ -386,13 +386,13 @@ export function InvoicesView() {
         </Alert>
       )}
 
-      <div className="lg:grid lg:grid-cols-[320px,1fr] lg:gap-6">
+      <div className="lg:grid lg:grid-cols-[280px,1fr] lg:gap-8">
         <InvoiceFilterSidebar facets={facetsQuery.data?.facets} isLoading={facetsQuery.isLoading} />
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <InvoiceFilterChips savedViews={savedViews} />
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             <Card className="rpd-card">
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
@@ -459,13 +459,6 @@ export function InvoicesView() {
               </CardContent>
             </Card>
           </div>
-
-          <Alert className="border-slate-200 bg-slate-50">
-            <ExternalLink className="h-4 w-4 text-primary" />
-            <AlertDescription className="text-slate-700">
-              <strong>Server-side pagination</strong> keeps the experience fast while filters refine large datasets.
-            </AlertDescription>
-          </Alert>
 
           <Card>
             <CardHeader>

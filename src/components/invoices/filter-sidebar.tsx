@@ -34,7 +34,7 @@ export function InvoiceFilterSidebar({
 }: InvoiceFilterSidebarProps) {
   return (
     <aside className={cn('hidden lg:block', className)}>
-      <div className="sticky top-28 space-y-4">
+      <div className="sticky top-24 space-y-4">
         <InvoiceFilterForm facets={facets} isLoading={isLoading} onClose={onClose} />
       </div>
     </aside>
