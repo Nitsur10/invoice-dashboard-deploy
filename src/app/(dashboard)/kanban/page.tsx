@@ -46,15 +46,25 @@ function KanbanView() {
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['kanban-invoices', apiParams],
-    queryFn: () => fetchInvoices(apiParams),
+    queryFn: async () => {
+      console.log('Fetching invoices with params:', apiParams);
+      const result = await fetchInvoices(apiParams);
+      console.log('Fetched invoices result:', result);
+      return result;
+    },
     staleTime: 2 * 60 * 1000,
     placeholderData: 'keepPreviousData',
     enabled: typeof window !== 'undefined',
   });
 
   const invoices: Invoice[] = useMemo(() => {
-    if (!data?.data) return [] as Invoice[];
-    return (data.data as any[]).map((inv, idx) => {
+    console.log('Processing invoices data:', { data, hasData: !!data?.data });
+    if (!data?.data) {
+      console.log('No data available');
+      return [] as Invoice[];
+    }
+
+    const processed = (data.data as any[]).map((inv, idx) => {
       const rawStatus = (inv.status ?? inv.paymentStatus ?? 'pending')
         .toString()
         .toLowerCase() as BoardStatus;
@@ -70,6 +80,9 @@ function KanbanView() {
         paidDate: inv.paidDate ? new Date(inv.paidDate) : undefined,
       } as Invoice;
     });
+
+    console.log('Processed invoices:', processed.length, processed.slice(0, 2));
+    return processed;
   }, [data]);
 
   const grouped = useMemo(() => ({

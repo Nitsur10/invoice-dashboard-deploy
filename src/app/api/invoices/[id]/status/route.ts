@@ -69,10 +69,14 @@ export async function PATCH(
     }
 
     // Get current invoice to check existing status
+    // Use invoiceNumber if id is empty
+    const columnToFetch = id && id.trim() !== '' ? 'id' : 'invoiceNumber';
+    const valueToFetch = id && id.trim() !== '' ? id : id;
+
     const { data: currentInvoice, error: fetchError } = await supabaseAdmin
       .from('invoices')
-      .select('id, status, payment_status')
-      .eq('id', id)
+      .select('id, invoiceNumber, status, payment_status')
+      .eq(columnToFetch, valueToFetch)
       .single()
 
     if (fetchError || !currentInvoice) {
@@ -116,7 +120,7 @@ export async function PATCH(
         payment_status: newStatus,
         updated_at: new Date().toISOString()
       })
-      .eq('id', id)
+      .eq(currentInvoice.id ? 'id' : 'invoiceNumber', currentInvoice.id || currentInvoice.invoiceNumber)
       .select('*')
       .single()
 

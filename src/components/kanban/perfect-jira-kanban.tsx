@@ -284,7 +284,7 @@ function PerfectJiraColumn({ id, title, invoices, isHighlighted, draggedInvoiceI
 
 interface PerfectJiraKanbanProps {
   invoices: MockInvoice[];
-  onInvoiceUpdate: (invoiceId: string, newStatus: BoardStatus) => void;
+  onInvoiceUpdate: (invoiceId: string, newStatus: BoardStatus) => void | Promise<void>;
 }
 
 export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanbanProps) {
@@ -332,7 +332,7 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
     setHighlightedColumnId((over?.id as BoardStatus) ?? null);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     const raw = String(active.id || '');
     const invoiceId = raw.startsWith('card:') ? raw.replace('card:', '') : raw;
@@ -340,8 +340,8 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
     // reset drag UI state
     setDraggedInvoiceId(null);
     setHighlightedColumnId(null);
-    
-    
+
+
     if (!over) return;
     const targetColumnId = over.id as BoardStatus;
 
@@ -355,7 +355,11 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
 
     // Only update if status changed
     if (currentStatus !== targetColumnId) {
-      onInvoiceUpdate(invoiceId, targetColumnId);
+      try {
+        await onInvoiceUpdate(invoiceId, targetColumnId);
+      } catch (error) {
+        console.error('Failed to update invoice status:', error);
+      }
     }
   };
 
