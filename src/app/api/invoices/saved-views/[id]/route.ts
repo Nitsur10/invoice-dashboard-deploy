@@ -7,13 +7,13 @@ import { serializeInvoiceFilters } from '@/types/invoice-filters'
 
 const FALLBACK_USER_ID = '00000000-0000-0000-0000-000000000000'
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ code: 'SUPABASE_DISABLED', message: 'Supabase not configured' }, { status: 503 })
   }
 
   const userId = resolveUserId(request)
-  const { id } = params
+  const { id } = await params
 
   try {
     const body = await request.json()
@@ -57,13 +57,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ code: 'SUPABASE_DISABLED', message: 'Supabase not configured' }, { status: 503 })
   }
 
   const userId = resolveUserId(request)
-  const { id } = params
+  const { id } = await params
 
   try {
     const { error } = await supabaseAdmin

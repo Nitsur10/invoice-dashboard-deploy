@@ -79,7 +79,7 @@ export function InvoicesView() {
   }, [filters, pagination, sorting])
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['invoices', apiParams],
+    queryKey: ['invoices', apiParams] as const,
     queryFn: () => fetchInvoices(apiParams),
     staleTime: 2 * 60 * 1000,
     placeholderData: 'keepPreviousData',

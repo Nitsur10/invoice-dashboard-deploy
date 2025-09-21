@@ -14,7 +14,7 @@ import { DateRangePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { formatDateForSydney } from '@/lib/data';
 
-const CategoryBreakdown = dynamic(() => import('@/components/charts/category-breakdown').then((m) => m.CategoryBreakdown), {
+const StatusBreakdown = dynamic(() => import('@/components/charts/supplier-breakdown').then((m) => m.StatusBreakdown), {
   ssr: false,
   loading: () => (
     <Card className="rpd-card-elevated">
@@ -277,13 +277,13 @@ function DashboardView() {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="animate-fade-in">
-            <CategoryBreakdown 
-              data={stats?.breakdowns.categories ?? []}
+            <StatusBreakdown
+              data={stats?.breakdowns.processingStatus ?? []}
               isLoading={isLoading}
             />
           </div>
           <div className="animate-fade-in" style={{animationDelay: '0.1s'}}>
-            <TopVendors 
+            <TopVendors
               data={stats?.breakdowns.topVendors ?? []}
               isLoading={isLoading}
             />

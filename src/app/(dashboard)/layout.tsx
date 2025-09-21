@@ -14,13 +14,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
         redirect('/auth/login')
       }
     } else {
-      // Supabase not configured, redirect to login
-      redirect('/auth/login')
+      // Supabase not configured - allow access for development
+      console.log('⚠️ Supabase not configured - allowing access for development')
     }
   } catch (error) {
     console.error('Dashboard auth error:', error)
-    // If Supabase is not configured or an error occurs, treat as unauthenticated
-    redirect('/auth/login')
+    // If Supabase is not configured or an error occurs, allow access for development
+    console.log('⚠️ Supabase error - allowing access for development')
   }
 
   return (

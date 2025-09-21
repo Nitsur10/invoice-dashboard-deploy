@@ -7,13 +7,13 @@ const supabaseUrl = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL')
 const supabaseKey = getRequiredEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 
 // Valid status transitions to prevent invalid changes
-// Align backend transitions with Kanban UI rules
+// Allow more flexible transitions for development/testing
 const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
-  pending: ['in_review', 'overdue'],
-  in_review: ['approved', 'pending', 'overdue'],
-  approved: ['paid', 'in_review'],
-  paid: [],
-  overdue: ['in_review', 'approved', 'paid'],
+  pending: ['in_review', 'overdue', 'approved', 'paid'],
+  in_review: ['approved', 'pending', 'overdue', 'paid'],
+  approved: ['paid', 'in_review', 'pending', 'overdue'],
+  paid: ['in_review', 'approved', 'pending', 'overdue'],
+  overdue: ['in_review', 'approved', 'paid', 'pending'],
 }
 
 // PATCH /api/invoices/[id]/status

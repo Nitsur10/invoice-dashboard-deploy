@@ -18,6 +18,7 @@ type DashboardStatsResponse = {
     }
   }
   breakdowns: {
+    processingStatus: Array<{ status: string; count: number; amount: number }>
     categories: Array<{ category: string; count: number; amount: number }>
     topVendors: Array<{ vendor: string; count: number; amount: number }>
   }
@@ -144,6 +145,7 @@ export async function GET(request: NextRequest) {
 
     const byCategory = new Map<string, { count: number; amount: number }>()
     const byVendor = new Map<string, { count: number; amount: number }>()
+    const byStatus = new Map<string, { count: number; amount: number }>()
 
     const pick = (record: any, keys: string[], fallback?: any) => {
       for (const k of keys) {
@@ -212,6 +214,13 @@ export async function GET(request: NextRequest) {
       const dueDateValue = pick(r, ['due_date', 'dueDate', 'payment_due', 'payment_due_date'], null)
       const issueDateValue = pick(r, ['issue_date', 'issueDate', 'invoice_date', 'invoiceDate', 'created_at', 'createdAt'], null)
       const status = deriveInvoiceStatus(amountDue, dueDateValue, issueDateValue, now)
+
+      // Track by status for breakdown
+      const statusEntry = byStatus.get(status) || { count: 0, amount: 0 }
+      statusEntry.count += 1
+      statusEntry.amount += amount
+      byStatus.set(status, statusEntry)
+
       if (status === 'paid') {
         paidAmount += amount
       } else if (status === 'overdue') {
@@ -239,6 +248,8 @@ export async function GET(request: NextRequest) {
     const topVendors = Array.from(byVendor.entries()).map(([vendor, v]) => ({ vendor, count: v.count, amount: v.amount }))
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 10)
+    const processingStatus = Array.from(byStatus.entries()).map(([status, v]) => ({ status, count: v.count, amount: v.amount }))
+      .sort((a, b) => b.count - a.count)
 
     // Summary logging
     // console.log(`[Stats API] Processing summary:`, {
@@ -266,6 +277,7 @@ export async function GET(request: NextRequest) {
         },
       },
       breakdowns: {
+        processingStatus,
         categories,
         topVendors,
       },
@@ -291,7 +303,7 @@ export async function GET(request: NextRequest) {
           overduePayments: 0,
           trends: { invoices: 0, amount: 0 },
         },
-        breakdowns: { categories: [], topVendors: [] },
+        breakdowns: { processingStatus: [], categories: [], topVendors: [] },
         metadata: { generatedAt: new Date().toISOString(), dateRange: { from: null, to: null }, periodDays: 0 },
       },
       { status: 500 }

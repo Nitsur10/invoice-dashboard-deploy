@@ -133,7 +133,7 @@ export function DataTable<TData, TValue>({
               ))
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className="group">
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="align-middle">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

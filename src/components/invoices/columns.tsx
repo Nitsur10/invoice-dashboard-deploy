@@ -11,9 +11,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ArrowUpDown, MoreHorizontal, ExternalLink } from "lucide-react"
+import { ArrowUpDown, MoreHorizontal, ExternalLink, CheckCircle, Clock, AlertTriangle, ChevronDown } from "lucide-react"
 import { Invoice } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
+import { updateInvoiceStatus } from "@/lib/api/invoices"
+import { useQueryClient, useMutation } from "@tanstack/react-query"
+import { useState } from "react"
 
 export const invoiceColumns: ColumnDef<Invoice>[] = [
   {
@@ -143,32 +146,46 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       )
     },
     cell: ({ row }) => {
+      const invoice = row.original
       const status = row.getValue("status") as string
-      
+
       const statusConfig = {
-        pending: { 
-          label: "Pending", 
+        pending: {
+          label: "Pending",
           variant: "secondary" as const,
-          className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+          className: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/20 dark:text-blue-300 dark:border-blue-800/30"
         },
-        paid: { 
-          label: "Paid", 
+        in_review: {
+          label: "In Review",
           variant: "secondary" as const,
-          className: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+          className: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-300 dark:border-amber-800/30"
         },
-        overdue: { 
-          label: "Overdue", 
+        approved: {
+          label: "Approved",
+          variant: "secondary" as const,
+          className: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/20 dark:text-purple-300 dark:border-purple-800/30"
+        },
+        paid: {
+          label: "Paid",
+          variant: "secondary" as const,
+          className: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-300 dark:border-emerald-800/30"
+        },
+        overdue: {
+          label: "Overdue",
           variant: "destructive" as const,
-          className: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+          className: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/20 dark:text-red-300 dark:border-red-800/30"
         },
       }
-      
+
       const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
-      
+
       return (
-        <Badge variant={config.variant} className={config.className}>
-          {config.label}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant={config.variant} className={config.className}>
+            {config.label}
+          </Badge>
+          <StatusUpdateDropdown invoice={invoice} />
+        </div>
       )
     },
   },
@@ -224,7 +241,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const isOverdue = dueDate < new Date() && row.original.status !== 'paid'
 
       return (
-        <div className={`text-sm font-medium ${isOverdue ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
+        <div className={`text-sm font-medium ${isOverdue ? 'text-red-600 dark:text-red-300' : 'text-slate-700 dark:text-slate-300'}`}>
           {dueDate.toLocaleDateString('en-AU')}
         </div>
       )
@@ -276,6 +293,113 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
+
+              {/* Status Updates */}
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Update Status</DropdownMenuLabel>
+              {invoice.status !== 'pending' && (
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const result = await updateInvoiceStatus(invoice.id, 'pending')
+                    if (result.success) {
+                      window.dispatchEvent(new CustomEvent('status-update-toast', {
+                        detail: { type: 'success', message: `Invoice ${invoice.invoiceNumber} status updated to Pending` }
+                      }))
+                    } else {
+                      window.dispatchEvent(new CustomEvent('status-update-toast', {
+                        detail: { type: 'error', message: result.error || 'Failed to update status' }
+                      }))
+                    }
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Clock className="mr-2 h-4 w-4 text-blue-500" />
+                  Mark as Pending
+                </DropdownMenuItem>
+              )}
+              {invoice.status !== 'in_review' && (
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const result = await updateInvoiceStatus(invoice.id, 'in_review')
+                    if (result.success) {
+                      window.dispatchEvent(new CustomEvent('status-update-toast', {
+                        detail: { type: 'success', message: `Invoice ${invoice.invoiceNumber} status updated to In Review` }
+                      }))
+                    } else {
+                      window.dispatchEvent(new CustomEvent('status-update-toast', {
+                        detail: { type: 'error', message: result.error || 'Failed to update status' }
+                      }))
+                    }
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Clock className="mr-2 h-4 w-4 text-amber-500" />
+                  Mark as In Review
+                </DropdownMenuItem>
+              )}
+              {invoice.status !== 'approved' && (
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const result = await updateInvoiceStatus(invoice.id, 'approved')
+                    if (result.success) {
+                      window.dispatchEvent(new CustomEvent('status-update-toast', {
+                        detail: { type: 'success', message: `Invoice ${invoice.invoiceNumber} status updated to Approved` }
+                      }))
+                    } else {
+                      window.dispatchEvent(new CustomEvent('status-update-toast', {
+                        detail: { type: 'error', message: result.error || 'Failed to update status' }
+                      }))
+                    }
+                  }}
+                  className="cursor-pointer"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4 text-purple-500" />
+                  Mark as Approved
+                </DropdownMenuItem>
+              )}
+              {invoice.status !== 'paid' && (
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const result = await updateInvoiceStatus(invoice.id, 'paid')
+                    if (result.success) {
+                      window.dispatchEvent(new CustomEvent('status-update-toast', {
+                        detail: { type: 'success', message: `Invoice ${invoice.invoiceNumber} status updated to Paid` }
+                      }))
+                    } else {
+                      window.dispatchEvent(new CustomEvent('status-update-toast', {
+                        detail: { type: 'error', message: result.error || 'Failed to update status' }
+                      }))
+                    }
+                  }}
+                  className="cursor-pointer"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                  Mark as Paid
+                </DropdownMenuItem>
+              )}
+              {invoice.status !== 'overdue' && (
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const result = await updateInvoiceStatus(invoice.id, 'overdue')
+                    if (result.success) {
+                      window.dispatchEvent(new CustomEvent('status-update-toast', {
+                        detail: { type: 'success', message: `Invoice ${invoice.invoiceNumber} status updated to Overdue` }
+                      }))
+                    } else {
+                      window.dispatchEvent(new CustomEvent('status-update-toast', {
+                        detail: { type: 'error', message: result.error || 'Failed to update status' }
+                      }))
+                    }
+                  }}
+                  className="cursor-pointer"
+                >
+                  <AlertTriangle className="mr-2 h-4 w-4 text-red-500" />
+                  Mark as Overdue
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuSeparator />
+
+              {/* File Actions */}
               {invoice.invoiceUrl && (
                 <DropdownMenuItem
                   onClick={() => window.open(invoice.invoiceUrl, '_blank')}
@@ -285,6 +409,10 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
                   View Invoice
                 </DropdownMenuItem>
               )}
+
+              <DropdownMenuSeparator />
+
+              {/* Copy Actions */}
               <DropdownMenuItem
                 onClick={() => navigator.clipboard.writeText(invoice.invoiceNumber)}
                 className="cursor-pointer"
@@ -306,3 +434,102 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
     enableHiding: false,
   },
 ]
+
+// Status Update Dropdown Component
+interface StatusUpdateDropdownProps {
+  invoice: Invoice
+}
+
+function StatusUpdateDropdown({ invoice }: StatusUpdateDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const queryClient = useQueryClient()
+
+  const statusUpdateMutation = useMutation({
+    mutationFn: async (newStatus: string) => {
+      const response = await fetch(`/api/invoices/${invoice.id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Failed to update status')
+      }
+
+      return response.json()
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      setIsOpen(false)
+    },
+    onError: (error) => {
+      console.error('Failed to update invoice status:', error)
+    },
+  })
+
+  const statusOptions = [
+    { value: 'pending', label: 'Pending', color: 'blue' },
+    { value: 'in_review', label: 'In Review', color: 'amber' },
+    { value: 'approved', label: 'Approved', color: 'purple' },
+    { value: 'paid', label: 'Paid', color: 'emerald' },
+    { value: 'overdue', label: 'Overdue', color: 'red' },
+  ]
+
+  const currentStatus = invoice.status || 'pending'
+
+  const handleStatusChange = (newStatus: string) => {
+    if (newStatus !== currentStatus) {
+      statusUpdateMutation.mutate(newStatus)
+    }
+  }
+
+  return (
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-800 opacity-0 group-hover:opacity-100 transition-opacity"
+          disabled={statusUpdateMutation.isPending}
+        >
+          {statusUpdateMutation.isPending ? (
+            <div className="h-2 w-2 animate-spin rounded-full border border-current border-t-transparent" />
+          ) : (
+            <ChevronDown className="h-3 w-3" />
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+        <DropdownMenuLabel className="text-slate-900 dark:text-slate-100">Update Status</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {statusOptions.map((option) => (
+          <DropdownMenuItem
+            key={option.value}
+            onClick={() => handleStatusChange(option.value)}
+            className={`cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-slate-100 dark:focus:bg-slate-800 ${
+              currentStatus === option.value ? 'bg-slate-100 dark:bg-slate-800' : ''
+            }`}
+            disabled={statusUpdateMutation.isPending}
+          >
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${
+                option.color === 'blue' ? 'bg-blue-500' :
+                option.color === 'amber' ? 'bg-amber-500' :
+                option.color === 'purple' ? 'bg-purple-500' :
+                option.color === 'emerald' ? 'bg-emerald-500' :
+                option.color === 'red' ? 'bg-red-500' : 'bg-blue-500'
+              }`} />
+              {option.label}
+              {currentStatus === option.value && (
+                <span className="ml-auto text-xs text-slate-600 dark:text-slate-400">✓</span>
+              )}
+            </div>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
