@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import {
   DndContext,
   closestCenter,
+  pointerWithin,
   PointerSensor,
   useSensor,
   useSensors,
@@ -14,7 +15,7 @@ import {
   useDraggable,
   useDroppable,
 } from '@dnd-kit/core';
-import { offset } from '@dnd-kit/modifiers';
+import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -295,7 +296,7 @@ interface PerfectJiraKanbanProps {
 export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanbanProps) {
   const [draggedInvoiceId, setDraggedInvoiceId] = useState<string | null>(null);
   const [highlightedColumnId, setHighlightedColumnId] = useState<BoardStatus | null>(null);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  
 
   const columns: { id: BoardStatus; title: string }[] = [
     { id: 'pending', title: 'Pending' },
@@ -328,18 +329,6 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
 
   const handleDragStart = (event: DragStartEvent) => {
     setDraggedInvoiceId(event.active.id as string);
-
-    // Calculate initial mouse offset within the card
-    const draggedElement = document.querySelector(`[data-card-id="${event.active.id}"]`);
-    if (draggedElement && event.activatorEvent) {
-      const rect = draggedElement.getBoundingClientRect();
-      const pointerEvent = event.activatorEvent as PointerEvent;
-
-      const offsetX = pointerEvent.clientX - rect.left;
-      const offsetY = pointerEvent.clientY - rect.top;
-
-      setDragOffset({ x: offsetX, y: offsetY });
-    }
   };
 
   const handleDragOver = (event: DragOverEvent) => {
@@ -354,7 +343,7 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
     // reset drag UI state
     setDraggedInvoiceId(null);
     setHighlightedColumnId(null);
-    setDragOffset(null);
+    
     
     if (!over) return;
     const targetColumnId = over.id as BoardStatus;
@@ -383,7 +372,11 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={(args) => {
+        const pointerCollisions = pointerWithin(args);
+        if (pointerCollisions.length > 0) return pointerCollisions;
+        return closestCenter(args);
+      }}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
@@ -405,7 +398,7 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
       <DragOverlay
         adjustScale={false}
         dropAnimation={null}
-        modifiers={dragOffset ? [offset({ x: -dragOffset.x, y: -dragOffset.y })] : undefined}
+        modifiers={[snapCenterToCursor]}
       >
         {draggedInvoice && (
           <div
