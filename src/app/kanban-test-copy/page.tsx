@@ -14,6 +14,20 @@ export default function KanbanTestCopyPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const handleInvoiceUpdate = (invoiceId: string, newStatus: BoardStatus) => {
+    setInvoices((prev) =>
+      prev.map((invoice) =>
+        String(invoice.id) === invoiceId
+          ? {
+              ...invoice,
+              status: newStatus,
+              paymentStatus: newStatus,
+            }
+          : invoice
+      )
+    );
+  };
+
   async function load() {
     try {
       setError(null);
@@ -83,7 +97,7 @@ export default function KanbanTestCopyPage() {
         <div className="bg-white/30 dark:bg-slate-900/30 backdrop-blur-sm rounded-xl p-6 border border-slate-200/50 dark:border-slate-700/50">
           <PerfectJiraKanban
             invoices={mapped as any}
-            onInvoiceUpdate={() => {/* noop on test copy */}}
+            onInvoiceUpdate={handleInvoiceUpdate}
           />
         </div>
       )}
