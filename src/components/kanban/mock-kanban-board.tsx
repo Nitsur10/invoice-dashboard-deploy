@@ -12,19 +12,22 @@ import {
   DragOverlay,
   DragStartEvent,
   DragOverEvent,
-  closestCorners,
+  DragMoveEvent,
+  defaultDropAnimationSideEffects,
+  DropAnimation,
 } from '@dnd-kit/core';
 import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
+  arrayMove,
 } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -37,20 +40,33 @@ import {
   Eye,
   ExternalLink,
   MoreHorizontal,
-  Loader2,
 } from 'lucide-react';
-import { Invoice } from '@/lib/types';
+
+// Temporary type for mock data compatibility
+interface MockInvoice {
+  id: string;
+  invoiceNumber: string;
+  vendor?: string;
+  vendorName?: string;
+  subject?: string;
+  description?: string;
+  amount: number;
+  status: BoardStatus | string;
+  paymentStatus?: BoardStatus | string;
+  dueDate: string | Date;
+  category: string;
+  oneDriveLink?: string | null;
+  invoiceUrl?: string;
+}
 import { formatDateForSydney, isDueSoon, isOverdue } from '@/lib/data';
-import { updateInvoiceStatus } from '@/lib/api/invoices';
 
 export type BoardStatus = 'pending' | 'in_review' | 'approved' | 'paid' | 'overdue';
 
-interface KanbanCardProps {
-  invoice: Invoice;
-  isUpdating?: boolean;
+interface MockKanbanCardProps {
+  invoice: MockInvoice;
 }
 
-function KanbanCard({ invoice, isUpdating = false }: KanbanCardProps) {
+function MockKanbanCard({ invoice }: MockKanbanCardProps) {
   const {
     attributes,
     listeners,
@@ -62,7 +78,9 @@ function KanbanCard({ invoice, isUpdating = false }: KanbanCardProps) {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging ? 'none' : transition || 'transform 200ms ease',
+    zIndex: isDragging ? 1000 : 'auto',
+    opacity: isDragging ? 0.3 : 1,
   };
 
   const formatCurrency = (amount: number) => {
@@ -72,12 +90,13 @@ function KanbanCard({ invoice, isUpdating = false }: KanbanCardProps) {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '-';
+  const formatDate = (date: string | Date) => {
+    if (!date) return '-';
     try {
-      return formatDateForSydney(dateString).split(' ')[0];
+      const dateStr = typeof date === 'string' ? date : date.toISOString();
+      return formatDateForSydney(dateStr).split(' ')[0];
     } catch {
-      return dateString;
+      return typeof date === 'string' ? date : date.toLocaleDateString();
     }
   };
 
@@ -86,14 +105,15 @@ function KanbanCard({ invoice, isUpdating = false }: KanbanCardProps) {
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
-      className={`mb-3 cursor-grab active:cursor-grabbing touch-none ${
-        isDragging ? 'opacity-30 scale-95' : ''
-      } ${isUpdating ? 'opacity-70 pointer-events-none' : ''} transition-all duration-200`}
+      className={`mb-3 kanban-card ${
+        isDragging ? 'dragging' : ''
+      }`}
     >
-      <Card className={`bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-200 ${
-        !isUpdating ? 'hover:scale-105' : ''
-      } ${isUpdating ? 'border-blue-300 dark:border-blue-600' : ''}`}>
+      <div
+        {...listeners}
+        className="touch-none w-full h-full"
+      >
+      <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-all duration-200">
         <CardContent className="p-4">
           <div className="space-y-3">
             {/* Header */}
@@ -103,24 +123,19 @@ function KanbanCard({ invoice, isUpdating = false }: KanbanCardProps) {
                   {invoice.invoiceNumber}
                 </h4>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 truncate">
-                  {invoice.subject}
+                  {invoice.description || invoice.subject}
                 </p>
               </div>
-              <div className="flex items-center space-x-1">
-                {isUpdating && (
-                  <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
-                )}
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                  <MoreHorizontal className="h-3 w-3" />
-                </Button>
-              </div>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <MoreHorizontal className="h-3 w-3" />
+              </Button>
             </div>
 
             {/* Vendor */}
             <div className="flex items-center space-x-2">
               <Building className="h-3 w-3 text-slate-500" />
               <span className="text-xs text-slate-600 dark:text-slate-400 truncate">
-                {invoice.vendor}
+                {invoice.vendorName || invoice.vendor}
               </span>
             </div>
 
@@ -132,12 +147,12 @@ function KanbanCard({ invoice, isUpdating = false }: KanbanCardProps) {
                   {formatCurrency(invoice.amount)}
                 </span>
               </div>
-              
+
               {invoice.dueDate && (
                 <div className={`flex items-center space-x-1 ${
-                  isOverdue(invoice.dueDate) 
-                    ? 'text-red-600 dark:text-red-400' 
-                    : isDueSoon(invoice.dueDate)
+                  isOverdue(typeof invoice.dueDate === 'string' ? invoice.dueDate : invoice.dueDate.toISOString())
+                    ? 'text-red-600 dark:text-red-400'
+                    : isDueSoon(typeof invoice.dueDate === 'string' ? invoice.dueDate : invoice.dueDate.toISOString())
                     ? 'text-amber-600 dark:text-amber-400'
                     : 'text-slate-500'
                 }`}>
@@ -152,9 +167,9 @@ function KanbanCard({ invoice, isUpdating = false }: KanbanCardProps) {
               <Badge variant="outline" className="text-xs">
                 {invoice.category.replace('_', ' ')}
               </Badge>
-              
+
               <div className="flex items-center space-x-1">
-                {invoice.oneDriveLink && (
+                {(invoice.invoiceUrl || invoice.oneDriveLink) && (
                   <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                     <ExternalLink className="h-3 w-3" />
                   </Button>
@@ -166,14 +181,14 @@ function KanbanCard({ invoice, isUpdating = false }: KanbanCardProps) {
             </div>
 
             {/* Due Status Indicator */}
-            {invoice.dueDate && isOverdue(invoice.dueDate) && (
+            {invoice.dueDate && isOverdue(typeof invoice.dueDate === 'string' ? invoice.dueDate : invoice.dueDate.toISOString()) && (
               <div className="flex items-center space-x-1 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 rounded-md px-2 py-1">
                 <AlertTriangle className="h-3 w-3" />
                 <span className="text-xs font-medium">Overdue</span>
               </div>
             )}
-            
-            {invoice.dueDate && isDueSoon(invoice.dueDate) && !isOverdue(invoice.dueDate) && (
+
+            {invoice.dueDate && isDueSoon(typeof invoice.dueDate === 'string' ? invoice.dueDate : invoice.dueDate.toISOString()) && !isOverdue(typeof invoice.dueDate === 'string' ? invoice.dueDate : invoice.dueDate.toISOString()) && (
               <div className="flex items-center space-x-1 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 rounded-md px-2 py-1">
                 <Clock className="h-3 w-3" />
                 <span className="text-xs font-medium">Due Soon</span>
@@ -182,21 +197,21 @@ function KanbanCard({ invoice, isUpdating = false }: KanbanCardProps) {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
 
-interface KanbanColumnProps {
+interface MockKanbanColumnProps {
   column: {
     id: BoardStatus;
     title: string;
   };
-  invoices: Invoice[];
-  updatingInvoiceId?: string | null;
+  invoices: MockInvoice[];
   isDropTarget?: boolean;
 }
 
-function KanbanColumnComponent({ column, invoices, updatingInvoiceId, isDropTarget }: KanbanColumnProps) {
+function MockKanbanColumnComponent({ column, invoices, isDropTarget }: MockKanbanColumnProps) {
   const { setNodeRef } = useDroppable({
     id: column.id,
   });
@@ -229,10 +244,8 @@ function KanbanColumnComponent({ column, invoices, updatingInvoiceId, isDropTarg
     }
   };
 
-  const columnClasses = `rounded-lg border-2 border-dashed p-4 min-h-96 transition-all duration-200 ${getColumnColor(column.id)} ${
-    isDropTarget
-      ? 'ring-2 ring-blue-400 ring-offset-2 scale-[1.02] shadow-lg bg-blue-50/50 dark:bg-blue-950/20'
-      : ''
+  const columnClasses = `rounded-xl border-2 border-dashed p-4 min-h-96 transition-all duration-200 drop-zone ${getColumnColor(column.id)} ${
+    isDropTarget ? 'active' : ''
   }`;
 
   return (
@@ -256,10 +269,9 @@ function KanbanColumnComponent({ column, invoices, updatingInvoiceId, isDropTarg
       <SortableContext items={invoices.map(i => i.id)} strategy={verticalListSortingStrategy}>
         <div className="space-y-2">
           {invoices.map((invoice) => (
-            <KanbanCard
+            <MockKanbanCard
               key={invoice.id}
               invoice={invoice}
-              isUpdating={updatingInvoiceId === invoice.id}
             />
           ))}
         </div>
@@ -275,20 +287,32 @@ function KanbanColumnComponent({ column, invoices, updatingInvoiceId, isDropTarg
   );
 }
 
-interface KanbanBoardProps {
-  invoices: Invoice[];
+interface MockKanbanBoardProps {
+  invoices: MockInvoice[];
   onInvoiceUpdate: (invoiceId: string, newStatus: BoardStatus) => void;
-  onInvoiceUpdateError?: (error: string, invoiceId: string, attemptedStatus: BoardStatus) => void;
 }
 
-export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }: KanbanBoardProps) {
-  const [updatingInvoiceId, setUpdatingInvoiceId] = useState<string | null>(null);
-  const [draggedInvoice, setDraggedInvoice] = useState<Invoice | null>(null);
+const dropAnimationConfig: DropAnimation = {
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: {
+      active: {
+        opacity: '0.4',
+      },
+    },
+  }),
+};
+
+export function MockKanbanBoard({ invoices, onInvoiceUpdate }: MockKanbanBoardProps) {
+  const [draggedInvoice, setDraggedInvoice] = useState<MockInvoice | null>(null);
   const [activeDropZone, setActiveDropZone] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Require 8px movement before drag starts
+        distance: 3,
+        tolerance: 5,
+        delay: 100,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -297,27 +321,31 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
   );
 
   const columns: { id: BoardStatus; title: string }[] = [
-    { id: 'pending', title: 'Pending', invoices: [] },
-    { id: 'in_review', title: 'In Review', invoices: [] },
-    { id: 'approved', title: 'Approved', invoices: [] },
-    { id: 'paid', title: 'Paid', invoices: [] },
-    { id: 'overdue', title: 'Overdue', invoices: [] },
+    { id: 'pending', title: 'Pending' },
+    { id: 'in_review', title: 'In Review' },
+    { id: 'approved', title: 'Approved' },
+    { id: 'paid', title: 'Paid' },
+    { id: 'overdue', title: 'Overdue' },
   ];
 
   // Group invoices by status
   const groupedInvoices = invoices.reduce((acc, invoice) => {
-    const status = (invoice.status ?? invoice.paymentStatus ?? 'pending') as BoardStatus;
+    const status = (typeof invoice.status === 'string' ? invoice.status.toLowerCase() : invoice.status) as BoardStatus ||
+                  (typeof invoice.paymentStatus === 'string' ? invoice.paymentStatus.toLowerCase() : invoice.paymentStatus) as BoardStatus ||
+                  'pending';
     if (!acc[status]) {
       acc[status] = [];
     }
     acc[status].push(invoice);
     return acc;
-  }, {} as Record<BoardStatus, Invoice[]>);
+  }, {} as Record<BoardStatus, MockInvoice[]>);
 
-  async function handleDragEnd(event: DragEndEvent) {
+  function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
+
     setDraggedInvoice(null);
     setActiveDropZone(null);
+    setIsDragging(false);
 
     if (!over) return;
 
@@ -328,38 +356,15 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
     const activeInvoice = invoices.find(inv => inv.id === activeInvoiceId);
     if (!activeInvoice) return;
 
-    const currentStatus = (activeInvoice.status ?? activeInvoice.paymentStatus ?? 'pending') as BoardStatus;
+    const currentStatus = (typeof activeInvoice.status === 'string' ? activeInvoice.status.toLowerCase() : activeInvoice.status) as BoardStatus ||
+                         (typeof activeInvoice.paymentStatus === 'string' ? activeInvoice.paymentStatus.toLowerCase() : activeInvoice.paymentStatus) as BoardStatus ||
+                         'pending';
 
     if (currentStatus !== overColumnId) {
-      setUpdatingInvoiceId(activeInvoiceId);
-
-      try {
-        // Call the API to update status
-        const result = await updateInvoiceStatus(activeInvoiceId, overColumnId);
-
-        if (result.success) {
-          // Update local state optimistically
-          onInvoiceUpdate(activeInvoiceId, overColumnId);
-        } else {
-          // Handle API error
-          const errorMessage = result.error || 'Failed to update invoice status';
-          console.error('Status update failed:', errorMessage);
-
-          if (onInvoiceUpdateError) {
-            onInvoiceUpdateError(errorMessage, activeInvoiceId, overColumnId);
-          }
-        }
-      } catch (error) {
-        // Handle network error
-        const errorMessage = error instanceof Error ? error.message : 'Network error occurred';
-        console.error('Status update error:', error);
-
-        if (onInvoiceUpdateError) {
-          onInvoiceUpdateError(errorMessage, activeInvoiceId, overColumnId);
-        }
-      } finally {
-        setUpdatingInvoiceId(null);
-      }
+      // Smooth update with slight delay for animation
+      setTimeout(() => {
+        onInvoiceUpdate(activeInvoiceId, overColumnId);
+      }, 100);
     }
   }
 
@@ -367,22 +372,28 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
     const { active } = event;
     const activeInvoice = invoices.find(inv => inv.id === active.id);
     setDraggedInvoice(activeInvoice || null);
+    setIsDragging(true);
   }
 
   function handleDragOver(event: DragOverEvent) {
     const { over } = event;
-    setActiveDropZone(over ? over.id as string : null);
+
+    // Immediate visual feedback for better UX
+    requestAnimationFrame(() => {
+      setActiveDropZone(over ? over.id as string : null);
+    });
   }
 
   function handleDragCancel() {
     setDraggedInvoice(null);
     setActiveDropZone(null);
+    setIsDragging(false);
   }
 
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
@@ -390,28 +401,63 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {columns.map((column) => (
-          <KanbanColumnComponent
+          <MockKanbanColumnComponent
             key={column.id}
             column={column}
             invoices={groupedInvoices[column.id] || []}
-            updatingInvoiceId={updatingInvoiceId}
             isDropTarget={activeDropZone === column.id}
           />
         ))}
       </div>
 
       <DragOverlay
-        dropAnimation={{
-          duration: 300,
-          easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+        adjustScale={false}
+        dropAnimation={dropAnimationConfig}
+        style={{
+          transformOrigin: 'center',
         }}
+        className="z-50"
       >
         {draggedInvoice ? (
-          <div className="transform rotate-2 scale-110 shadow-2xl ring-2 ring-blue-400 ring-opacity-50">
-            <KanbanCard
-              invoice={draggedInvoice}
-              isUpdating={false}
-            />
+          <div
+            className="drag-overlay pointer-events-none"
+            style={{
+              width: '280px',
+              transform: 'rotate(8deg) scale(1.05)',
+              transformOrigin: 'center center',
+            }}
+          >
+            <Card className="bg-white dark:bg-slate-800 border-2 border-blue-500 shadow-2xl">
+              <CardContent className="p-3">
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                        {draggedInvoice.invoiceNumber}
+                      </h4>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 truncate">
+                        {draggedInvoice.description || draggedInvoice.subject}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Building className="h-3 w-3 text-slate-500" />
+                    <span className="text-xs text-slate-600 dark:text-slate-400 truncate">
+                      {draggedInvoice.vendorName || draggedInvoice.vendor}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <DollarSign className="h-3 w-3 text-slate-500" />
+                    <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      {new Intl.NumberFormat('en-AU', {
+                        style: 'currency',
+                        currency: 'AUD'
+                      }).format(draggedInvoice.amount)}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         ) : null}
       </DragOverlay>

@@ -33,18 +33,51 @@ export default function Dashboard() {
 
   const loadInvoices = async () => {
     try {
-      // For now, load from processed data files
+      // Fetch from API and normalise to the local Invoice shape expected by this page
       const response = await fetch('/api/invoices');
-      if (response.ok) {
-        const data = await response.json();
-        setInvoices(data);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch invoices: ${response.status}`);
       }
+
+      const payload: any = await response.json();
+      const rows: any[] = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.data)
+          ? payload.data
+          : [];
+
+      const normalised: Invoice[] = rows.map((row: any) => {
+        // Map flexible API fields into this page's expected fields
+        const createdAt = row.createdAt || row.receivedDate || row.issueDate || new Date().toISOString();
+        const vendor = row.vendor ?? row.vendorName ?? row.supplier_name ?? 'Unknown Vendor';
+        const paymentStatusRaw = row.paymentStatus ?? row.status ?? 'pending';
+        const paymentStatus = String(paymentStatusRaw).toUpperCase() as 'PENDING' | 'PAID' | 'OVERDUE';
+
+        return {
+          id: row.id ?? row.invoice_id ?? cryptoRandomId(),
+          emailId: row.vendorEmail ?? row.email ?? '',
+          subject: row.description ?? '',
+          invoiceNumber: row.invoiceNumber ?? row.invoice_number ?? '',
+          amount: typeof row.amount === 'number' ? row.amount : Number(row.amount ?? 0) || 0,
+          vendor,
+          sourceTab: (row.sourceTab ?? 'tab1') as 'tab1' | 'tab2' | 'tab3',
+          paymentStatus,
+          createdAt,
+        };
+      });
+
+      setInvoices(normalised);
     } catch (error) {
       console.error('Failed to load invoices:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  function cryptoRandomId(): string {
+    // Lightweight ID for local-only fallback
+    return `inv_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`;
+  }
 
   const updatePaymentStatus = async (invoiceId: string, status: string) => {
     try {

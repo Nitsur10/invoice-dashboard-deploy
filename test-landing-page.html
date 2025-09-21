@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page Test Guide</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-section { background: #f5f5f5; padding: 15px; margin: 15px 0; border-radius: 8px; }
+        .checklist { list-style: none; padding: 0; }
+        .checklist li { padding: 5px 0; }
+        .checklist li:before { content: "☐ "; margin-right: 8px; }
+        .url { background: #e3f2fd; padding: 10px; border-radius: 4px; font-family: monospace; }
+        .success { color: #4caf50; font-weight: bold; }
+        .error { color: #f44336; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🧪 RPD Landing Page Testing Guide</h1>
+
+    <div class="test-section">
+        <h2>🌐 Test URLs</h2>
+        <div class="url">Landing Page: http://localhost:3002</div>
+        <div class="url">Dashboard: http://localhost:3002/dashboard</div>
+        <div class="url">Auth Page: http://localhost:3002/auth/login</div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Hero Section Checklist</h2>
+        <ul class="checklist">
+            <li>Animated background gradients load</li>
+            <li>RPD logo displays correctly</li>
+            <li>Hero text with gradient effect</li>
+            <li>Feature pills animate in sequence</li>
+            <li>"Access Dashboard" button opens modal</li>
+            <li>"Learn More" button works</li>
+            <li>Mock dashboard preview animates</li>
+            <li>Floating orbs move smoothly</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🔐 Login Modal Checklist</h2>
+        <ul class="checklist">
+            <li>Modal opens when clicking "Access Dashboard"</li>
+            <li>Email step: Enter email → Continue</li>
+            <li>Password step: Enter password → Sign In</li>
+            <li>Password visibility toggle works</li>
+            <li>Form validation shows errors</li>
+            <li>Loading spinner during auth</li>
+            <li>Modal closes with X, backdrop, Escape</li>
+            <li>Successful login redirects to dashboard</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Responsive Design Checklist</h2>
+        <ul class="checklist">
+            <li>Mobile (≤768px): Single column layout</li>
+            <li>Mobile: Buttons stack vertically</li>
+            <li>Tablet (768-1024px): 2-column grids</li>
+            <li>Desktop (≥1024px): Full 3-column grids</li>
+            <li>All text scales properly</li>
+            <li>Touch targets ≥44px on mobile</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Analytics Testing</h2>
+        <p>Open Browser DevTools → Console tab</p>
+        <ul class="checklist">
+            <li>Page load: "page_view" event</li>
+            <li>Hero CTA clicks: "hero_cta_click" events</li>
+            <li>Login steps: "login_attempt" events</li>
+            <li>Successful login: "login_success" event</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 Performance Checklist</h2>
+        <ul class="checklist">
+            <li>Page loads in &lt;3 seconds</li>
+            <li>Animations are smooth (60fps)</li>
+            <li>No console errors</li>
+            <li>Images load properly</li>
+            <li>Lazy loading works for sections</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>♿ Accessibility Checklist</h2>
+        <ul class="checklist">
+            <li>Tab navigation works properly</li>
+            <li>Focus indicators visible</li>
+            <li>Screen reader friendly</li>
+            <li>Proper heading hierarchy</li>
+            <li>ARIA labels present</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎨 Visual Quality Checklist</h2>
+        <ul class="checklist">
+            <li>RPD brand colors (navy & gold)</li>
+            <li>Typography consistent and readable</li>
+            <li>Proper spacing and alignment</li>
+            <li>High-quality gradients and effects</li>
+            <li>Professional appearance</li>
+        </ul>
+    </div>
+
+    <script>
+        // Make checklist interactive
+        document.querySelectorAll('.checklist li').forEach(item => {
+            item.style.cursor = 'pointer';
+            item.addEventListener('click', function() {
+                if (this.style.textDecoration === 'line-through') {
+                    this.style.textDecoration = 'none';
+                    this.style.color = 'inherit';
+                    this.innerHTML = this.innerHTML.replace('✅ ', '☐ ');
+                } else {
+                    this.style.textDecoration = 'line-through';
+                    this.style.color = '#4caf50';
+                    this.innerHTML = this.innerHTML.replace('☐ ', '✅ ');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

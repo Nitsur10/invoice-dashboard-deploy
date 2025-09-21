@@ -60,6 +60,15 @@ export default function KanbanPage() {
     );
   };
 
+  const handleInvoiceUpdateError = (error: string, invoiceId: string, attemptedStatus: BoardStatus) => {
+    // Log error for debugging
+    console.error('Failed to update invoice:', { invoiceId, attemptedStatus, error });
+
+    // You could show a toast notification here if you had a toast library
+    // For now, we'll just log the error
+    alert(`Failed to update invoice status: ${error}`);
+  };
+
   const grouped = useMemo(() => {
     return {
       pending: invoices.filter((i) => i.status === 'pending'),
@@ -227,6 +236,7 @@ export default function KanbanPage() {
         <KanbanBoard
           invoices={invoices}
           onInvoiceUpdate={handleInvoiceUpdate}
+          onInvoiceUpdateError={handleInvoiceUpdateError}
         />
       </div>
     </div>

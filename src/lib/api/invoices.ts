@@ -264,3 +264,117 @@ export async function deleteInvoiceSavedView(id: string): Promise<void> {
 
 // CSV export is now handled directly via fetch in the component
 // No longer need job-based export functions
+
+// Update invoice status with audit logging
+export async function updateInvoiceStatus(
+  invoiceId: string,
+  status: string
+): Promise<{
+  success: boolean
+  invoice?: Invoice
+  auditLog?: any
+  message?: string
+  error?: string
+}> {
+  const startTime = Date.now()
+
+  try {
+    const url = new URL(`${API_BASE}/api/invoices/${invoiceId}/status`,
+      typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001')
+
+    const response = await fetch(url.toString(), {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status }),
+    })
+
+    const data = await response.json()
+    const duration = Date.now() - startTime
+
+    trackAPIPerformance('/api/invoices/[id]/status', duration)
+
+    if (!response.ok) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`[Status Update API] Error: ${duration}ms`, { invoiceId, status, error: data })
+      }
+
+      return {
+        success: false,
+        error: data.message || `HTTP ${response.status}`,
+        ...data
+      }
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Status Update API] Success: ${duration}ms`, { invoiceId, status })
+    }
+
+    return data
+
+  } catch (error) {
+    const duration = Date.now() - startTime
+
+    trackAPIPerformance('/api/invoices/[id]/status', duration)
+
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[Status Update API] Error: ${duration}ms`, { invoiceId, status, error })
+    }
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Network error'
+    }
+  }
+}
+
+// Get status history for an invoice
+export async function getInvoiceStatusHistory(invoiceId: string): Promise<{
+  currentStatus?: string
+  history?: any[]
+  error?: string
+}> {
+  const startTime = Date.now()
+
+  try {
+    const url = new URL(`${API_BASE}/api/invoices/${invoiceId}/status`,
+      typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001')
+
+    const response = await fetch(url.toString())
+
+    const data = await response.json()
+    const duration = Date.now() - startTime
+
+    trackAPIPerformance('/api/invoices/[id]/status', duration)
+
+    if (!response.ok) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`[Status History API] Error: ${duration}ms`, { invoiceId, error: data })
+      }
+
+      return {
+        error: data.message || `HTTP ${response.status}`
+      }
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Status History API] Success: ${duration}ms`, { invoiceId })
+    }
+
+    return data
+
+  } catch (error) {
+    const duration = Date.now() - startTime
+
+    trackAPIPerformance('/api/invoices/[id]/status', duration)
+
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[Status History API] Error: ${duration}ms`, { invoiceId, error })
+    }
+
+    return {
+      error: error instanceof Error ? error.message : 'Network error'
+    }
+  }
+}

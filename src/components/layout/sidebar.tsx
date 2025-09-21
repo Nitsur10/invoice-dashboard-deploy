@@ -21,7 +21,7 @@ interface SidebarProps {
 const getNavigation = (invoiceCount?: number) => [
   {
     name: 'Dashboard',
-    href: '/',
+    href: '/overview',
     icon: LayoutDashboard,
     badge: null,
   },

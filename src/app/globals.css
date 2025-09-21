@@ -392,3 +392,312 @@
     --muted-foreground: 0 0% 80%;
   }
 }
+
+/* Landing Page Styles */
+@layer components {
+  .landing-hero-mobile {
+    @apply px-4 py-12 lg:px-8 lg:py-24;
+  }
+
+  .landing-grid-responsive {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8;
+  }
+
+  .landing-text-responsive {
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl;
+  }
+
+  .landing-card-hover {
+    @apply hover:scale-105 hover:shadow-2xl transition-all duration-300;
+  }
+
+  .landing-button-responsive {
+    @apply px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg;
+  }
+
+  /* Mobile-specific optimizations */
+  @media (max-width: 768px) {
+    .landing-hero-content {
+      @apply text-center;
+    }
+
+    .landing-hero-buttons {
+      @apply flex-col space-y-4;
+    }
+
+    .landing-feature-grid {
+      @apply grid-cols-1 gap-6;
+    }
+
+    .landing-testimonial-grid {
+      @apply grid-cols-1 gap-8;
+    }
+
+    .landing-stats-grid {
+      @apply grid-cols-2 gap-4;
+    }
+  }
+
+  /* Tablet optimizations */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .landing-hero-grid {
+      @apply grid-cols-1 gap-12;
+    }
+
+    .landing-feature-grid {
+      @apply grid-cols-2 gap-6;
+    }
+
+    .landing-testimonial-grid {
+      @apply grid-cols-2 gap-8;
+    }
+  }
+
+  /* Touch device optimizations */
+  @media (hover: none) and (pointer: coarse) {
+    .landing-card-hover {
+      @apply hover:scale-100;
+    }
+
+    .interactive-element {
+      @apply min-h-[44px] min-w-[44px];
+    }
+  }
+}
+
+/* Jira-like Kanban Animations */
+
+/* Ultra-smooth card hover effect */
+@keyframes jiraCardFloat {
+  0% {
+    transform: translateY(0px) scale(1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Drop zone pulse animation */
+@keyframes dropZonePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+/* Drag preview glow effect */
+@keyframes dragGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
+  }
+}
+
+/* Spring animation for dropped cards */
+@keyframes springDrop {
+  0% {
+    transform: scale(0.95) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.05) rotate(1deg);
+  }
+  50% {
+    transform: scale(0.98) rotate(-0.5deg);
+  }
+  75% {
+    transform: scale(1.02) rotate(0.2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Jira-style Card Interactions */
+.jira-card {
+  cursor: grab;
+  transition: all 150ms cubic-bezier(0.2, 0, 0, 1);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform, box-shadow;
+}
+
+.jira-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.jira-card:active {
+  cursor: grabbing;
+  transform: translateY(0px) rotate(2deg) scale(1.02);
+}
+
+/* Dragging state */
+.jira-card[data-dragging="true"] {
+  opacity: 0.5;
+  transform: rotate(0deg) scale(1);
+  z-index: 1000;
+}
+
+/* Drag overlay styling */
+.jira-drag-overlay {
+  cursor: grabbing !important;
+  transform: rotate(8deg) scale(1.05);
+  opacity: 0.95;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Jira-style Column States */
+.jira-column {
+  transition: all 200ms cubic-bezier(0.2, 0, 0, 1);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.jira-column.drop-target {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 197, 253, 0.08) 100%);
+  border-color: rgba(59, 130, 246, 0.6) !important;
+  box-shadow:
+    0 0 0 1px rgba(59, 130, 246, 0.3),
+    0 4px 20px rgba(59, 130, 246, 0.1);
+  transform: scale(1.005);
+}
+
+/* Column pulse effect during drag */
+.jira-column.drop-target::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(45deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+  animation: pulse 2s ease-in-out infinite;
+  z-index: -1;
+}
+
+/* Drag overlay enhancements */
+.drag-overlay {
+  opacity: 1 !important;
+  transform: rotate(8deg) scale(1.05) !important;
+  filter: brightness(1.1) saturate(1.2);
+  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(59, 130, 246, 0.5);
+  animation: dragGlow 2s ease-in-out infinite;
+  z-index: 1000;
+}
+
+/* Card insertion animation */
+.card-insert {
+  animation: springDrop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Smooth transitions for reordering */
+.kanban-card {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Jira Performance Optimizations */
+.jira-card,
+.jira-column,
+.jira-drag-overlay {
+  will-change: transform, opacity, box-shadow;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  contain: layout style paint;
+}
+
+/* Smooth insertion animation */
+@keyframes jiraCardInsert {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-20px);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.jira-card-inserting {
+  animation: jiraCardInsert 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Touch feedback for mobile */
+@media (hover: none) {
+  .kanban-card:hover {
+    animation: none;
+  }
+
+  .kanban-card:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+/* Responsive drag handle area */
+@media (max-width: 768px) {
+  .kanban-card {
+    padding: 12px;
+    touch-action: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .drop-zone.active {
+    border-width: 3px;
+    border-style: solid;
+  }
+}
+
+/* Perfect Jira Kanban Animations */
+.perfect-jira-card {
+  transition: all 150ms cubic-bezier(0.2, 0, 0, 1);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.perfect-jira-card:hover {
+  transform: translateY(-2px) translateZ(0);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.perfect-jira-column {
+  transition: all 200ms cubic-bezier(0.2, 0, 0, 1);
+  transform: translateZ(0);
+}
+
+.perfect-jira-column.highlighted {
+  transform: scale(1.02) translateZ(0);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+}
+
+/* Drag overlay with professional shadow */
+.perfect-jira-overlay {
+  filter: drop-shadow(0 25px 50px rgba(0, 0, 0, 0.25));
+  transform: rotate(8deg) scale(1.05);
+  z-index: 1000;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .kanban-card,
+  .drop-zone,
+  .drag-overlay,
+  .perfect-jira-card,
+  .perfect-jira-column {
+    animation: none !important;
+    transition: none !important;
+  }
+}

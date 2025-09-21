@@ -108,3 +108,41 @@ export interface SortOption {
 }
 
 export type Theme = 'light' | 'dark' | 'system';
+
+// Audit logging types
+export interface AuditLog {
+  id: string;
+  invoice_id: string;
+  old_status: string | null;
+  new_status: string;
+  user_id: string | null;
+  user_email: string | null;
+  action_type: string;
+  metadata: Record<string, any>;
+  created_at: string;
+}
+
+export interface StatusUpdateRequest {
+  status: PaymentStatus;
+}
+
+export interface StatusUpdateResponse {
+  success: boolean;
+  invoice: Invoice;
+  auditLog?: AuditLog | null;
+  message?: string;
+}
+
+export interface StatusHistoryResponse {
+  currentStatus: string;
+  history: AuditLog[];
+}
+
+// Valid status transitions for validation
+export const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
+  'pending': ['in_review', 'approved', 'paid', 'overdue'],
+  'in_review': ['pending', 'approved', 'paid'],
+  'approved': ['paid', 'pending'],
+  'paid': ['pending'], // Allow reverting paid status if needed
+  'overdue': ['pending', 'in_review', 'approved', 'paid']
+};
