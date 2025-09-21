@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { supabaseAdmin } from '@/lib/server/supabase-admin'
 import { getRequiredEnv } from '@/lib/env'
+import { verifyAPIAuth } from '@/lib/server/auth'
+import { invoiceStatusUpdateSchema, invoiceIdSchema } from '@/lib/schemas/api'
 
 const supabaseUrl = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL')
 const supabaseKey = getRequiredEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
@@ -21,17 +23,47 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { id } = await params
-    const body = await request.json()
-    const { status: newStatus } = body
+  // Verify authentication first
+  const authResult = await verifyAPIAuth(request);
+  if (authResult.error) {
+    return NextResponse.json(
+      { error: authResult.error, code: 'UNAUTHORIZED' },
+      { status: 401 }
+    );
+  }
 
-    if (!newStatus) {
+  const authenticatedUser = authResult.user!;
+  try {
+    // Validate parameters
+    const paramsResult = invoiceIdSchema.safeParse(await params)
+    if (!paramsResult.success) {
       return NextResponse.json(
-        { code: 'INVALID_BODY', message: 'Status is required' },
+        {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid invoice ID',
+          errors: paramsResult.error.issues
+        },
         { status: 400 }
       )
     }
+
+    const { id } = paramsResult.data
+    const body = await request.json()
+
+    // Validate request body
+    const bodyResult = invoiceStatusUpdateSchema.safeParse(body)
+    if (!bodyResult.success) {
+      return NextResponse.json(
+        {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid request body',
+          errors: bodyResult.error.issues
+        },
+        { status: 400 }
+      )
+    }
+
+    const { status: newStatus } = bodyResult.data
 
     // Validate status value
     const validStatuses = ['pending', 'in_review', 'approved', 'paid', 'overdue']
@@ -76,19 +108,10 @@ export async function PATCH(
       },
     })
 
-    // Get current user - temporarily disabled for testing
-    // const { data: { user }, error: authError } = await supabase.auth.getUser()
-    // if (authError || !user) {
-    //   return NextResponse.json(
-    //     { code: 'UNAUTHORIZED', message: 'Authentication required' },
-    //     { status: 401 }
-    //   )
-    // }
-
-    // Use a test user for now
+    // Use the authenticated user from the middleware
     const user = {
-      id: 'test-user-id-12345',
-      email: 'test@example.com'
+      id: authenticatedUser.id,
+      email: authenticatedUser.email
     }
 
     // Get current invoice to check existing status
