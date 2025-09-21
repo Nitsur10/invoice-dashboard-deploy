@@ -114,15 +114,19 @@ function KanbanView() {
     return map;
   }, [totalsQueries]);
 
-  const stats = useMemo(() => ({
-    total: data?.pagination?.total ?? 0,
-    totalAmount: data?.pagination?.totalAmount ?? 0,
-    pending: totalsByStatus.pending ?? 0,
-    in_review: totalsByStatus.in_review ?? 0,
-    approved: totalsByStatus.approved ?? 0,
-    paid: totalsByStatus.paid ?? 0,
-    overdue: totalsByStatus.overdue ?? 0,
-  }), [data?.pagination?.total, data?.pagination?.totalAmount, totalsByStatus]);
+  const stats = useMemo(() => {
+    const totalAmount = data?.pagination?.totalAmount ??
+                       invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0);
+    return {
+      total: data?.pagination?.total ?? 0,
+      totalAmount,
+      pending: totalsByStatus.pending ?? 0,
+      in_review: totalsByStatus.in_review ?? 0,
+      approved: totalsByStatus.approved ?? 0,
+      paid: totalsByStatus.paid ?? 0,
+      overdue: totalsByStatus.overdue ?? 0,
+    };
+  }, [data?.pagination?.total, data?.pagination?.totalAmount, totalsByStatus, invoices]);
 
   const handleInvoiceUpdate = async (invoiceId: string, newStatus: BoardStatus) => {
     // Optimistically update the React Query cache for this page's dataset

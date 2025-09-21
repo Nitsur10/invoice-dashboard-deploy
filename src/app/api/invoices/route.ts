@@ -170,6 +170,7 @@ export async function GET(request: NextRequest) {
 
     const total = filtered.length
     const pageCount = Math.ceil(total / limit) || 0
+    const totalAmount = filtered.reduce((sum, inv) => sum + (inv.total || inv.amount || 0), 0)
 
     return NextResponse.json({
       data: paginated,
@@ -178,6 +179,7 @@ export async function GET(request: NextRequest) {
         pageCount,
         pageSize: limit,
         pageIndex: page,
+        totalAmount,
       },
     })
   } catch (error) {
@@ -373,6 +375,7 @@ function buildLocalInvoiceResponse(
 
   const total = filtered.length
   const pageCount = Math.ceil(total / limit) || 0
+  const totalAmount = filtered.reduce((sum, inv) => sum + (inv.amount || 0), 0)
 
   return {
     data,
@@ -381,6 +384,7 @@ function buildLocalInvoiceResponse(
       pageCount,
       pageSize: limit,
       pageIndex: page,
+      totalAmount,
     },
   }
 }
