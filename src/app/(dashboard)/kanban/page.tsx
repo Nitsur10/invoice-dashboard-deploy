@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useMemo } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useQueries } from '@tanstack/react-query';
 import { KanbanBoard, BoardStatus } from '@/components/kanban/kanban-board';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -75,6 +75,27 @@ function KanbanView() {
     paid: invoices.filter((i) => i.status === 'paid'),
     overdue: invoices.filter((i) => i.status === 'overdue'),
   }), [invoices]);
+
+  // Fetch server-side totals per status (respects current filters)
+  const statusList: BoardStatus[] = ['pending','in_review','approved','paid','overdue'];
+  const totalsQueries = useQueries({
+    queries: statusList.map((s) => ({
+      queryKey: ['kanban-invoices-total', { ...apiParams, status: [s], limit: 1 }],
+      queryFn: () => fetchInvoices({ ...apiParams, status: [s], limit: 1 }),
+      staleTime: 2 * 60 * 1000,
+      enabled: typeof window !== 'undefined',
+    })),
+  });
+
+  const totalsByStatus = useMemo(() => {
+    const map: Partial<Record<BoardStatus, number>> = {};
+    statusList.forEach((s, idx) => {
+      const q = totalsQueries[idx];
+      const total = (q?.data as any)?.pagination?.total;
+      if (typeof total === 'number') map[s] = total;
+    });
+    return map;
+  }, [totalsQueries]);
 
   const stats = useMemo(() => ({
     total: data?.pagination?.total ?? invoices.length,
@@ -215,6 +236,7 @@ function KanbanView() {
           invoices={invoices}
           onInvoiceUpdate={handleInvoiceUpdate}
           onInvoiceUpdateError={(err, id, s) => handleInvoiceUpdateError(`${id}:${s} ${err}`)}
+          statusTotals={totalsByStatus}
         />
         <div className="text-xs text-slate-500 mt-3">Showing up to 5 matching cards. Adjust filters to refine.</div>
       </div>

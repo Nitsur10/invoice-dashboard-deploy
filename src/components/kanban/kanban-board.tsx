@@ -195,9 +195,10 @@ interface KanbanColumnProps {
   invoices: Invoice[];
   updatingInvoiceId?: string | null;
   isDropTarget?: boolean;
+  totalCountOverride?: number;
 }
 
-function KanbanColumnComponent({ column, invoices, updatingInvoiceId, isDropTarget }: KanbanColumnProps) {
+function KanbanColumnComponent({ column, invoices, updatingInvoiceId, isDropTarget, totalCountOverride }: KanbanColumnProps) {
   const { setNodeRef } = useDroppable({
     id: column.id,
   });
@@ -249,7 +250,7 @@ function KanbanColumnComponent({ column, invoices, updatingInvoiceId, isDropTarg
             {column.title}
           </h3>
           <Badge variant="outline" className="ml-2">
-            {invoices.length}
+            {typeof totalCountOverride === 'number' ? totalCountOverride : invoices.length}
           </Badge>
         </div>
       </div>
@@ -280,9 +281,10 @@ interface KanbanBoardProps {
   invoices: Invoice[];
   onInvoiceUpdate: (invoiceId: string, newStatus: BoardStatus) => void;
   onInvoiceUpdateError?: (error: string, invoiceId: string, attemptedStatus: BoardStatus) => void;
+  statusTotals?: Partial<Record<BoardStatus, number>>;
 }
 
-export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }: KanbanBoardProps) {
+export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError, statusTotals }: KanbanBoardProps) {
   const [updatingInvoiceId, setUpdatingInvoiceId] = useState<string | null>(null);
   const [draggedInvoice, setDraggedInvoice] = useState<Invoice | null>(null);
   const [activeDropZone, setActiveDropZone] = useState<string | null>(null);
@@ -441,6 +443,7 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
             invoices={groupedInvoices[column.id] || []}
             updatingInvoiceId={updatingInvoiceId}
             isDropTarget={activeDropZone === column.id}
+            totalCountOverride={statusTotals?.[column.id]}
           />
         ))}
       </div>
