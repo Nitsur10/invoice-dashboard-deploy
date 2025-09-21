@@ -130,7 +130,7 @@ function KanbanView() {
       const next = {
         ...old,
         data: old.data.map((inv: any) =>
-          inv.id === invoiceId ? { ...inv, status: newStatus, paymentStatus: newStatus } : inv
+          (inv.id === invoiceId || inv.invoiceNumber === invoiceId) ? { ...inv, status: newStatus, paymentStatus: newStatus } : inv
         ),
       };
       return next;
@@ -146,7 +146,7 @@ function KanbanView() {
           const reverted = {
             ...old,
             data: old.data.map((inv: any) =>
-              inv.id === invoiceId ? { ...inv, status: inv.status, paymentStatus: inv.paymentStatus } : inv
+              (inv.id === invoiceId || inv.invoiceNumber === invoiceId) ? { ...inv, status: inv.status, paymentStatus: inv.paymentStatus } : inv
             ),
           };
           return reverted;
@@ -160,7 +160,7 @@ function KanbanView() {
         const reverted = {
           ...old,
           data: old.data.map((inv: any) =>
-            inv.id === invoiceId ? { ...inv, status: inv.status, paymentStatus: inv.paymentStatus } : inv
+            (inv.id === invoiceId || inv.invoiceNumber === invoiceId) ? { ...inv, status: inv.status, paymentStatus: inv.paymentStatus } : inv
           ),
         };
         return reverted;

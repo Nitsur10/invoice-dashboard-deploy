@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { User, Bell, Search, Settings, LogOut } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
 
 interface ProfileState {
@@ -64,47 +64,21 @@ export function Header() {
         {/* Left side intentionally minimal to keep spacing consistent */}
         <div className="flex items-center space-x-4" />
 
-        {/* Center - Status Indicator */}
-        <div className="hidden md:flex items-center space-x-2">
-          <Badge 
-            variant="outline" 
-            className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-800/30"
-          >
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
-            System Online
-          </Badge>
-        </div>
-        
-        {/* Right side - User Actions */}
-        <div className="flex items-center space-x-2">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="h-9 w-9 p-0 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
-          >
-            <Search className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-          </Button>
+        {/* Right side - Status Indicator and User Actions */}
+        <div className="flex items-center space-x-4">
+          {/* System Online Badge */}
+          <div className="hidden md:flex items-center space-x-2">
+            <Badge
+              variant="outline"
+              className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-800/30"
+            >
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
+              System Online
+            </Badge>
+          </div>
 
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="h-9 w-9 p-0 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors relative"
-          >
-            <Bell className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-            <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
-              <span className="text-xs text-white font-medium">3</span>
-            </div>
-          </Button>
-
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="h-9 w-9 p-0 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
-          >
-            <Settings className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-          </Button>
-
-          <div className="flex items-center space-x-2 ml-2">
+          {/* User Actions */}
+          <div className="flex items-center space-x-2">
             <div className="hidden md:block text-right">
               <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                 {profile?.email ?? 'Guest'}
@@ -113,8 +87,8 @@ export function Header() {
                 {profile ? 'Authenticated' : 'Not signed in'}
               </p>
             </div>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="h-9 px-3 space-x-2 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
             >
               <div className="h-6 w-6 rounded-full bg-gradient-to-r from-brand-navy to-brand-navy-light flex items-center justify-center">
