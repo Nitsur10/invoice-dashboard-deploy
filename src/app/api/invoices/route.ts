@@ -68,15 +68,20 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Apply default minimum date (>= May 1, 2025) when not explicitly provided
+    const minClampDate = '2025-05-01T00:00:00.000Z';
+    if (!resolvedFilters.dateFrom) {
+      resolvedFilters.dateFrom = minClampDate;
+    }
+
     if (!useSupabase) {
       // For local fixtures, honour explicit date filters but do not clamp to May 2025.
+      // (We still set a default dateFrom above if none was provided.)
       const response = buildLocalInvoiceResponse(resolvedFilters, page, limit, sortBy, sortOrder, now);
       return NextResponse.json(response);
     }
 
-    // Only apply date clamping if explicit date filters are provided
-    // This allows the UI to show all data by default
-    const minClampDate = '2025-05-01T00:00:00.000Z';
+    // Clamp dateFrom to minimum if earlier
     if (resolvedFilters.dateFrom && new Date(resolvedFilters.dateFrom) < new Date(minClampDate)) {
       resolvedFilters.dateFrom = minClampDate;
     }
