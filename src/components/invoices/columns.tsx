@@ -46,7 +46,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="h-8 px-2 lg:px-3"
+          className="h-8 px-2 lg:px-3 text-slate-900 dark:text-slate-100 hover:text-slate-900 dark:hover:text-slate-100"
         >
           Invoice #
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -82,7 +82,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="h-8 px-2 lg:px-3"
+          className="h-8 px-2 lg:px-3 text-slate-900 dark:text-slate-100 hover:text-slate-900 dark:hover:text-slate-100"
         >
           Vendor
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -173,30 +173,30 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
     },
   },
   {
-    accessorKey: "category",
+    accessorKey: "vendorName",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="h-8 px-2 lg:px-3"
+          className="h-8 px-2 lg:px-3 text-slate-900 dark:text-slate-100 hover:text-slate-900 dark:hover:text-slate-100"
         >
-          Category
+          Supplier
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
     cell: ({ row }) => {
-      const category = row.getValue("category") as string | undefined
-
-      if (!category) {
-        return <span className="text-sm italic text-gray-500 dark:text-gray-400">Uncategorised</span>
-      }
-
+      const supplier = row.getValue("vendorName") as string
       return (
-        <Badge variant="secondary" className="border-slate-200 bg-slate-100/80 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
-          {category}
-        </Badge>
+        <div className="max-w-[200px]">
+          <div className="truncate font-semibold text-slate-900 dark:text-slate-100">
+            {supplier}
+          </div>
+          <div className="truncate text-xs text-slate-600 dark:text-slate-300">
+            {row.original.vendorEmail}
+          </div>
+        </div>
       )
     },
   },
