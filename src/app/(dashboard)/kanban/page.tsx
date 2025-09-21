@@ -280,14 +280,14 @@ function KanbanView() {
       </Card>
 
       {/* Kanban Board (Jira-like behavior) */}
-      <div className="bg-white/30 dark:bg-slate-900/30 backdrop-blur-sm rounded-xl p-6 border border-slate-200/50 dark:border-slate-700/50">
+      <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-sm rounded-xl p-6 border border-slate-200/40 dark:border-slate-700/40">
         <PerfectJiraKanban
           invoices={invoices as any}
           onInvoiceUpdate={async (id, status) => {
             await handleInvoiceUpdate(id, status);
           }}
         />
-        <div className="text-xs text-slate-500 mt-3">Showing up to 5 matching cards. Adjust filters to refine.</div>
+        <div className="text-xs text-slate-600 dark:text-slate-400 mt-3">Showing up to 5 matching cards. Adjust filters to refine.</div>
       </div>
     </div>
   );

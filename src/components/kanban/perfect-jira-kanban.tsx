@@ -212,34 +212,34 @@ function PerfectJiraColumn({ id, title, invoices, isHighlighted, draggedInvoiceI
   const getColumnColor = (status: BoardStatus) => {
     switch (status) {
       case 'pending':
-        return 'border-blue-300 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-950/20';
+        return 'border-blue-200 dark:border-blue-700 bg-blue-50/30 dark:bg-blue-950/10';
       case 'in_review':
-        return 'border-amber-300 dark:border-amber-600 bg-amber-50/50 dark:bg-amber-950/20';
+        return 'border-amber-200 dark:border-amber-700 bg-amber-50/30 dark:bg-amber-950/10';
       case 'approved':
-        return 'border-purple-300 dark:border-purple-600 bg-purple-50/50 dark:bg-purple-950/20';
+        return 'border-purple-200 dark:border-purple-700 bg-purple-50/30 dark:bg-purple-950/10';
       case 'paid':
-        return 'border-emerald-300 dark:border-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/20';
+        return 'border-emerald-200 dark:border-emerald-700 bg-emerald-50/30 dark:bg-emerald-950/10';
       case 'overdue':
-        return 'border-red-300 dark:border-red-600 bg-red-50/50 dark:bg-red-950/20';
+        return 'border-red-200 dark:border-red-700 bg-red-50/30 dark:bg-red-950/10';
       default:
-        return 'border-slate-300 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-950/20';
+        return 'border-slate-200 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-950/10';
     }
   };
 
   const getStatusIcon = (status: BoardStatus) => {
     switch (status) {
       case 'paid':
-        return <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />;
+        return <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />;
       case 'overdue':
-        return <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />;
+        return <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-300" />;
       case 'pending':
-        return <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
+        return <Clock className="h-4 w-4 text-blue-600 dark:text-blue-300" />;
       case 'in_review':
-        return <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />;
+        return <Clock className="h-4 w-4 text-amber-600 dark:text-amber-300" />;
       case 'approved':
-        return <Clock className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
+        return <Clock className="h-4 w-4 text-purple-600 dark:text-purple-300" />;
       default:
-        return <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />;
+        return <Clock className="h-4 w-4 text-slate-600 dark:text-slate-300" />;
     }
   };
 
@@ -266,7 +266,7 @@ function PerfectJiraColumn({ id, title, invoices, isHighlighted, draggedInvoiceI
           </h3>
           <Badge
             variant="outline"
-            className="ml-2 bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
+            className="ml-2 bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800/50 dark:text-slate-200 dark:border-slate-700"
           >
             {invoices.length}
           </Badge>
