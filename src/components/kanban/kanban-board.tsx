@@ -315,6 +315,17 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
     return acc;
   }, {} as Record<BoardStatus, Invoice[]>);
 
+  const canTransition = (from: BoardStatus, to: BoardStatus): boolean => {
+    const rules: Record<BoardStatus, BoardStatus[]> = {
+      pending: ['in_review', 'overdue'],
+      in_review: ['approved', 'pending', 'overdue'],
+      approved: ['paid', 'in_review'],
+      paid: [],
+      overdue: ['in_review', 'approved', 'paid'],
+    };
+    return rules[from]?.includes(to) ?? false;
+  };
+
   const findContainer = (id: string | null | undefined): BoardStatus | null => {
     if (!id) return null;
     // If id matches a column id directly
@@ -341,6 +352,14 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
     if (!activeInvoice) return;
 
     const currentStatus = (activeInvoice.status ?? activeInvoice.paymentStatus ?? 'pending') as BoardStatus;
+
+    // Enforce move rules
+    if (!canTransition(currentStatus, overColumnId)) {
+      if (onInvoiceUpdateError) {
+        onInvoiceUpdateError(`Move from ${currentStatus} to ${overColumnId} is not allowed`, activeInvoiceId, overColumnId);
+      }
+      return;
+    }
 
     if (currentStatus !== overColumnId) {
       setUpdatingInvoiceId(activeInvoiceId);
@@ -384,7 +403,16 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
   function handleDragOver(event: DragOverEvent) {
     const { over } = event;
     const containerId = findContainer(over?.id as string);
-    setActiveDropZone(containerId);
+    if (!containerId) {
+      setActiveDropZone(null);
+      return;
+    }
+    if (!draggedInvoice) {
+      setActiveDropZone(containerId);
+      return;
+    }
+    const currentStatus = (draggedInvoice.status ?? draggedInvoice.paymentStatus ?? 'pending') as BoardStatus;
+    setActiveDropZone(canTransition(currentStatus, containerId) ? containerId : null);
   }
 
   function handleDragCancel() {
