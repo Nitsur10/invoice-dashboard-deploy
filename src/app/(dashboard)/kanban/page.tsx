@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useQuery, useQueryClient, useQueries } from '@tanstack/react-query';
 import { KanbanBoard, BoardStatus } from '@/components/kanban/kanban-board';
 import { PerfectJiraKanban } from '@/components/kanban/perfect-jira-kanban';
+import { updateInvoiceStatus } from '@/lib/api/invoices';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -57,7 +58,7 @@ function KanbanView() {
       const rawStatus = (inv.status ?? inv.paymentStatus ?? 'pending')
         .toString()
         .toLowerCase() as BoardStatus;
-      const uniqueId = String(inv.id ?? inv.invoiceNumber ?? `gen-${inv.vendor ?? 'v'}-${inv.amount ?? '0'}-${inv.dueDate ?? 'd'}-${idx}`);
+      const uniqueId = String((inv as any).invoiceNumber ?? `gen-${idx}`);
       return {
         ...inv,
         id: uniqueId,
@@ -108,7 +109,7 @@ function KanbanView() {
     overdue: grouped.overdue.length,
   }), [invoices, grouped, data?.pagination?.total]);
 
-  const handleInvoiceUpdate = (invoiceId: string, newStatus: BoardStatus) => {
+  const handleInvoiceUpdate = async (invoiceId: string, newStatus: BoardStatus) => {
     // Optimistically update the React Query cache for this page's dataset
     const queryKey = ['kanban-invoices', apiParams] as const;
     queryClient.setQueryData(queryKey, (old: any) => {
@@ -121,6 +122,38 @@ function KanbanView() {
       };
       return next;
     });
+
+    // Actually update the database
+    try {
+      const result = await updateInvoiceStatus(invoiceId, newStatus);
+      if (!result.success) {
+        // Revert optimistic update on failure
+        queryClient.setQueryData(queryKey, (old: any) => {
+          if (!old?.data) return old;
+          const reverted = {
+            ...old,
+            data: old.data.map((inv: any) =>
+              inv.id === invoiceId ? { ...inv, status: inv.status, paymentStatus: inv.paymentStatus } : inv
+            ),
+          };
+          return reverted;
+        });
+        console.error('Failed to update invoice status:', result.error);
+      }
+    } catch (error) {
+      // Revert optimistic update on error
+      queryClient.setQueryData(queryKey, (old: any) => {
+        if (!old?.data) return old;
+        const reverted = {
+          ...old,
+          data: old.data.map((inv: any) =>
+            inv.id === invoiceId ? { ...inv, status: inv.status, paymentStatus: inv.paymentStatus } : inv
+          ),
+        };
+        return reverted;
+      });
+      console.error('Error updating invoice status:', error);
+    }
   };
 
   const handleInvoiceUpdateError = (error: string) => {
@@ -237,7 +270,9 @@ function KanbanView() {
       <div className="bg-white/30 dark:bg-slate-900/30 backdrop-blur-sm rounded-xl p-6 border border-slate-200/50 dark:border-slate-700/50">
         <PerfectJiraKanban
           invoices={invoices as any}
-          onInvoiceUpdate={(id, status) => handleInvoiceUpdate(id, status)}
+          onInvoiceUpdate={async (id, status) => {
+            await handleInvoiceUpdate(id, status);
+          }}
         />
         <div className="text-xs text-slate-500 mt-3">Showing up to 5 matching cards. Adjust filters to refine.</div>
       </div>

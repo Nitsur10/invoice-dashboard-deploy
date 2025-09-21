@@ -56,7 +56,7 @@ interface PerfectJiraCardProps {
 }
 
 function PerfectJiraCard({ invoice, isBeingDragged }: PerfectJiraCardProps) {
-  const cardId = `card:${String(invoice.id)}`;
+  const cardId = `card:${String(invoice.id || invoice.invoiceNumber || 'unknown')}`;
   const { attributes, listeners, setNodeRef } = useDraggable({
     id: cardId,
   });
@@ -253,9 +253,9 @@ function PerfectJiraColumn({ id, title, invoices, isHighlighted, draggedInvoiceI
       <div className="space-y-2">
         {invoices.map((invoice, idx) => (
           <PerfectJiraCard
-            key={`${invoice.id}-${id}-${idx}`}
+            key={`${String(invoice.id || invoice.invoiceNumber || 'unknown')}-${id}-${idx}`}
             invoice={invoice}
-            isBeingDragged={draggedInvoiceId === String(invoice.id)}
+            isBeingDragged={draggedInvoiceId === String(invoice.id || invoice.invoiceNumber || 'unknown')}
           />
         ))}
       </div>
@@ -346,7 +346,7 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
     const targetColumnId = over.id as BoardStatus;
 
     // Find current status
-    const invoice = invoices.find(inv => String(inv.id) === invoiceId);
+    const invoice = invoices.find(inv => String(inv.id || inv.invoiceNumber || 'unknown') === invoiceId);
     if (!invoice) return;
 
     const currentStatus = (typeof invoice.status === 'string' ? invoice.status.toLowerCase() : invoice.status) as BoardStatus ||
@@ -361,7 +361,7 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
 
   const getDraggedInvoice = () => {
     if (!draggedInvoiceId) return null;
-    return invoices.find(inv => String(inv.id) === draggedInvoiceId) || null;
+    return invoices.find(inv => String(inv.id || inv.invoiceNumber || 'unknown') === draggedInvoiceId) || null;
   };
 
   const draggedInvoice = getDraggedInvoice();
