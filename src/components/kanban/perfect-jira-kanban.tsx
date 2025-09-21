@@ -26,7 +26,6 @@ import {
   Calendar,
   AlertTriangle,
   CheckCircle,
-  Eye,
   ExternalLink,
   MoreHorizontal,
 } from 'lucide-react';
@@ -71,8 +70,12 @@ function PerfectJiraCard({ invoice, isBeingDragged }: PerfectJiraCardProps) {
   const formatDate = (date: string | Date) => {
     if (!date) return '-';
     try {
-      const dateStr = typeof date === 'string' ? date : date.toISOString();
-      return formatDateForSydney(dateStr).split(' ')[0];
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      return dateObj.toLocaleDateString('en-AU', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
     } catch {
       return typeof date === 'string' ? date : date.toLocaleDateString();
     }
@@ -144,21 +147,33 @@ function PerfectJiraCard({ invoice, isBeingDragged }: PerfectJiraCardProps) {
               )}
             </div>
 
-            {/* Category and Actions */}
+            {/* Supplier and Invoice Link */}
             <div className="flex items-center justify-between">
-              <Badge variant="outline" className="text-xs">
-                {invoice.category.replace('_', ' ')}
-              </Badge>
+              <div className="flex items-center space-x-2">
+                <Building className="h-3 w-3 text-slate-500" />
+                <span className="text-xs text-slate-600 dark:text-slate-400 truncate">
+                  {invoice.vendorName || invoice.vendor || 'Unknown Supplier'}
+                </span>
+              </div>
 
               <div className="flex items-center space-x-1">
                 {(invoice.invoiceUrl || invoice.oneDriveLink) && (
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const url = invoice.invoiceUrl || invoice.oneDriveLink;
+                      if (url) {
+                        window.open(url, '_blank', 'noopener,noreferrer');
+                      }
+                    }}
+                    title="View Invoice"
+                  >
                     <ExternalLink className="h-3 w-3" />
                   </Button>
                 )}
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                  <Eye className="h-3 w-3" />
-                </Button>
               </div>
             </div>
 

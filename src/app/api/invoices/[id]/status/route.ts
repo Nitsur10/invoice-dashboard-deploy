@@ -42,6 +42,24 @@ export async function PATCH(
       )
     }
 
+    // Check if Supabase is configured
+    let hasSupabase = true
+    try {
+      getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL')
+    } catch {
+      hasSupabase = false
+    }
+
+    if (!hasSupabase) {
+      return NextResponse.json({
+        code: 'NOT_IMPLEMENTED',
+        message: 'Database functionality not configured for this deployment. Please configure Supabase environment variables.',
+        success: true,
+        invoice: { invoiceNumber: id, status: newStatus },
+        note: 'Mock update - no database changes made'
+      })
+    }
+
     // Create authenticated Supabase client to get user info
     const response = NextResponse.json({ status: 'ok' })
     const supabase = createServerClient(supabaseUrl, supabaseKey, {
