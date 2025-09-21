@@ -263,7 +263,7 @@ function PerfectJiraColumn({ id, title, invoices, isHighlighted, draggedInvoiceI
           <PerfectJiraCard
             key={`${invoice.id || invoice.invoiceNumber || 'inv'}-${id}-${idx}`}
             invoice={invoice}
-            isBeingDragged={draggedInvoiceId === invoice.id}
+            isBeingDragged={draggedInvoiceId === String(invoice.id)}
           />
         ))}
       </div>
@@ -354,7 +354,7 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
     const targetColumnId = over.id as BoardStatus;
 
     // Find current status
-    const invoice = invoices.find(inv => inv.id === invoiceId);
+    const invoice = invoices.find(inv => String(inv.id) === invoiceId);
     if (!invoice) return;
 
     const currentStatus = (typeof invoice.status === 'string' ? invoice.status.toLowerCase() : invoice.status) as BoardStatus ||
@@ -369,7 +369,7 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
 
   const getDraggedInvoice = () => {
     if (!draggedInvoiceId) return null;
-    return invoices.find(inv => inv.id === draggedInvoiceId) || null;
+    return invoices.find(inv => String(inv.id) === draggedInvoiceId) || null;
   };
 
   const draggedInvoice = getDraggedInvoice();
