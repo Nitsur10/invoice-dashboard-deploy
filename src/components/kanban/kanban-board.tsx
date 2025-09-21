@@ -13,6 +13,7 @@ import {
   DragStartEvent,
   DragOverEvent,
   closestCorners,
+  pointerWithin,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -314,6 +315,15 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
     return acc;
   }, {} as Record<BoardStatus, Invoice[]>);
 
+  const findContainer = (id: string | null | undefined): BoardStatus | null => {
+    if (!id) return null;
+    // If id matches a column id directly
+    if (columns.some(c => c.id === id)) return id as BoardStatus;
+    // Otherwise find the column that contains this item id
+    const container = columns.find(c => (groupedInvoices[c.id] || []).some(item => item.id === id));
+    return container ? container.id : null;
+  };
+
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setDraggedInvoice(null);
@@ -322,7 +332,9 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
     if (!over) return;
 
     const activeInvoiceId = active.id as string;
-    const overColumnId = over.id as BoardStatus;
+    const containerId = findContainer(over.id as string);
+    if (!containerId) return;
+    const overColumnId = containerId as BoardStatus;
 
     // Find which column the invoice is currently in
     const activeInvoice = invoices.find(inv => inv.id === activeInvoiceId);
@@ -371,7 +383,8 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
 
   function handleDragOver(event: DragOverEvent) {
     const { over } = event;
-    setActiveDropZone(over ? over.id as string : null);
+    const containerId = findContainer(over?.id as string);
+    setActiveDropZone(containerId);
   }
 
   function handleDragCancel() {
@@ -382,7 +395,11 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={(args) => {
+        const collisions = pointerWithin(args);
+        if (collisions.length > 0) return collisions;
+        return closestCorners(args);
+      }}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
