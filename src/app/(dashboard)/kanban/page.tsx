@@ -53,13 +53,14 @@ function KanbanView() {
 
   const invoices: Invoice[] = useMemo(() => {
     if (!data?.data) return [] as Invoice[];
-    return (data.data as any[]).map((inv) => {
+    return (data.data as any[]).map((inv, idx) => {
       const rawStatus = (inv.status ?? inv.paymentStatus ?? 'pending')
         .toString()
         .toLowerCase() as BoardStatus;
+      const uniqueId = String(inv.id ?? inv.invoiceNumber ?? `gen-${inv.vendor ?? 'v'}-${inv.amount ?? '0'}-${inv.dueDate ?? 'd'}-${idx}`);
       return {
         ...inv,
-        id: String(inv.id),
+        id: uniqueId,
         status: rawStatus,
         paymentStatus: rawStatus,
         issueDate: inv.issueDate ? new Date(inv.issueDate) : undefined,
