@@ -35,17 +35,24 @@ export default function LandingPage() {
 
     const checkUser = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          router.replace('/overview')
+        // Only check auth if supabase is properly configured
+        if (supabase) {
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session) {
+            router.replace('/overview')
+          }
         }
       } catch (error) {
         console.error('Auth check error:', error)
         // Continue showing landing page if auth check fails
+        // This ensures landing page always shows for unauthenticated users
       }
     }
-    checkUser()
-  }, [router, supabase.auth])
+
+    // Small delay to ensure page loads first
+    const timer = setTimeout(checkUser, 100)
+    return () => clearTimeout(timer)
+  }, [router, supabase])
 
   return (
     <ErrorBoundary>

@@ -7,11 +7,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Server-side auth guard: require signed-in session for all dashboard pages
   try {
     const supabase = await getSupabaseServerComponentClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
+    if (supabase) {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        redirect('/auth/login')
+      }
+    } else {
+      // Supabase not configured, redirect to login
       redirect('/auth/login')
     }
   } catch (error) {
+    console.error('Dashboard auth error:', error)
     // If Supabase is not configured or an error occurs, treat as unauthenticated
     redirect('/auth/login')
   }

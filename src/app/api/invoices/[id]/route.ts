@@ -4,10 +4,10 @@ import { supabaseAdmin } from '@/lib/server/supabase-admin'
 // GET /api/invoices/[id]
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const { data, error } = await supabaseAdmin
       .from('invoices')
       .select('*')
@@ -39,10 +39,10 @@ export async function GET(
 // PATCH /api/invoices/[id]
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
     const allowed = ['paymentStatus', 'category', 'description']
     const updates: any = {}
@@ -89,10 +89,10 @@ export async function PATCH(
 // DELETE /api/invoices/[id]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const { error, count } = await supabaseAdmin
       .from('invoices')
       .delete({ count: 'exact' })
