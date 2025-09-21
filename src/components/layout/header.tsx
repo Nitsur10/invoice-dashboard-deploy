@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { User, LogOut } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface ProfileState {
   email: string;
@@ -79,6 +80,11 @@ export function Header() {
 
           {/* User Actions */}
           <div className="flex items-center space-x-2">
+            {/* Theme Toggle */}
+            <div className="flex items-center">
+              <ThemeToggle />
+            </div>
+
             <div className="hidden md:block text-right">
               <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                 {profile?.email ?? 'Guest'}
