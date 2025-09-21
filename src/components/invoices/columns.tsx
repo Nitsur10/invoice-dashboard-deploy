@@ -57,7 +57,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const invoice = row.original
       return (
         <div className="flex items-center space-x-2">
-          <span className="font-semibold text-gray-900 dark:text-gray-100">
+          <span className="font-semibold text-slate-900 dark:text-slate-100">
             {invoice.invoiceNumber}
           </span>
           {invoice.invoiceUrl && (
@@ -93,10 +93,10 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const vendor = row.getValue("vendorName") as string
       return (
         <div className="max-w-[200px]">
-          <div className="truncate font-semibold text-gray-900 dark:text-gray-100">
+          <div className="truncate font-semibold text-slate-900 dark:text-slate-100">
             {vendor}
           </div>
-          <div className="truncate text-xs text-gray-600 dark:text-gray-300">
+          <div className="truncate text-xs text-slate-600 dark:text-slate-300">
             {row.original.vendorEmail}
           </div>
         </div>
@@ -135,7 +135,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="h-8 px-2 lg:px-3"
+          className="h-8 px-2 lg:px-3 text-slate-900 dark:text-slate-100 hover:text-slate-900 dark:hover:text-slate-100"
         >
           Status
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -207,7 +207,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="h-8 px-2 lg:px-3"
+          className="h-8 px-2 lg:px-3 text-slate-900 dark:text-slate-100 hover:text-slate-900 dark:hover:text-slate-100"
         >
           Due Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -218,13 +218,13 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const dueDate = row.getValue("dueDate") as Date | undefined
 
       if (!dueDate) {
-        return <div className="text-sm text-gray-500 dark:text-gray-400">—</div>
+        return <div className="text-sm text-slate-500 dark:text-slate-400">—</div>
       }
 
       const isOverdue = dueDate < new Date() && row.original.status !== 'paid'
 
       return (
-        <div className={`text-sm font-medium ${isOverdue ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>
+        <div className={`text-sm font-medium ${isOverdue ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
           {dueDate.toLocaleDateString('en-AU')}
         </div>
       )
@@ -237,7 +237,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="h-8 px-2 lg:px-3"
+          className="h-8 px-2 lg:px-3 text-slate-900 dark:text-slate-100 hover:text-slate-900 dark:hover:text-slate-100"
         >
           Received
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -248,11 +248,11 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const receivedDate = row.getValue("receivedDate") as Date | undefined
 
       if (!receivedDate) {
-        return <div className="text-sm text-gray-500 dark:text-gray-400">—</div>
+        return <div className="text-sm text-slate-500 dark:text-slate-400">—</div>
       }
 
       return (
-        <div className="text-sm text-gray-600 dark:text-gray-300">
+        <div className="text-sm text-slate-600 dark:text-slate-300">
           {receivedDate.toLocaleDateString('en-AU')}
         </div>
       )

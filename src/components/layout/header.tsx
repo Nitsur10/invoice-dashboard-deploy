@@ -68,13 +68,13 @@ export function Header() {
         <div className="flex items-center space-x-4">
           {/* System Online Badge */}
           <div className="hidden md:flex items-center space-x-2">
-            <Badge
-              variant="outline"
-              className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-800/30"
-            >
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
-              System Online
-            </Badge>
+          <Badge
+            variant="outline"
+            className="bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-200 dark:border-green-700/50"
+          >
+            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
+            System Online
+          </Badge>
           </div>
 
           {/* User Actions */}

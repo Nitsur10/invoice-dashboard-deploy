@@ -197,28 +197,34 @@ function PerfectJiraColumn({ id, title, invoices, isHighlighted, draggedInvoiceI
   const getColumnColor = (status: BoardStatus) => {
     switch (status) {
       case 'pending':
-        return 'border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-950/10';
+        return 'border-blue-300 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-950/20';
       case 'in_review':
-        return 'border-amber-200 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-950/10';
+        return 'border-amber-300 dark:border-amber-600 bg-amber-50/50 dark:bg-amber-950/20';
       case 'approved':
-        return 'border-purple-200 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-950/10';
+        return 'border-purple-300 dark:border-purple-600 bg-purple-50/50 dark:bg-purple-950/20';
       case 'paid':
-        return 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-950/10';
+        return 'border-emerald-300 dark:border-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/20';
       case 'overdue':
-        return 'border-red-200 dark:border-red-800 bg-red-50/30 dark:bg-red-950/10';
+        return 'border-red-300 dark:border-red-600 bg-red-50/50 dark:bg-red-950/20';
       default:
-        return 'border-slate-200 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-950/10';
+        return 'border-slate-300 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-950/20';
     }
   };
 
   const getStatusIcon = (status: BoardStatus) => {
     switch (status) {
       case 'paid':
-        return <CheckCircle className="h-4 w-4 text-emerald-600" />;
+        return <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />;
       case 'overdue':
-        return <AlertTriangle className="h-4 w-4 text-red-600" />;
+        return <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />;
+      case 'pending':
+        return <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
+      case 'in_review':
+        return <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />;
+      case 'approved':
+        return <Clock className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
       default:
-        return <Clock className="h-4 w-4 text-slate-600" />;
+        return <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />;
     }
   };
 
@@ -231,7 +237,7 @@ function PerfectJiraColumn({ id, title, invoices, isHighlighted, draggedInvoiceI
         transition-all duration-200 ease-out transform-gpu
         ${getColumnColor(id)}
         ${isHighlighted
-          ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/20 shadow-lg ring-2 ring-blue-400/30'
+          ? 'border-blue-500 bg-blue-50/70 dark:bg-blue-950/30 shadow-lg ring-2 ring-blue-400/40'
           : ''
         }
       `}
@@ -243,7 +249,10 @@ function PerfectJiraColumn({ id, title, invoices, isHighlighted, draggedInvoiceI
           <h3 className="font-semibold text-slate-900 dark:text-slate-100">
             {title}
           </h3>
-          <Badge variant="outline" className="ml-2">
+          <Badge
+            variant="outline"
+            className="ml-2 bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
+          >
             {invoices.length}
           </Badge>
         </div>
@@ -264,15 +273,15 @@ function PerfectJiraColumn({ id, title, invoices, isHighlighted, draggedInvoiceI
       {invoices.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-slate-400 dark:text-slate-500">
           <div className="text-4xl mb-2">📋</div>
-          <p className="text-sm text-center">No invoices</p>
+          <p className="text-sm text-center text-slate-600 dark:text-slate-400">No invoices</p>
         </div>
       )}
 
       {/* Drop Indicator */}
       {isHighlighted && (
-        <div className="absolute inset-0 rounded-xl border-2 border-blue-500 bg-blue-500/10 pointer-events-none">
+        <div className="absolute inset-0 rounded-xl border-2 border-blue-500 bg-blue-500/20 dark:bg-blue-500/30 pointer-events-none">
           <div className="absolute inset-x-0 top-1/2 transform -translate-y-1/2 text-center">
-            <div className="inline-block bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+            <div className="inline-block bg-blue-600 dark:bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
               Drop here
             </div>
           </div>
