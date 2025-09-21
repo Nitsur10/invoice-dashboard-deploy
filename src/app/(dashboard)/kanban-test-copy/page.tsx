@@ -36,7 +36,7 @@ export default function KanbanTestCopyPage() {
       const rawStatus = (inv.status ?? inv.paymentStatus ?? 'pending')
         .toString()
         .toLowerCase() as BoardStatus;
-      const id = String((inv as any).id ?? inv.invoiceNumber ?? `gen-${idx}`);
+      const id = String((inv as any).invoiceNumber ?? `gen-${idx}`);
       return {
         id,
         invoiceNumber: (inv as any).invoiceNumber ?? id,
