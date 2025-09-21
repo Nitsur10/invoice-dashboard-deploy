@@ -139,8 +139,19 @@ export async function PATCH(
       .single()
 
     if (updateError || !updatedInvoice) {
+      console.error('Invoice update failed:', {
+        updateError,
+        updatedInvoice,
+        columnToFetch,
+        valueToFetch,
+        newStatus
+      })
       return NextResponse.json(
-        { code: 'UPDATE_FAILED', message: 'Failed to update invoice status' },
+        {
+          code: 'UPDATE_FAILED',
+          message: 'Failed to update invoice status',
+          debug: { updateError, columnToFetch, valueToFetch, newStatus }
+        },
         { status: 500 }
       )
     }
@@ -162,12 +173,17 @@ export async function PATCH(
       }
     }
 
+    console.log('Creating audit log:', auditLogData)
     const { error: auditError } = await supabaseAdmin
       .from('audit_logs')
       .insert(auditLogData)
 
     if (auditError) {
-      console.error('Failed to create audit log:', auditError)
+      console.error('Failed to create audit log:', {
+        auditError,
+        auditLogData,
+        table: 'audit_logs'
+      })
       // Don't fail the request if audit log fails, but log the error
     }
 
