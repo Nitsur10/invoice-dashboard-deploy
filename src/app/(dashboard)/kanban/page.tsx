@@ -23,15 +23,13 @@ export default function KanbanPage() {
       const mapped: Invoice[] = (res.data.data as any[]).map((inv) => {
         const rawStatus = (inv.status ?? inv.paymentStatus ?? 'pending')
           .toString()
-          .toLowerCase();
-
-        const reviewStatus = (rawStatus === 'paid' ? 'pending' : rawStatus) as BoardStatus;
+          .toLowerCase() as BoardStatus;
 
         return {
           ...inv,
           originalStatus: rawStatus,
-          status: reviewStatus,
-          paymentStatus: reviewStatus,
+          status: rawStatus,
+          paymentStatus: rawStatus,
           issueDate: inv.issueDate ? new Date(inv.issueDate) : undefined,
           dueDate: inv.dueDate ? new Date(inv.dueDate) : undefined,
           receivedDate: inv.receivedDate ? new Date(inv.receivedDate) : undefined,

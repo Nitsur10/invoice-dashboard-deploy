@@ -117,6 +117,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Map to internal shape
+    const normalizeStatus = (value: any): 'pending' | 'in_review' | 'approved' | 'paid' | 'overdue' | undefined => {
+      if (!value) return undefined
+      const raw = String(value).trim().toLowerCase()
+      if (raw === 'in review' || raw === 'in-review') return 'in_review'
+      if (raw === 'pending' || raw === 'open') return 'pending'
+      if (raw === 'approved') return 'approved'
+      if (raw === 'paid' || raw === 'complete' || raw === 'completed') return 'paid'
+      if (raw === 'overdue' || raw === 'late') return 'overdue'
+      return undefined
+    }
+
     const mapped = supaData.map((row: any) => {
       const amount = Number(pick(row, ['total', 'amount', 'total_amount', 'grand_total'], 0)) || 0
       const amountDueRaw = pick(row, ['amount_due', 'due_amount', 'outstanding', 'balance_due'], null)
@@ -126,7 +137,10 @@ export async function GET(request: NextRequest) {
       const receivedDate = pick(row, ['invoice_date', 'invoiceDate', 'received_date', 'receivedDate', 'created_at', 'createdAt'], null)
       const issueDate = pick(row, ['invoice_date', 'invoiceDate'], null)
       const effectiveIssueDate = issueDate || receivedDate
-      const status = deriveInvoiceStatus(amountDue, dueDate, effectiveIssueDate, now)
+      // Prefer DB-provided status when present; fall back to derived
+      const dbStatusRaw = row.status ?? row.payment_status ?? row.paymentStatus
+      const normalizedDbStatus = normalizeStatus(dbStatusRaw)
+      const status = normalizedDbStatus ?? deriveInvoiceStatus(amountDue, dueDate, effectiveIssueDate, now)
 
       return {
         id: row.id ?? pick(row, ['invoice_id', 'uuid'], ''),
