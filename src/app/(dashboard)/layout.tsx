@@ -6,8 +6,6 @@ import { headers } from 'next/headers'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Server-side auth guard: require signed-in session for all dashboard pages
-  // Temporarily disabled for testing - uncomment for production
-  /*
   try {
     const supabase = await getSupabaseServerComponentClient()
     if (supabase) {
@@ -24,7 +22,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
     // If Supabase is not configured or an error occurs, treat as unauthenticated
     redirect('/auth/login')
   }
-  */
 
   return (
     <div className="flex min-h-screen relative z-10">
