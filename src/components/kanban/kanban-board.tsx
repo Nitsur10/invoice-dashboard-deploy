@@ -234,7 +234,7 @@ function KanbanColumnComponent({ column, invoices, updatingInvoiceId, isDropTarg
 
   const columnClasses = `rounded-lg border-2 border-dashed p-4 min-h-96 transition-all duration-200 ${getColumnColor(column.id)} ${
     isDropTarget
-      ? 'ring-2 ring-blue-400 ring-offset-2 scale-[1.02] shadow-lg bg-blue-50/50 dark:bg-blue-950/20'
+      ? 'ring-2 ring-blue-400 ring-offset-2 shadow-lg bg-blue-50/50 dark:bg-blue-950/20'
       : ''
   }`;
 

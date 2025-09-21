@@ -237,7 +237,7 @@ function PerfectJiraColumn({ id, title, invoices, isHighlighted, draggedInvoiceI
         transition-all duration-200 ease-out transform-gpu
         ${getColumnColor(id)}
         ${isHighlighted
-          ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/20 scale-[1.02] shadow-lg ring-2 ring-blue-400/30'
+          ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/20 shadow-lg ring-2 ring-blue-400/30'
           : ''
         }
       `}
