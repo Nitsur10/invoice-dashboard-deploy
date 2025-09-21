@@ -74,8 +74,12 @@ export async function PATCH(
     }
 
     // Get current invoice to check existing status
-    // Use invoice_number if the id parameter looks like an invoice number, otherwise use id column
-    const columnToFetch = id && id.startsWith('INV-') ? 'invoice_number' : 'id';
+    // Detect if the parameter is an invoice number (contains INV-, or is numeric but not a typical ID)
+    const isInvoiceNumber = id && (
+      id.startsWith('INV-') ||
+      /^\d{4,}$/.test(id)  // Numbers with 4+ digits are likely invoice numbers
+    );
+    const columnToFetch = isInvoiceNumber ? 'invoice_number' : 'id';
     const valueToFetch = id;
 
     const { data: currentInvoice, error: fetchError } = await supabaseAdmin
