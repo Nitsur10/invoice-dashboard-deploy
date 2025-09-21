@@ -58,6 +58,7 @@ function KanbanView() {
         .toString()
         .toLowerCase() as BoardStatus;
       return {
+        id: String(inv.id),
         ...inv,
         status: rawStatus,
         paymentStatus: rawStatus,
