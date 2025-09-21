@@ -103,25 +103,11 @@ export default function LandingPage() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-amber-50/20">
+      <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-amber-50/20 overflow-hidden">
         <ErrorBoundary>
           <LandingHero />
         </ErrorBoundary>
-        <ErrorBoundary>
-          <Suspense fallback={<div className="h-96 bg-slate-100 animate-pulse rounded-xl mx-8" />}>
-            <LandingFeatures />
-          </Suspense>
-        </ErrorBoundary>
-        <ErrorBoundary>
-          <Suspense fallback={<div className="h-96 bg-slate-100 animate-pulse rounded-xl mx-8" />}>
-            <LandingTestimonials />
-          </Suspense>
-        </ErrorBoundary>
-        <ErrorBoundary>
-          <Suspense fallback={<div className="h-32 bg-slate-800 animate-pulse" />}>
-            <LandingFooter />
-          </Suspense>
-        </ErrorBoundary>
+        {/* Remove all other components to keep only the hero section */}
       </div>
     </ErrorBoundary>
   )

@@ -85,7 +85,7 @@ function LoginShell() {
             onChange={(event) => setEmail(event.target.value)}
             required
             autoComplete="email"
-            className="bg-slate-950/80"
+            className="bg-slate-950/80 text-slate-100 placeholder:text-slate-400 border-slate-700 focus:border-slate-500"
           />
         </div>
 
@@ -101,7 +101,7 @@ function LoginShell() {
             onChange={(event) => setPassword(event.target.value)}
             required
             autoComplete="current-password"
-            className="bg-slate-950/80"
+            className="bg-slate-950/80 text-slate-100 placeholder:text-slate-400 border-slate-700 focus:border-slate-500"
           />
         </div>
 
