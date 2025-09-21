@@ -58,8 +58,8 @@ function KanbanView() {
         .toString()
         .toLowerCase() as BoardStatus;
       return {
-        id: String(inv.id),
         ...inv,
+        id: String(inv.id),
         status: rawStatus,
         paymentStatus: rawStatus,
         issueDate: inv.issueDate ? new Date(inv.issueDate) : undefined,
