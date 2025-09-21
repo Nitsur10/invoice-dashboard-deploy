@@ -299,11 +299,11 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
   
 
   const columns: { id: BoardStatus; title: string }[] = [
+    { id: 'overdue', title: 'Overdue' },
     { id: 'pending', title: 'Pending' },
     { id: 'in_review', title: 'In Review' },
     { id: 'approved', title: 'Approved' },
     { id: 'paid', title: 'Paid' },
-    { id: 'overdue', title: 'Overdue' },
   ];
 
   // Group invoices by status
