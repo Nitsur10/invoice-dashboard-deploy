@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies, headers } from 'next/headers'
 import type { NextRequest, NextResponse } from 'next/server'
+import 'server-only'
 
 function getSupabaseConfig() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -13,9 +14,9 @@ function getSupabaseConfig() {
   return { url: supabaseUrl, key: supabaseAnonKey }
 }
 
-export function getSupabaseServerComponentClient() {
-  const cookieStore = cookies()
-  const headerStore = headers()
+export async function getSupabaseServerComponentClient() {
+  const cookieStore = await cookies()
+  const headerStore = await headers()
   const { url, key } = getSupabaseConfig()
 
   return createServerClient(url, key, {

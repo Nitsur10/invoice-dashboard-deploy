@@ -1,7 +1,21 @@
 import { Sidebar } from '@/components/layout/sidebar'
 import { Header } from '@/components/layout/header'
+import { getSupabaseServerComponentClient } from '@/lib/supabase-server'
+import { redirect } from 'next/navigation'
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // Server-side auth guard: require signed-in session for all dashboard pages
+  try {
+    const supabase = await getSupabaseServerComponentClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      redirect('/auth/login')
+    }
+  } catch (error) {
+    // If Supabase is not configured or an error occurs, treat as unauthenticated
+    redirect('/auth/login')
+  }
+
   return (
     <div className="flex min-h-screen relative z-10">
       {/* Skip to main content link for accessibility */}
