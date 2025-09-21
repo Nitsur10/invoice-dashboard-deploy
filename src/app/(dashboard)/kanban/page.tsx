@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { KanbanBoard, BoardStatus } from '@/components/kanban/kanban-board';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +26,7 @@ export default function KanbanPage() {
 function KanbanView() {
   const { filters } = useInvoiceFilters();
   const [isFilterDrawerOpen, setFilterDrawerOpen] = React.useState(false);
+  const queryClient = useQueryClient();
 
   const apiParams = useMemo(() => ({
     page: 0,
@@ -84,9 +85,18 @@ function KanbanView() {
   }), [invoices, grouped, data?.pagination?.total]);
 
   const handleInvoiceUpdate = (invoiceId: string, newStatus: BoardStatus) => {
-    // local optimistic update of the limited set
-    // note: server persists via /api/invoices/[id]/status in KanbanBoard
-    (data as any)?.data && ((data as any).data = (data as any).data.map((inv: any) => inv.id === invoiceId ? { ...inv, status: newStatus, paymentStatus: newStatus } : inv));
+    // Optimistically update the React Query cache for this page's dataset
+    const queryKey = ['kanban-invoices', apiParams] as const;
+    queryClient.setQueryData(queryKey, (old: any) => {
+      if (!old?.data) return old;
+      const next = {
+        ...old,
+        data: old.data.map((inv: any) =>
+          inv.id === invoiceId ? { ...inv, status: newStatus, paymentStatus: newStatus } : inv
+        ),
+      };
+      return next;
+    });
   };
 
   const handleInvoiceUpdateError = (error: string) => {
