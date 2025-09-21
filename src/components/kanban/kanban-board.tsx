@@ -24,6 +24,7 @@ import { useDroppable } from '@dnd-kit/core';
 import {
   useSortable,
 } from '@dnd-kit/sortable';
+import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -364,32 +365,23 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError, s
     }
 
     if (currentStatus !== overColumnId) {
+      // Optimistic UI update first
+      onInvoiceUpdate(activeInvoiceId, overColumnId);
       setUpdatingInvoiceId(activeInvoiceId);
 
       try {
-        // Call the API to update status
         const result = await updateInvoiceStatus(activeInvoiceId, overColumnId);
-
-        if (result.success) {
-          // Update local state optimistically
-          onInvoiceUpdate(activeInvoiceId, overColumnId);
-        } else {
-          // Handle API error
+        if (!result.success) {
           const errorMessage = result.error || 'Failed to update invoice status';
-          console.error('Status update failed:', errorMessage);
-
-          if (onInvoiceUpdateError) {
-            onInvoiceUpdateError(errorMessage, activeInvoiceId, overColumnId);
-          }
+          // Revert on failure
+          onInvoiceUpdate(activeInvoiceId, currentStatus);
+          if (onInvoiceUpdateError) onInvoiceUpdateError(errorMessage, activeInvoiceId, overColumnId);
         }
       } catch (error) {
-        // Handle network error
         const errorMessage = error instanceof Error ? error.message : 'Network error occurred';
-        console.error('Status update error:', error);
-
-        if (onInvoiceUpdateError) {
-          onInvoiceUpdateError(errorMessage, activeInvoiceId, overColumnId);
-        }
+        // Revert on failure
+        onInvoiceUpdate(activeInvoiceId, currentStatus);
+        if (onInvoiceUpdateError) onInvoiceUpdateError(errorMessage, activeInvoiceId, overColumnId);
       } finally {
         setUpdatingInvoiceId(null);
       }
@@ -453,9 +445,10 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError, s
           duration: 300,
           easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
         }}
+        modifiers={[snapCenterToCursor]}
       >
         {draggedInvoice ? (
-          <div className="transform rotate-2 scale-110 shadow-2xl ring-2 ring-blue-400 ring-opacity-50">
+          <div className="transform rotate-2 scale-110 shadow-2xl ring-2 ring-blue-400 ring-opacity-50 pointer-events-none">
             <KanbanCard
               invoice={draggedInvoice}
               isUpdating={false}

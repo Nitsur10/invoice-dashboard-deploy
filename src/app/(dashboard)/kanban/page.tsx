@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useMemo } from 'react';
 import { useQuery, useQueryClient, useQueries } from '@tanstack/react-query';
 import { KanbanBoard, BoardStatus } from '@/components/kanban/kanban-board';
+import { PerfectJiraKanban } from '@/components/kanban/perfect-jira-kanban';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -230,13 +231,11 @@ function KanbanView() {
         </CardContent>
       </Card>
 
-      {/* Kanban Board */}
+      {/* Kanban Board (Jira-like behavior) */}
       <div className="bg-white/30 dark:bg-slate-900/30 backdrop-blur-sm rounded-xl p-6 border border-slate-200/50 dark:border-slate-700/50">
-        <KanbanBoard
-          invoices={invoices}
-          onInvoiceUpdate={handleInvoiceUpdate}
-          onInvoiceUpdateError={(err, id, s) => handleInvoiceUpdateError(`${id}:${s} ${err}`)}
-          statusTotals={totalsByStatus}
+        <PerfectJiraKanban
+          invoices={invoices as any}
+          onInvoiceUpdate={(id, status) => handleInvoiceUpdate(id, status)}
         />
         <div className="text-xs text-slate-500 mt-3">Showing up to 5 matching cards. Adjust filters to refine.</div>
       </div>
