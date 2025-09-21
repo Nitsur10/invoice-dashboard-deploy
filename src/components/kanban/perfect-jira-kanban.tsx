@@ -57,7 +57,7 @@ interface PerfectJiraCardProps {
 
 function PerfectJiraCard({ invoice, isBeingDragged }: PerfectJiraCardProps) {
   const { attributes, listeners, setNodeRef } = useDraggable({
-    id: invoice.id,
+    id: (invoice.id || invoice.invoiceNumber) as string,
   });
 
   const formatCurrency = (amount: number) => {
@@ -257,9 +257,9 @@ function PerfectJiraColumn({ id, title, invoices, isHighlighted, draggedInvoiceI
 
       {/* Cards */}
       <div className="space-y-2">
-        {invoices.map((invoice) => (
+        {invoices.map((invoice, idx) => (
           <PerfectJiraCard
-            key={invoice.id}
+            key={`${invoice.id || invoice.invoiceNumber || 'inv'}-${id}-${idx}`}
             invoice={invoice}
             isBeingDragged={draggedInvoiceId === invoice.id}
           />
