@@ -52,4 +52,6 @@ Thumbs.db
 
 # TypeScript cache
 *.tsbuildinfo
-next-env.d.ts
+next-env.d.tstestrigor-cli.jar
+test-results/
+*.jar
