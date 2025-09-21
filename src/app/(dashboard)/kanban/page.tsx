@@ -97,7 +97,7 @@ function KanbanView() {
   const statusList: BoardStatus[] = ['pending','in_review','approved','paid','overdue'];
   const totalsQueries = useQueries({
     queries: statusList.map((s) => ({
-      queryKey: ['kanban-invoices-total', { ...apiParams, status: [s], limit: 1 }],
+      queryKey: ['kanban-invoices-total', { ...apiParams, status: [s] }],
       queryFn: () => fetchInvoices({ ...apiParams, status: [s], limit: 1 }),
       staleTime: 2 * 60 * 1000,
       enabled: typeof window !== 'undefined',
@@ -115,12 +115,14 @@ function KanbanView() {
   }, [totalsQueries]);
 
   const stats = useMemo(() => ({
-    total: data?.pagination?.total ?? invoices.length,
-    totalAmount: invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0),
-    pending: grouped.pending.length,
-    paid: grouped.paid.length,
-    overdue: grouped.overdue.length,
-  }), [invoices, grouped, data?.pagination?.total]);
+    total: data?.pagination?.total ?? 0,
+    totalAmount: data?.pagination?.totalAmount ?? 0,
+    pending: totalsByStatus.pending ?? 0,
+    in_review: totalsByStatus.in_review ?? 0,
+    approved: totalsByStatus.approved ?? 0,
+    paid: totalsByStatus.paid ?? 0,
+    overdue: totalsByStatus.overdue ?? 0,
+  }), [data?.pagination?.total, data?.pagination?.totalAmount, totalsByStatus]);
 
   const handleInvoiceUpdate = async (invoiceId: string, newStatus: BoardStatus) => {
     // Optimistically update the React Query cache for this page's dataset
@@ -210,13 +212,13 @@ function KanbanView() {
 
       <InvoiceFilterChips />
 
-      {/* Quick Stats (for the 5-card window) */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      {/* Quick Stats (actual totals from database) */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <Card className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-slate-200/50 dark:border-slate-700/50">
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats.total}</p>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Total (matching)</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Total</p>
             </div>
           </CardContent>
         </Card>
@@ -226,6 +228,24 @@ function KanbanView() {
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.pending}</p>
               <p className="text-sm text-blue-700 dark:text-blue-300">Pending</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200/50 dark:border-amber-800/30">
+          <CardContent className="p-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">{stats.in_review}</p>
+              <p className="text-sm text-amber-700 dark:text-amber-300">In Review</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/30">
+          <CardContent className="p-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.approved}</p>
+              <p className="text-sm text-purple-700 dark:text-purple-300">Approved</p>
             </div>
           </CardContent>
         </Card>
@@ -244,15 +264,6 @@ function KanbanView() {
             <div className="text-center">
               <p className="text-2xl font-bold text-red-900 dark:text-red-100">{stats.overdue}</p>
               <p className="text-sm text-red-700 dark:text-red-300">Overdue</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/30">
-          <CardContent className="p-4">
-            <div className="text-center">
-              <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{stats.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
-              <p className="text-sm text-purple-700 dark:text-purple-300">Page Value</p>
             </div>
           </CardContent>
         </Card>
