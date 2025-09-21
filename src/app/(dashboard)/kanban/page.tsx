@@ -171,7 +171,7 @@ function KanbanView() {
         <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/30">
           <CardContent className="p-4">
             <div className="text-center">
-              <p className="text-lg font-bold text-purple-900 dark:text-purple-100">${'{'}stats.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }){'}'}</p>
+              <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{stats.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
               <p className="text-sm text-purple-700 dark:text-purple-300">Page Value</p>
             </div>
           </CardContent>
