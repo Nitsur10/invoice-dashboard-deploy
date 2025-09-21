@@ -298,11 +298,11 @@ export function KanbanBoard({ invoices, onInvoiceUpdate, onInvoiceUpdateError }:
   );
 
   const columns: { id: BoardStatus; title: string }[] = [
+    { id: 'overdue', title: 'Overdue', invoices: [] },
     { id: 'pending', title: 'Pending', invoices: [] },
     { id: 'in_review', title: 'In Review', invoices: [] },
     { id: 'approved', title: 'Approved', invoices: [] },
     { id: 'paid', title: 'Paid', invoices: [] },
-    { id: 'overdue', title: 'Overdue', invoices: [] },
   ];
 
   // Group invoices by status
