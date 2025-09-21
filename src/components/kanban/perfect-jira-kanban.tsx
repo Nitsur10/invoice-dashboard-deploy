@@ -56,8 +56,9 @@ interface PerfectJiraCardProps {
 }
 
 function PerfectJiraCard({ invoice, isBeingDragged }: PerfectJiraCardProps) {
+  const cardId = `card:${String(invoice.id || invoice.invoiceNumber)}`;
   const { attributes, listeners, setNodeRef } = useDraggable({
-    id: (invoice.id || invoice.invoiceNumber) as string,
+    id: cardId,
   });
 
   const formatCurrency = (amount: number) => {
@@ -94,6 +95,7 @@ function PerfectJiraCard({ invoice, isBeingDragged }: PerfectJiraCardProps) {
         ref={setNodeRef}
         {...listeners}
         {...attributes}
+        data-card-id={cardId}
         className="absolute inset-0 z-10 cursor-grab active:cursor-grabbing"
         style={{
           background: 'transparent',
@@ -328,7 +330,9 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    setDraggedInvoiceId(event.active.id as string);
+    const raw = String(event.active.id || '');
+    const normalized = raw.startsWith('card:') ? raw.replace('card:', '') : raw;
+    setDraggedInvoiceId(normalized);
   };
 
   const handleDragOver = (event: DragOverEvent) => {
@@ -338,7 +342,8 @@ export function PerfectJiraKanban({ invoices, onInvoiceUpdate }: PerfectJiraKanb
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    const invoiceId = active.id as string;
+    const raw = String(active.id || '');
+    const invoiceId = raw.startsWith('card:') ? raw.replace('card:', '') : raw;
 
     // reset drag UI state
     setDraggedInvoiceId(null);
