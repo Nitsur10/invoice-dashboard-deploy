@@ -80,8 +80,11 @@ function PerfectJiraCard({ invoice, isBeingDragged }: PerfectJiraCardProps) {
 
   return (
     <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
       data-card-id={invoice.id}
-      className={`mb-3 relative transition-all duration-150 ease-out ${
+      className={`mb-3 relative cursor-grab active:cursor-grabbing transition-all duration-150 ease-out ${
         isBeingDragged
           ? 'opacity-40'
           : 'hover:shadow-lg hover:-translate-y-0.5'
@@ -90,17 +93,6 @@ function PerfectJiraCard({ invoice, isBeingDragged }: PerfectJiraCardProps) {
         transform: 'translateZ(0)', // Hardware acceleration
       }}
     >
-      {/* Drag handle - invisible overlay for dragging */}
-      <div
-        ref={setNodeRef}
-        {...listeners}
-        {...attributes}
-        data-card-id={cardId}
-        className="absolute inset-0 z-10 cursor-grab active:cursor-grabbing"
-        style={{
-          background: 'transparent',
-        }}
-      />
 
       {/* Always visible card content */}
       <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm">
