@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import '@testing-library/jest-dom'
 import { invoiceColumns } from '../columns'
 import { DataTable } from '@/components/ui/data-table'
-import { DescriptionCell } from '../description-cell'
+import { DescriptionCell } from '../columns'
 import { Invoice } from '@/lib/types'
 
 // Mock data for responsive testing

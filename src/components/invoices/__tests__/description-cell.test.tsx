@@ -2,7 +2,7 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
-import { DescriptionCell } from '../description-cell'
+import { DescriptionCell } from '../columns'
 
 describe('DescriptionCell', () => {
   describe('Empty/null descriptions', () => {

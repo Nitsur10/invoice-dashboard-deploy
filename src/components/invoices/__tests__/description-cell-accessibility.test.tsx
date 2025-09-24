@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import '@testing-library/jest-dom'
-import { DescriptionCell } from '../description-cell'
+import { DescriptionCell } from '../columns'
 
 // Extend Jest matchers
 expect.extend(toHaveNoViolations)

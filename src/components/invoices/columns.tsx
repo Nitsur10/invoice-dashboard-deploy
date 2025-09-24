@@ -457,6 +457,9 @@ function DescriptionCell({ description }: DescriptionCellProps) {
   )
 }
 
+// Export DescriptionCell for testing
+export { DescriptionCell }
+
 // Status Update Dropdown Component
 interface StatusUpdateDropdownProps {
   invoice: Invoice

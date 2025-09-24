@@ -1,0 +1,31 @@
+{
+  "name": "agent-orchestration-system",
+  "version": "1.0.0",
+  "description": "Multi-agent GitHub issue orchestration system",
+  "main": "agent-coordinator.js",
+  "bin": {
+    "agent-coord": "./agent-coordinator.js"
+  },
+  "scripts": {
+    "start": "node agent-coordinator.js",
+    "test": "jest",
+    "validate": "node scripts/validate-agents.js"
+  },
+  "dependencies": {
+    "yaml": "^2.3.4",
+    "@octokit/rest": "^20.0.2",
+    "commander": "^11.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "keywords": [
+    "github",
+    "automation",
+    "agents",
+    "orchestration",
+    "ci-cd"
+  ],
+  "author": "Agent Orchestration System",
+  "license": "MIT"
+}

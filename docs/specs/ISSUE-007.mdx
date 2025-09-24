@@ -1,0 +1,341 @@
+# Technical Specification: Invoice Filter UI Redesign
+
+**Issue Reference:** [docs/issues/issue-007-invoice-filter-ui.md]
+**Created:** 2025-09-24
+
+## Overview
+
+This specification details the technical requirements for redesigning the invoice filters from a left sidebar layout to a top-right popover interface, matching the Kanban board UX pattern. The redesign will maintain all current filtering functionality while providing a more compact and consistent user experience.
+
+## Current State Analysis
+
+### Existing Architecture
+- **Layout:** Desktop sidebar + mobile drawer pattern (lines 389-390 in `src/app/(dashboard)/invoices/page.tsx`)
+- **Components:**
+  - `InvoiceFilterSidebar` - Desktop left sidebar (hidden on mobile)
+  - `InvoiceFilterDrawer` - Mobile right-slide drawer
+  - `InvoiceFilterForm` - Shared filter form component
+- **Grid Layout:** `lg:grid-cols-[280px,1fr]` allocates fixed 280px for sidebar
+- **Mobile Trigger:** Filter button visible only on mobile (`md:hidden` class)
+
+### Current Filter Components Structure
+```
+InvoiceFilterSidebar (lines 29-42, filter-sidebar.tsx)
+├── Sticky positioning (top-24)
+├── InvoiceFilterForm (shared component)
+│   ├── Date Range (calendar + quick presets)
+│   ├── Status filters (buttons)
+│   ├── Category filters (buttons)
+│   ├── Vendor filters (buttons)
+│   └── Amount Range (min/max inputs)
+└── Reset & Done buttons
+```
+
+### State Management Integration
+- **Hook:** `useInvoiceFilters` provides comprehensive filter state
+- **Context:** `InvoiceFiltersProvider` wraps entire page
+- **Facets API:** `fetchInvoiceFacets` populates filter options from Supabase
+- **Query Integration:** Filters sync with tanstack-query for data fetching
+
+## Technical Requirements
+
+### 1. Component Architecture Transformation
+
+#### Remove Sidebar Layout
+- **Target:** Eliminate `InvoiceFilterSidebar` usage in `page.tsx` line 390
+- **Layout Change:** Remove `lg:grid lg:grid-cols-[280px,1fr] lg:gap-8` grid system (line 389)
+- **Content Reflow:** Main content area becomes full-width on all screen sizes
+
+#### Create InvoiceFilterPopover Component
+```typescript
+interface InvoiceFilterPopoverProps {
+  facets?: InvoiceFacetsResponse['facets'];
+  isLoading?: boolean;
+  className?: string;
+}
+
+export function InvoiceFilterPopover({
+  facets,
+  isLoading,
+  className
+}: InvoiceFilterPopoverProps): JSX.Element
+```
+
+### 2. Popover Implementation Specifications
+
+#### Component Structure
+```tsx
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+
+<Popover>
+  <PopoverTrigger asChild>
+    <Button variant="outline" size="sm">
+      <Filter className="mr-2 h-4 w-4" />
+      Filters
+      {hasActiveFilters && <Badge variant="secondary" className="ml-2">{filterCount}</Badge>}
+    </Button>
+  </PopoverTrigger>
+  <PopoverContent
+    className="w-96 p-0"
+    align="end"
+    sideOffset={8}
+  >
+    <InvoiceFilterForm
+      facets={facets}
+      isLoading={isLoading}
+      onClose={() => setOpen(false)}
+      variant="popover"
+    />
+  </PopoverContent>
+</Popover>
+```
+
+#### Positioning Requirements
+- **Alignment:** `align="end"` to align with Export CSV button
+- **Width:** `w-96` (384px) for optimal content display
+- **Offset:** `sideOffset={8}` for visual separation
+- **Z-Index:** Ensure popover appears above all content (handled by RadixUI)
+
+### 3. Responsive Behavior Specifications
+
+#### Desktop (≥1024px)
+- **Display:** Popover interface with floating content
+- **Trigger:** Button positioned in toolbar next to Export CSV
+- **Content:** Compact form layout optimized for popover width
+
+#### Tablet (768px-1023px)
+- **Display:** Popover interface (same as desktop)
+- **Adjustments:** May require smaller popover width (`w-80` - 320px)
+
+#### Mobile (<768px)
+- **Display:** Drawer interface (reuse existing `InvoiceFilterDrawer`)
+- **Trigger:** Replace existing mobile filter button
+- **Behavior:** Full-screen overlay from right side (existing implementation)
+
+### 4. Form Layout Optimization
+
+#### Compact Popover Layout
+Modify `InvoiceFilterForm` to support variant prop:
+```typescript
+interface InvoiceFilterFormProps {
+  facets?: InvoiceFacetsResponse['facets'];
+  isLoading?: boolean;
+  onClose?: () => void;
+  variant?: 'sidebar' | 'drawer' | 'popover'; // New prop
+}
+```
+
+#### Layout Adaptations for Popover
+- **Date Range:** Compress calendar to single month display
+- **Quick Presets:** Stack presets in 2-3 columns instead of single row
+- **Filter Buttons:** Smaller button sizes (`size="xs"`)
+- **Amount Inputs:** Side-by-side layout maintained
+- **Scroll:** Enable vertical scroll if content exceeds popover height
+
+### 5. Integration Points
+
+#### Toolbar Button Placement
+Position filter trigger in existing toolbar (lines 314-364 in `page.tsx`):
+```tsx
+<div className="flex flex-wrap items-center gap-4">
+  <Button /* Mobile drawer trigger - keep existing mobile logic */>
+
+  <Button /* Saved views button - existing */>
+
+  <InvoiceFilterPopover
+    facets={facetsQuery.data?.facets}
+    isLoading={facetsQuery.isLoading}
+    className="hidden md:block" // Desktop only
+  />
+
+  <Button /* Refresh button - existing */>
+  <Button /* Clear filters - existing */>
+  <ExportProgressButton /* Export CSV - existing */>
+</div>
+```
+
+#### State Management Hooks
+- **No Changes Required:** Existing `useInvoiceFilters` hook works unchanged
+- **Facets Query:** Reuse existing `facetsQuery` for popover data
+- **Filter Chips:** Continue to display active filters below toolbar
+
+### 6. Accessibility Requirements
+
+#### Focus Management
+- **Trigger Focus:** PopoverTrigger receives focus on close
+- **Content Focus:** First interactive element focused on open
+- **Escape Key:** Closes popover and returns focus to trigger
+- **Outside Click:** Closes popover (default RadixUI behavior)
+
+#### ARIA Labels
+```tsx
+<PopoverTrigger
+  aria-label="Open invoice filters"
+  aria-describedby="filter-description"
+  aria-expanded={open}
+>
+  <Button>Filters</Button>
+</PopoverTrigger>
+
+<PopoverContent role="dialog" aria-label="Invoice filters">
+  <div id="filter-description" className="sr-only">
+    Filter invoices by status, category, vendor, date range, and amount
+  </div>
+  {/* Form content */}
+</PopoverContent>
+```
+
+#### Screen Reader Support
+- **Filter Count Badge:** Include count in aria-label when filters active
+- **Form Labels:** Maintain existing label associations
+- **Status Updates:** Announce filter changes to screen readers
+
+### 7. Filter Count Badge Specification
+
+#### Badge Display Logic
+```typescript
+const activeFilterCount = useMemo(() => {
+  let count = 0;
+  if (filters.statuses.length > 0) count += filters.statuses.length;
+  if (filters.categories.length > 0) count += filters.categories.length;
+  if (filters.vendors.length > 0) count += filters.vendors.length;
+  if (filters.dateRange) count += 1;
+  if (filters.amountRange) count += 1;
+  if (filters.search) count += 1;
+  return count;
+}, [filters]);
+
+const hasActiveFilters = activeFilterCount > 0;
+```
+
+#### Badge Component
+```tsx
+{hasActiveFilters && (
+  <Badge
+    variant="secondary"
+    className="ml-2 min-w-[1.25rem] h-5 px-1.5 text-xs"
+  >
+    {activeFilterCount}
+  </Badge>
+)}
+```
+
+### 8. Component Props Interface
+
+#### InvoiceFilterPopover Props
+```typescript
+interface InvoiceFilterPopoverProps {
+  /** Facet data from Supabase API */
+  facets?: InvoiceFacetsResponse['facets'];
+
+  /** Loading state for facets query */
+  isLoading?: boolean;
+
+  /** Additional CSS classes */
+  className?: string;
+
+  /** Optional callback when popover closes */
+  onClose?: () => void;
+}
+```
+
+#### Enhanced InvoiceFilterForm Props
+```typescript
+interface InvoiceFilterFormProps {
+  facets?: InvoiceFacetsResponse['facets'];
+  isLoading?: boolean;
+  onClose?: () => void;
+
+  /** Layout variant for different container types */
+  variant?: 'sidebar' | 'drawer' | 'popover';
+}
+```
+
+### 9. Implementation Steps
+
+#### Phase 1: Component Creation
+1. Create `src/components/invoices/filter-popover.tsx`
+2. Implement popover structure with RadixUI primitives
+3. Add responsive logic for mobile/desktop switching
+4. Integrate active filter count badge
+
+#### Phase 2: Form Adaptation
+1. Add `variant` prop to `InvoiceFilterForm`
+2. Implement popover-specific layout adaptations
+3. Optimize calendar display for compact space
+4. Test form interactions within popover constraints
+
+#### Phase 3: Layout Integration
+1. Remove sidebar grid layout from `page.tsx`
+2. Add popover trigger to toolbar
+3. Update mobile drawer trigger logic
+4. Ensure proper positioning relative to Export CSV
+
+#### Phase 4: Accessibility & Polish
+1. Implement focus management
+2. Add comprehensive ARIA labels
+3. Test keyboard navigation
+4. Verify screen reader compatibility
+
+### 10. Testing Requirements
+
+#### Component Testing
+```typescript
+describe('InvoiceFilterPopover', () => {
+  it('renders trigger button with filter count badge when filters active');
+  it('opens popover on trigger click');
+  it('positions popover correctly relative to trigger');
+  it('closes popover on outside click');
+  it('manages focus properly on open/close');
+});
+```
+
+#### Integration Testing
+- Filter state synchronization with popover interactions
+- Responsive behavior across breakpoints
+- Compatibility with existing filter chips display
+- Performance with large facet datasets
+
+#### Accessibility Testing
+- Screen reader navigation and announcements
+- Keyboard-only interaction flow
+- Focus trap behavior within popover
+- ARIA state management
+
+### 11. Acceptance Criteria
+
+#### Functional Requirements
+- ✅ Invoices page removes left sidebar layout
+- ✅ Filter trigger button appears next to Export CSV
+- ✅ Desktop shows popover, mobile shows drawer
+- ✅ All existing filters work identically in popover
+- ✅ Filter count badge displays when filters active
+- ✅ Facets load before rendering (no empty filter lists)
+- ✅ Filter state syncs with existing chips and context
+
+#### Non-Functional Requirements
+- ✅ Popover loads and renders within 100ms
+- ✅ Smooth open/close animations (handled by RadixUI)
+- ✅ Accessible via keyboard and screen readers
+- ✅ Responsive across all supported devices
+- ✅ No visual regressions in filter functionality
+
+## References
+
+### Existing Components to Reuse
+- **Filter Logic:** `src/components/invoices/filter-sidebar.tsx` (InvoiceFilterForm)
+- **Mobile Pattern:** `src/components/invoices/filter-drawer.tsx`
+- **UI Primitives:** `src/components/ui/popover.tsx`
+- **State Management:** `src/hooks/use-invoices-filters.tsx`
+
+### API Integration Points
+- **Facets Endpoint:** `fetchInvoiceFacets()` in `src/lib/api/invoices.ts`
+- **Query Key:** `['invoice-facets']` for caching
+- **Response Type:** `InvoiceFacetsResponse['facets']`
+
+### Layout Context
+- **Current Grid:** `lg:grid lg:grid-cols-[280px,1fr] lg:gap-8` (to be removed)
+- **Toolbar Location:** Lines 314-364 in `src/app/(dashboard)/invoices/page.tsx`
+- **Mobile Breakpoint:** `md:hidden` for mobile-specific elements
+
+This specification provides a comprehensive blueprint for transforming the invoice filter interface from a sidebar to popover design while maintaining all existing functionality and improving the user experience.
