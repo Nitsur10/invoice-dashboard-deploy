@@ -1,0 +1,123 @@
+issues:
+  - title: "Fix dashboard trend percentage logic"
+    body: |
+      Problem: Stats cards treat absolute totals as percentages, showing values like “125.0%” for 125 invoices.
+      Impact: Finance stakeholders receive misleading KPIs and may make incorrect decisions.
+      Recommendation:
+        - Adjust `/api/stats` to return true month-over-month deltas (or `N/A` when unavailable).
+        - Update `StatsCards` to render the new delta fields and guard against null values.
+        - Add lightweight validation/tests to prevent regressions.
+      Acceptance:
+        - Dashboard trend badges display correct percentages or `N/A` when no prior data exists.
+        - API contract documents the new fields and passes automated checks.
+      Notes: See `docs/issues/issue-001-trend-delta.md` for background.
+    labels: ["frontend", "analytics"]
+    priority: "P1"
+
+  - title: "Refine invoice status derivation across APIs"
+    body: |
+      Problem: `deriveInvoiceStatus` marks all invoices issued before 1 May 2025 as paid, hiding potential overdue items.
+      Impact: Dashboard and invoice list under-report outstanding liabilities.
+      Recommendation:
+        - Respect stored status fields when present and remove the unconditional pre-2025 paid rule.
+        - Derive pending/overdue status using `amount_due` and `due_date` regardless of issue date.
+        - Ensure both `/api/invoices` and `/api/stats` share the corrected logic.
+      Acceptance:
+        - Legacy invoices (if present) reflect true status in list and metrics.
+        - Regression tests or logs confirm consistent behaviour post-2025.
+      Notes: See `docs/issues/issue-002-status-derivation.md`.
+    labels: ["backend", "finance"]
+    priority: "P1"
+
+  - title: "Surface stats API failures with user feedback"
+    body: |
+      Problem: `fetchDashboardStats` swallows errors and returns zero values, making outages appear as empty data.
+      Impact: Users assume business performance collapsed instead of noticing an API failure.
+      Recommendation:
+        - Propagate errors through React Query so `DashboardStatsProvider` reports `isError`.
+        - Show an error card/toast with retry on the dashboard when the API fails.
+        - Log failures for observability.
+      Acceptance:
+        - Simulated API failure shows error UI instead of zero stats.
+        - Successful calls remain unaffected.
+      Notes: See `docs/issues/issue-003-stats-error-handling.md`.
+    labels: ["frontend", "reliability"]
+    priority: "P1"
+
+  - title: "Harden Supabase admin client configuration"
+    body: |
+      Problem: `supabaseAdmin` initialises with an undefined service-role key when env vars are missing, leading to runtime crashes.
+      Impact: Local developers and misconfigured deploys fail without actionable guidance.
+      Recommendation:
+        - Lazily create the client only when both URL and key are present.
+        - Emit descriptive errors or fall back to mock data when configuration is incomplete.
+        - Add documentation/tests covering the missing-env scenario.
+      Acceptance:
+        - Local run without service key yields clear warning and mock data, not a crash.
+        - Production startup fails fast with actionable messaging if env vars absent.
+      Notes: See `docs/issues/issue-004-supabase-env.md`.
+    labels: ["backend", "devops"]
+    priority: "P2"
+
+  - title: "Implement month-over-month trend metrics pipeline"
+    body: |
+      Problem: Dashboard lacks reliable MoM analytics sourced from Supabase/n8n workflow outputs.
+      Impact: Finance teams cannot track growth or regression accurately.
+      Recommendation:
+        - Create a Supabase materialized view (or table) that aggregates invoices by month starting 1 May 2025.
+        - Update `/api/stats` to consume the view and compute MoM percentage deltas.
+        - Ensure `StatsCards` render the new data with fallbacks when prior month missing.
+      Acceptance:
+        - Materialized view/script checked into repo; refresh strategy documented.
+        - API and UI display correct MoM metrics validated against sample data.
+      Notes: See `docs/issues/issue-005-mom-trends.md`.
+    labels: ["analytics", "backend"]
+    priority: "P2"
+
+  - title: "Make status summary cards act as quick filters"
+    body: |
+      Problem: Summary cards on the invoices page (Pending/Paid/Overdue) are static and don’t adjust the table.
+      Impact: Users expect to click the cards to drill into matching invoices.
+      Recommendation:
+        - Hook card clicks into `useInvoiceFilters` to set/clear the status filter.
+        - Provide toggle behaviour so clicking an active card removes the filter.
+        - Ensure accessibility (keyboard activation + ARIA feedback) and mobile support.
+      Acceptance:
+        - Clicking Pending shows only pending invoices; Paid and Overdue behave similarly.
+        - Clicking an active card again clears the filter and restores previous view.
+        - Filter chips/sidebar reflect the active status.
+      Notes: See `docs/issues/issue-006-invoice-card-filter.md`.
+    labels: ["frontend", "ux"]
+    priority: "P2"
+
+  - title: "Move invoice filters to top-right popover"
+    body: |
+      Problem: Invoice filters live in a left sidebar/drawer; facets often appear blank and UX differs from Kanban board.
+      Impact: Feels inconsistent and wastes horizontal space.
+      Recommendation:
+        - Replace sidebar with a top-right filter button (next to Export CSV) that opens a populated popover.
+        - Preload facets (status/category/vendor) so options appear immediately or show skeleton while loading.
+        - Preserve existing filter syncing with chips/context; ensure mobile users get the drawer treatment.
+      Acceptance:
+        - Filter button opens a compact panel containing all available filter controls with populated options.
+        - Sidebar removed; layout resembles Kanban filter behaviour.
+        - Works with keyboard, screen readers, and mobile breakpoints.
+      Notes: See `docs/issues/issue-007-invoice-filter-ui.md`.
+    labels: ["frontend", "ux", "product"]
+    priority: "P1"
+
+  - title: "Replace supplier column with description in invoice list"
+    body: |
+      Problem: The invoice table shows supplier name; stakeholders prefer to see the description (line one) with hover for full text.
+      Impact: Users scan for descriptions and currently have to drill into details.
+      Recommendation:
+        - Swap the supplier column for a description column with truncation and tooltip on hover.
+        - Ensure full description is accessible for keyboard users (focus tooltip).
+        - Keep supplier data available via filters/export as needed.
+      Acceptance:
+        - Table displays truncated description; hovering/focusing reveals full text.
+        - Layout remains responsive; no loss of supplier filtering capability.
+      Notes: See `docs/issues/issue-008-invoice-description-column.md`.
+    labels: ["frontend", "ux"]
+    priority: "P2"
+
