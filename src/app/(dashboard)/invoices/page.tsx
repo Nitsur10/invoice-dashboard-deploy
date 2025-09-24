@@ -30,7 +30,7 @@ import {
 import { fetchInvoices, fetchInvoiceFacets, fetchInvoiceSavedViews, createInvoiceSavedView, deleteInvoiceSavedView } from "@/lib/api/invoices"
 import { cn, formatCurrency } from "@/lib/utils"
 import { InvoiceFiltersProvider, useInvoiceFilters } from "@/hooks/use-invoices-filters"
-import { InvoiceFilterSidebar } from "@/components/invoices/filter-sidebar"
+import { InvoiceFilterPopover } from "@/components/invoices/filter-popover"
 import { InvoiceFilterDrawer } from "@/components/invoices/filter-drawer"
 import { InvoiceFilterChips } from "@/components/invoices/filter-chips"
 import { ExportProgressButton } from "@/components/invoices/export-progress-button"
@@ -329,6 +329,11 @@ export function InvoicesView() {
             <Bookmark className="mr-2 h-4 w-4" />
             Saved views
           </Button>
+          <InvoiceFilterPopover
+            facets={facetsQuery.data?.facets}
+            isLoading={facetsQuery.isLoading}
+            className="hidden md:block"
+          />
           <Button
             variant="outline"
             size="sm"
@@ -386,10 +391,7 @@ export function InvoicesView() {
         </Alert>
       )}
 
-      <div className="lg:grid lg:grid-cols-[280px,1fr] lg:gap-8">
-        <InvoiceFilterSidebar facets={facetsQuery.data?.facets} isLoading={facetsQuery.isLoading} />
-
-        <div className="space-y-4">
+      <div className="space-y-4">
           <InvoiceFilterChips savedViews={savedViews} />
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -491,7 +493,6 @@ export function InvoicesView() {
               />
             </CardContent>
           </Card>
-        </div>
       </div>
     </div>
   )

@@ -45,9 +45,11 @@ interface InvoiceFilterFormProps {
   facets?: InvoiceFacetsResponse['facets']
   isLoading?: boolean
   onClose?: () => void
+  /** Layout variant for different container types */
+  variant?: 'sidebar' | 'drawer' | 'popover'
 }
 
-export function InvoiceFilterForm({ facets, isLoading, onClose }: InvoiceFilterFormProps) {
+export function InvoiceFilterForm({ facets, isLoading, onClose, variant = 'sidebar' }: InvoiceFilterFormProps) {
   const {
     filters,
     reset,
@@ -162,17 +164,25 @@ export function InvoiceFilterForm({ facets, isLoading, onClose }: InvoiceFilterF
     })
   }
 
+  // Layout-specific styles
+  const isPopover = variant === 'popover'
+  const cardClassName = isPopover ? "border-0 shadow-none" : "border-slate-200/80 shadow-sm"
+  const contentClassName = isPopover ? "space-y-4" : "space-y-6"
+  const headerClassName = isPopover ? "pb-3" : ""
+  const titleClassName = isPopover ? "text-sm font-semibold" : "text-base font-semibold"
+  const buttonSize = "sm" as const
+
   return (
-    <Card className="border-slate-200/80 shadow-sm">
-      <CardHeader>
+    <Card className={cardClassName}>
+      <CardHeader className={headerClassName}>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-semibold">Filters</CardTitle>
-          <Button variant="ghost" size="sm" onClick={clearAll} disabled={isLoading}>
+          <CardTitle className={titleClassName}>Filters</CardTitle>
+          <Button variant="ghost" size={buttonSize} onClick={clearAll} disabled={isLoading}>
             Reset
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className={contentClassName}>
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm font-semibold text-slate-700">Date range</p>
@@ -184,7 +194,10 @@ export function InvoiceFilterForm({ facets, isLoading, onClose }: InvoiceFilterF
               <QuickRangeButton label="Year to date" onClick={() => setQuickDateRange('yearToDate')} disabled={isLoading} />
             </div>
           </div>
-          <div className="calendar-surface rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm">
+          <div className={cn(
+            "calendar-surface rounded-xl border border-slate-200/80 bg-white shadow-sm",
+            isPopover ? "p-2" : "p-3"
+          )}>
             <DatePicker
               inline
               selectsRange
@@ -195,7 +208,10 @@ export function InvoiceFilterForm({ facets, isLoading, onClose }: InvoiceFilterF
               maxDate={new Date()}
               isClearable
               disabled={isLoading}
-              calendarClassName="invoice-date-picker"
+              calendarClassName={cn(
+                "invoice-date-picker",
+                isPopover && "scale-90 origin-top"
+              )}
               wrapperClassName="invoice-date-picker-wrapper"
               shouldCloseOnSelect={false}
               monthsShown={1}
@@ -214,11 +230,11 @@ export function InvoiceFilterForm({ facets, isLoading, onClose }: InvoiceFilterF
           </div>
         </section>
 
-        <section className="space-y-3">
+        <section className={isPopover ? "space-y-2" : "space-y-3"}>
           <p className="text-sm font-semibold text-slate-700">Status</p>
           <div className="flex flex-wrap gap-2">
             {isLoading && !facets ? (
-              Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className="h-8 w-20 rounded-full" />)
+              Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className={cn("rounded-full", isPopover ? "h-7 w-18" : "h-8 w-20")} />)
             ) : (
               statuses.map((status) => (
                 <Button
@@ -237,11 +253,11 @@ export function InvoiceFilterForm({ facets, isLoading, onClose }: InvoiceFilterF
           </div>
         </section>
 
-        <section className="space-y-3">
+        <section className={isPopover ? "space-y-2" : "space-y-3"}>
           <p className="text-sm font-semibold text-slate-700">Categories</p>
           <div className="flex flex-wrap gap-2">
             {isLoading && !facets ? (
-              Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-8 w-24" />)
+              Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className={cn(isPopover ? "h-7 w-20" : "h-8 w-24")} />)
             ) : categories.length === 0 ? (
               <p className="text-xs text-slate-500">No categories detected</p>
             ) : (
@@ -262,11 +278,11 @@ export function InvoiceFilterForm({ facets, isLoading, onClose }: InvoiceFilterF
           </div>
         </section>
 
-        <section className="space-y-3">
+        <section className={isPopover ? "space-y-2" : "space-y-3"}>
           <p className="text-sm font-semibold text-slate-700">Vendors</p>
           <div className="flex flex-wrap gap-2">
             {isLoading && !facets ? (
-              Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className="h-8 w-28" />)
+              Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className={cn(isPopover ? "h-7 w-24" : "h-8 w-28")} />)
             ) : vendors.length === 0 ? (
               <p className="text-xs text-slate-500">No vendor facets available</p>
             ) : (
@@ -287,7 +303,7 @@ export function InvoiceFilterForm({ facets, isLoading, onClose }: InvoiceFilterF
           </div>
         </section>
 
-        <section className="space-y-3">
+        <section className={isPopover ? "space-y-2" : "space-y-3"}>
           <p className="text-sm font-semibold text-slate-700">Amount range</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -323,7 +339,7 @@ export function InvoiceFilterForm({ facets, isLoading, onClose }: InvoiceFilterF
 
         {onClose && (
           <div className="flex justify-end">
-            <Button type="button" onClick={onClose} variant="secondary">
+            <Button type="button" onClick={onClose} variant="secondary" size="sm">
               Done
             </Button>
           </div>
