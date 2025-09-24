@@ -1,0 +1,311 @@
+# Technical Specification: Invoice Description Column
+
+**Issue Reference:** [docs/issues/issue-008-invoice-description-column.md]
+**Created:** 2025-09-24
+
+## Overview
+
+This specification details the technical requirements for replacing the supplier column with invoice description in the invoices table, implementing text truncation with accessible tooltips.
+
+## Current State Analysis
+
+### Existing Column Structure
+Currently, the invoice table in `src/components/invoices/columns.tsx` has:
+- A duplicate "Vendor" column (lines 82-108 and 193-219)
+- The second "Supplier" column (lines 193-219) uses `accessorKey: "vendorName"`
+- Both columns display vendor name with email as secondary text
+- Text truncation with `max-w-[200px]` and `truncate` classes
+- No tooltip functionality exists
+
+### Data Structure (from src/lib/types.ts)
+```typescript
+interface Invoice {
+  vendorName: string;
+  vendorEmail: string;
+  description: string;
+  // ... other properties
+}
+```
+
+### Current Filtering & Export Impact
+- Vendor filtering exists in filter sidebar (lines 265-287 in filter-sidebar.tsx)
+- CSV export includes both vendor data and description separately
+- Current vendor column filter uses `id: "vendorName"` (line 203 in page.tsx)
+
+## Technical Requirements
+
+### 1. Column Replacement Specifications
+
+#### Replace Duplicate Supplier Column
+- **Target:** Remove the second vendor column (lines 193-219 in columns.tsx)
+- **Replacement:** Invoice description column with truncation and tooltip
+- **Accessor:** `accessorKey: "description"`
+- **Header:** "Description" with sorting capability
+
+#### Column Configuration
+```typescript
+{
+  accessorKey: "description",
+  header: ({ column }) => {
+    return (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        className="h-8 px-2 lg:px-3 text-slate-900 dark:text-slate-100 hover:text-slate-900 dark:hover:text-slate-100"
+      >
+        Description
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    )
+  },
+  cell: ({ row }) => {
+    const description = row.getValue("description") as string
+    return <DescriptionCell description={description} />
+  },
+}
+```
+
+### 2. UI/UX Specifications
+
+#### Text Truncation Implementation
+- **Container width:** `max-w-[200px]` to maintain table layout consistency
+- **Truncation method:** CSS line-clamp or ellipsis for first line display
+- **Fallback handling:** Show "—" or "No description" for empty values
+
+#### Tooltip Requirements
+Since no existing tooltip component is available, implement using:
+- **Library:** Radix UI Tooltip (not currently installed)
+- **Alternative:** HTML `title` attribute as fallback
+- **Trigger:** Hover and keyboard focus
+- **Content:** Full description text
+- **Positioning:** Auto-positioned to avoid viewport overflow
+- **Accessibility:** ARIA compliant with proper labeling
+
+#### Visual Design
+```typescript
+const DescriptionCell = ({ description }: { description: string }) => {
+  if (!description) {
+    return <div className="text-sm text-slate-500 dark:text-slate-400">—</div>
+  }
+
+  const truncatedDescription = description.split('\n')[0] // First line only
+  const needsTooltip = description !== truncatedDescription || truncatedDescription.length > 50
+
+  return (
+    <div className="max-w-[200px]">
+      <div
+        className="truncate font-medium text-slate-900 dark:text-slate-100 cursor-help"
+        title={needsTooltip ? description : undefined}
+      >
+        {truncatedDescription}
+      </div>
+    </div>
+  )
+}
+```
+
+### 3. Responsive Design Considerations
+- **Mobile breakpoints:** Ensure description column remains visible on md+ screens
+- **Column priority:** Lower priority than invoice number, amount, and status
+- **Text overflow:** Maintain table row height consistency across breakpoints
+
+### 4. Data Flow & Component Interactions
+
+#### Table Data Flow
+```
+API Response (Invoice[])
+  → invoicesView memo (page.tsx lines 155-166)
+  → DataTable component
+  → invoiceColumns definition
+  → DescriptionCell component
+```
+
+#### Filtering Impact
+- **No changes required** to existing filter logic since description is not filterable
+- **Vendor filtering preserved** through the primary vendor column (lines 82-108)
+- **Search functionality** should continue to work if description is included in backend search
+
+#### Export Functionality
+- **CSV export preserved:** Description already included in CSV headers (line 24 in csv-export.ts)
+- **Vendor data maintained:** Vendor Name and Email remain in export
+- **No changes required** to export logic
+
+### 5. Accessibility Requirements
+
+#### Keyboard Navigation
+- **Tab order:** Focusable elements should include description cells when tooltip content differs from visible text
+- **Focus indicators:** Clear visual focus states for keyboard navigation
+- **Screen readers:** Proper ARIA labeling for truncated content
+
+#### ARIA Implementation
+```typescript
+<div
+  className="truncate font-medium text-slate-900 dark:text-slate-100"
+  title={needsTooltip ? description : undefined}
+  aria-label={needsTooltip ? `Description: ${description}` : undefined}
+  tabIndex={needsTooltip ? 0 : -1}
+>
+  {truncatedDescription}
+</div>
+```
+
+#### Color Contrast & Visual Accessibility
+- **Text contrast:** Ensure description text meets WCAG AA standards
+- **Focus visibility:** Clear focus outline for keyboard users
+- **Size constraints:** Maintain minimum touch target sizes
+
+### 6. Performance Considerations
+
+#### Rendering Optimization
+- **Memoization:** Consider React.memo for DescriptionCell component
+- **Virtual scrolling:** Ensure compatibility with existing table virtualization
+- **Text processing:** Minimize string operations in render cycle
+
+#### Memory Management
+- **Tooltip instances:** Avoid memory leaks with proper cleanup
+- **Event listeners:** Remove on component unmount
+
+## Testing Scenarios
+
+### 1. Functional Testing
+
+#### Column Display Tests
+- [ ] Description column displays in correct position (replacing duplicate supplier)
+- [ ] First line of description text is shown
+- [ ] Long descriptions are properly truncated
+- [ ] Empty descriptions show fallback text "—"
+- [ ] Column sorting works correctly
+
+#### Tooltip Functionality Tests
+- [ ] Tooltip appears on hover for truncated content
+- [ ] Tooltip appears on keyboard focus
+- [ ] Tooltip shows full description text
+- [ ] Tooltip dismisses when focus/hover ends
+- [ ] No tooltip appears for short descriptions that don't need truncation
+
+#### Responsive Behavior Tests
+- [ ] Column maintains proper width across breakpoints
+- [ ] Text truncation works on mobile devices
+- [ ] Table layout remains stable with new column
+
+### 2. Integration Testing
+
+#### Filtering & Search
+- [ ] Vendor filtering continues to work with primary vendor column
+- [ ] Global search includes description content (if backend supports)
+- [ ] No regression in existing filter facets
+
+#### Export Functionality
+- [ ] CSV export includes all required columns
+- [ ] Description data appears correctly in exports
+- [ ] Vendor data remains available in exports
+- [ ] Export filename and format unchanged
+
+#### Data Loading
+- [ ] Loading states display correctly
+- [ ] Empty data states handled properly
+- [ ] Error states don't break table layout
+
+### 3. Accessibility Testing
+
+#### Keyboard Navigation
+- [ ] All interactive elements reachable via keyboard
+- [ ] Tab order is logical and predictable
+- [ ] Focus indicators are visible and clear
+
+#### Screen Reader Compatibility
+- [ ] Column headers read correctly
+- [ ] Truncated content is accessible to screen readers
+- [ ] ARIA labels provide necessary context
+
+#### WCAG Compliance
+- [ ] Color contrast meets AA standards
+- [ ] Text remains readable at 200% zoom
+- [ ] No information conveyed by color alone
+
+### 4. Performance Testing
+
+#### Rendering Performance
+- [ ] Large datasets render without lag
+- [ ] Smooth scrolling with many rows
+- [ ] No memory leaks with tooltip interactions
+
+#### Load Time Impact
+- [ ] Page load time remains acceptable
+- [ ] Bundle size impact minimal
+- [ ] No impact on Time to Interactive (TTI)
+
+## Implementation Notes
+
+### Dependencies Required
+```json
+{
+  "@radix-ui/react-tooltip": "^1.0.7" // Add if implementing proper tooltip
+}
+```
+
+### Files to Modify
+1. **src/components/invoices/columns.tsx** - Remove duplicate supplier column, add description column
+2. **src/components/ui/tooltip.tsx** - Create if using Radix UI tooltip
+3. **src/components/invoices/description-cell.tsx** - New component for description display
+
+### Migration Considerations
+- **Backward compatibility:** No API changes required
+- **Feature flags:** Consider gradual rollout if needed
+- **Database impact:** None - using existing description field
+- **Cache invalidation:** Table column changes may require cache clearing
+
+### Error Handling
+- **Null descriptions:** Display fallback text
+- **HTML content:** Sanitize if description contains markup
+- **Long content:** Implement maximum tooltip width/height
+- **Network errors:** Graceful degradation for missing data
+
+### Security Considerations
+- **XSS prevention:** Sanitize description content in tooltips
+- **Content escaping:** Proper HTML escaping for dynamic content
+- **Input validation:** Ensure description data is properly validated
+
+## Acceptance Criteria Verification
+
+✅ **Table displays first-line description where supplier used to be**
+- Description column replaces duplicate supplier column
+- First line extraction logic implemented
+- Proper fallback for empty descriptions
+
+✅ **Hovering or focusing the cell shows the complete description**
+- Tooltip implementation with full description text
+- Keyboard accessibility with focus support
+- Conditional tooltip display based on content length
+
+✅ **No column layout regressions on different breakpoints**
+- Maintains existing responsive design patterns
+- Consistent column width constraints
+- Stable table row heights
+
+✅ **Supplier filters/chips remain available**
+- Primary vendor column preserved for filtering
+- Filter sidebar vendor section unchanged
+- No impact on existing vendor facet functionality
+
+## Success Metrics
+
+- **User Experience:** Improved information density in table view
+- **Accessibility:** Full WCAG AA compliance maintained
+- **Performance:** No degradation in table rendering performance
+- **Compatibility:** Zero breaking changes to existing functionality
+
+## Rollback Plan
+
+If issues arise:
+1. Revert column changes in `columns.tsx`
+2. Restore duplicate supplier column
+3. Remove description cell component
+4. Clear any cached table configurations
+
+## Future Enhancements
+
+- **Full-text search:** Include description in search functionality
+- **Description filtering:** Add optional description-based filters
+- **Rich tooltips:** Enhanced tooltip styling with better typography
+- **Content preview:** Show more context in description tooltips
