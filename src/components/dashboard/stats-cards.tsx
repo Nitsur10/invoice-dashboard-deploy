@@ -5,9 +5,11 @@ import { DollarSign, FileText, Clock, AlertTriangle, TrendingUp, TrendingDown } 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useDashboardStats } from '@/components/dashboard/dashboard-stats-provider';
+import { useInvoiceFilters, InvoiceStatusFilter } from '@/hooks/use-invoices-filters';
 
 export function StatsCards() {
   const { data: stats, isLoading, error } = useDashboardStats();
+  const { filters, toggleStatus } = useInvoiceFilters();
 
   if (isLoading) {
     return (
@@ -56,6 +58,9 @@ export function StatsCards() {
       trend: `${stats.overview.trends.invoices > 0 ? '+' : ''}${stats.overview.trends.invoices.toFixed(1)}%`,
       trendUp: stats.overview.trends.invoices > 0,
       type: 'primary' as const,
+      status: null as InvoiceStatusFilter | null,
+      clickable: false,
+      testId: 'summary-card-total',
     },
     {
       id: 'total-amount',
@@ -65,24 +70,45 @@ export function StatsCards() {
       trend: `${stats.overview.trends.amount > 0 ? '+' : ''}${stats.overview.trends.amount.toFixed(1)}%`,
       trendUp: stats.overview.trends.amount > 0,
       type: 'success' as const,
+      status: null as InvoiceStatusFilter | null,
+      clickable: false,
+      testId: 'summary-card-amount',
     },
     {
       id: 'pending-payments',
-      title: 'Pending Payments',
+      title: 'Pending',
       value: stats.overview.pendingPayments.toLocaleString(),
       icon: Clock,
       trend: `$${stats.overview.pendingAmount.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
       trendUp: false,
       type: 'warning' as const,
+      status: 'pending',
+      clickable: true,
+      testId: 'status-card-pending',
+    },
+    {
+      id: 'paid-items',
+      title: 'Paid',
+      value: (stats.overview.totalInvoices - stats.overview.pendingPayments - stats.overview.overduePayments).toLocaleString(),
+      icon: DollarSign,
+      trend: `$${(stats.overview.totalAmount - stats.overview.pendingAmount - stats.overview.overdueAmount).toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
+      trendUp: true,
+      type: 'success' as const,
+      status: 'paid',
+      clickable: true,
+      testId: 'status-card-paid',
     },
     {
       id: 'overdue-items',
-      title: 'Overdue Items',
+      title: 'Overdue',
       value: stats.overview.overduePayments.toLocaleString(),
       icon: AlertTriangle,
       trend: `$${stats.overview.overdueAmount.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
       trendUp: stats.overview.overduePayments > 0,
       type: 'danger' as const,
+      status: 'overdue',
+      clickable: true,
+      testId: 'status-card-overdue',
     },
   ];
 
@@ -127,15 +153,60 @@ export function StatsCards() {
           }
         };
 
+        const isActive = card.status && filters.statuses.includes(card.status as InvoiceStatusFilter);
+        const isClickable = card.clickable;
+
+        const handleClick = () => {
+          if (card.status && isClickable) {
+            toggleStatus(card.status as InvoiceStatusFilter);
+          }
+        };
+
+        const handleKeyDown = (event: React.KeyboardEvent) => {
+          if ((event.key === 'Enter' || event.key === ' ') && card.status && isClickable) {
+            event.preventDefault();
+            toggleStatus(card.status as InvoiceStatusFilter);
+          }
+        };
+
+        const getAriaLabel = () => {
+          if (!card.status || !isClickable) return undefined;
+          const statusName = card.status.charAt(0).toUpperCase() + card.status.slice(1);
+          const filterState = isActive ? 'Currently filtered' : 'Currently not filtered';
+          return `Filter by ${statusName.toLowerCase()} status. ${filterState}.`;
+        };
+
         return (
-          <Card 
+          <Card
             key={card.id}
-            className="rpd-card-elevated group cursor-pointer relative overflow-hidden border hover:shadow-premium-lg transition-all duration-300 ease-out hover:scale-105 hover:-translate-y-1 animate-fade-in"
+            data-testid={card.testId}
+            className={`rpd-card-elevated group relative overflow-hidden border hover:shadow-premium-lg transition-all duration-300 ease-out animate-fade-in ${
+              isClickable ? 'cursor-pointer hover:scale-105 hover:-translate-y-1' : ''
+            } ${
+              isActive ?
+                card.status === 'pending' ? 'ring-2 ring-amber-500 bg-amber-50 dark:bg-amber-900/20' :
+                card.status === 'paid' ? 'ring-2 ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' :
+                card.status === 'overdue' ? 'ring-2 ring-rose-500 bg-rose-50 dark:bg-rose-900/20' :
+                '' : ''
+            } ${
+              isClickable ? 'hover:bg-slate-50 hover:dark:bg-slate-800 transition-colors focus:outline-none focus:ring-2' : ''
+            } ${
+              card.status === 'pending' ? 'focus:ring-amber-500' :
+              card.status === 'paid' ? 'focus:ring-emerald-500' :
+              card.status === 'overdue' ? 'focus:ring-rose-500' :
+              'focus:ring-blue-500'
+            }`}
             style={{
-              background: cardStyle[card.type].background,
+              background: isActive ? undefined : cardStyle[card.type].background,
               borderColor: cardStyle[card.type].borderColor,
               animationDelay: `${index * 0.1}s`
             }}
+            onClick={handleClick}
+            onKeyDown={handleKeyDown}
+            role={isClickable ? 'button' : undefined}
+            tabIndex={isClickable ? 0 : undefined}
+            aria-pressed={isClickable ? (isActive ? 'true' : 'false') : undefined}
+            aria-label={getAriaLabel()}
           >
             {/* Animated background gradient */}
             <div className="absolute inset-0 animated-gradient opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out" />
