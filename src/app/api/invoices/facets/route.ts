@@ -38,7 +38,7 @@ export async function GET() {
 
     // Fallback: derive facets directly from base table
     const fallback = await supabaseAdmin.from('Invoice').select(
-      'payment_status, category, supplier_name, supplier_email, total, created_at'
+      'status, supplier_name, supplier_email, total, created_at'
     )
 
     if (fallback.error) {
@@ -63,10 +63,11 @@ export async function GET() {
     let maxDate: string | null = null
 
     for (const row of rows) {
-      const status = (row.payment_status ?? 'pending').toLowerCase()
+      const status = (row.status ?? 'pending').toLowerCase()
       statusMap.set(status, (statusMap.get(status) ?? 0) + 1)
 
-      const category = row.category ?? 'Uncategorized'
+      // For now, use supplier_name as category until we add a proper category column
+      const category = 'Uncategorized'
       categoryMap.set(category, (categoryMap.get(category) ?? 0) + 1)
 
       const vendor = row.supplier_name ?? 'Unknown Vendor'
