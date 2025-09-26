@@ -190,7 +190,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
     },
   },
   {
-    accessorKey: "vendorName",
+    accessorKey: "description",
     header: ({ column }) => {
       return (
         <Button
@@ -198,23 +198,14 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="h-8 px-2 lg:px-3 text-slate-900 dark:text-slate-100 hover:text-slate-900 dark:hover:text-slate-100"
         >
-          Supplier
+          Description
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
     cell: ({ row }) => {
-      const supplier = row.getValue("vendorName") as string
-      return (
-        <div className="max-w-[200px]">
-          <div className="truncate font-semibold text-slate-900 dark:text-slate-100">
-            {supplier}
-          </div>
-          <div className="truncate text-xs text-slate-600 dark:text-slate-300">
-            {row.original.vendorEmail}
-          </div>
-        </div>
-      )
+      const description = row.getValue("description") as string
+      return <DescriptionCell description={description} />
     },
   },
   {
@@ -434,6 +425,40 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
     enableHiding: false,
   },
 ]
+
+// Description Cell Component
+interface DescriptionCellProps {
+  description: string
+}
+
+function DescriptionCell({ description }: DescriptionCellProps) {
+  if (!description) {
+    return <div className="text-sm text-slate-500 dark:text-slate-400">—</div>
+  }
+
+  // Get first line only
+  const truncatedDescription = description.split('\n')[0]
+  const needsTooltip = description !== truncatedDescription || truncatedDescription.length > 50
+
+  return (
+    <div className="max-w-[200px]">
+      <div
+        className={`truncate font-medium text-slate-900 dark:text-slate-100 ${
+          needsTooltip ? 'cursor-help' : ''
+        }`}
+        title={needsTooltip ? description : undefined}
+        aria-label={needsTooltip ? `Description: ${description}` : undefined}
+        tabIndex={needsTooltip ? 0 : -1}
+        data-testid="description-cell"
+      >
+        {truncatedDescription}
+      </div>
+    </div>
+  )
+}
+
+// Export DescriptionCell for testing
+export { DescriptionCell }
 
 // Status Update Dropdown Component
 interface StatusUpdateDropdownProps {
