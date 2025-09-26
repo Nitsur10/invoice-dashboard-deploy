@@ -97,13 +97,13 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // Root redirect
+  // Root redirect - allow unauthenticated users to access landing page
   if (pathname === '/') {
     if (isAuthenticated) {
       return NextResponse.redirect(new URL('/overview', request.url));
-    } else {
-      return NextResponse.redirect(new URL('/auth/login', request.url));
     }
+    // Let unauthenticated users access the landing page
+    return response;
   }
 
   return response;

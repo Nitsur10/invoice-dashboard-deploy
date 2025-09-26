@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
         issueDate,
         dueDate,
         status,
-        description: pick(row, ['description', 'memo', 'details'], '') || '',
+        description: pick(row, ['line_1_desc', 'description', 'memo', 'details'], '') || '',
         category: pick(row, ['category', 'category_name', 'type'], 'Uncategorized'),
         paymentTerms: pick(row, ['payment_terms', 'terms'], 'Net 30'),
         invoiceUrl: pick(row, ['file_url', 'source_url', 'url', 'link'], '') || '',
