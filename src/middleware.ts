@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { isSupabaseConfigured } from '@/lib/server/env';
 
 // Define protected routes
 const protectedRoutes = ['/overview', '/invoices', '/kanban', '/dashboard', '/analytics', '/settings'];
@@ -24,6 +25,12 @@ export async function middleware(request: NextRequest) {
 
   // Skip middleware for public API routes
   if (publicRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
+
+  // If Supabase is not configured, skip authentication
+  if (!isSupabaseConfigured()) {
+    console.warn('Supabase not configured, skipping authentication middleware');
     return NextResponse.next();
   }
 

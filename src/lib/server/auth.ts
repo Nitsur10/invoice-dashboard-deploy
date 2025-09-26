@@ -106,10 +106,12 @@ export function withAuth(handler: Function, requireAdmin: boolean = false) {
     requestHeaders.set('x-user-email', authResult.user!.email);
     requestHeaders.set('x-user-role', authResult.user!.role);
 
-    const authenticatedRequest = new NextRequest(request.url, {
-      ...request,
+    const authenticatedRequest = new NextRequest(request.nextUrl, {
+      method: request.method,
       headers: requestHeaders,
-    });
+      body: request.body,
+      duplex: 'half',
+    } as any);
 
     return handler(authenticatedRequest, ...args);
   };
