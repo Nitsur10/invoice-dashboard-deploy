@@ -1,9 +1,7 @@
 'use client'
 
-import { useEffect, Suspense } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense } from 'react'
 import dynamic from 'next/dynamic'
-import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { analytics, trackLandingPageView } from '@/lib/analytics'
 import { LandingHero } from '@/components/landing/landing-hero'
 import ErrorBoundary from '@/components/error-boundary'
@@ -63,43 +61,18 @@ function LandingPageFallback() {
 }
 
 export default function LandingPage() {
-  const router = useRouter()
-  const supabase = createSupabaseBrowserClient()
-
   // Show fallback if we're in a development environment without proper setup
   if (process.env.NODE_ENV === 'development' && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
     return <LandingPageFallback />
   }
 
-  useEffect(() => {
-    // Initialize analytics
-    try {
-      analytics.init()
-      trackLandingPageView()
-    } catch (error) {
-      console.warn('Analytics initialization failed:', error)
-    }
-
-    const checkUser = async () => {
-      try {
-        // Only check auth if supabase is properly configured
-        if (supabase && typeof supabase.auth?.getSession === 'function') {
-          const { data: { session } } = await supabase.auth.getSession()
-          if (session) {
-            router.replace('/overview')
-          }
-        }
-      } catch (error) {
-        console.error('Auth check error:', error)
-        // Continue showing landing page if auth check fails
-        // This ensures landing page always shows for unauthenticated users
-      }
-    }
-
-    // Small delay to ensure page loads first
-    const timer = setTimeout(checkUser, 100)
-    return () => clearTimeout(timer)
-  }, [router, supabase])
+  // Initialize analytics (no async operations that cause redirects)
+  try {
+    analytics.init()
+    trackLandingPageView()
+  } catch (error) {
+    console.warn('Analytics initialization failed:', error)
+  }
 
   return (
     <ErrorBoundary>
