@@ -1,0 +1,190 @@
+# Portfolio Control Board - Maintainer Configuration
+# Defines triage rotation, capacity management, and assignment rules
+
+# Maintainer rotation with capacity and expertise
+rotation:
+  - handle: "nitesh"
+    github_username: "Nitsur10"
+    areas: ["frontend", "ci", "infra", "dashboard"]
+    capacity: 5              # Max concurrent assignments
+    timezone: "Australia/Sydney"
+    availability:
+      days: ["monday", "tuesday", "wednesday", "thursday", "friday"]
+      hours: { start: 9, end: 17 }
+    expertise_level:
+      frontend: "expert"
+      ci: "advanced"
+      infra: "intermediate"
+      backend: "beginner"
+    preferences:
+      priority_types: ["p0", "p1"]
+      avoid_types: ["documentation"]
+      max_age_days: 14        # Won't auto-assign to older items
+
+  - handle: "backup1"
+    github_username: "backup1"
+    areas: ["backend", "db", "api"]
+    capacity: 3
+    timezone: "UTC"
+    availability:
+      days: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+      hours: { start: 8, end: 16 }
+    expertise_level:
+      backend: "expert"
+      db: "expert"
+      api: "advanced"
+      frontend: "intermediate"
+    preferences:
+      priority_types: ["p1", "p2"]
+      avoid_types: []
+      max_age_days: 30
+
+# Auto-assignment rules based on file patterns and content
+assignment_rules:
+  # File path-based assignment
+  file_patterns:
+    - pattern: "src/components/**"
+      area: "frontend"
+      confidence: 0.9
+    - pattern: "src/app/**"
+      area: "frontend"
+      confidence: 0.8
+    - pattern: ".github/workflows/**"
+      area: "ci"
+      confidence: 0.95
+    - pattern: "scripts/**"
+      area: "infra"
+      confidence: 0.85
+    - pattern: "docs/**"
+      area: "documentation"
+      confidence: 0.9
+    - pattern: "**/*.sql"
+      area: "db"
+      confidence: 0.9
+    - pattern: "**/*.yml"
+      area: "infra"
+      confidence: 0.7
+
+  # Content-based assignment hints
+  content_patterns:
+    - pattern: "database|sql|query|migration"
+      area: "db"
+      confidence: 0.7
+    - pattern: "api|endpoint|route|controller"
+      area: "backend"
+      confidence: 0.8
+    - pattern: "component|react|jsx|tsx|css"
+      area: "frontend"
+      confidence: 0.75
+    - pattern: "workflow|action|ci|cd|deploy"
+      area: "ci"
+      confidence: 0.85
+
+  # Priority-based assignment preferences
+  priority_routing:
+    p0:
+      require_expertise: "advanced"
+      prefer_timezone_match: false
+      max_response_hours: 4
+    p1:
+      require_expertise: "intermediate"
+      prefer_timezone_match: true
+      max_response_hours: 24
+    p2:
+      require_expertise: "beginner"
+      prefer_timezone_match: true
+      max_response_hours: 72
+
+# Round-robin state (maintained automatically)
+round_robin_state:
+  current_assignee_index: 0
+  last_assignment_time: null
+  assignment_history: []
+
+# Assignment logic configuration
+assignment_logic:
+  # When to auto-assign
+  triggers:
+    new_pr: true
+    new_issue: true
+    unassigned_after_hours: 4
+    reassign_on_stale: false
+
+  # Assignment preferences
+  preferences:
+    respect_manual_assignments: true
+    prefer_area_expertise: true
+    balance_workload: true
+    consider_timezone: true
+    avoid_self_assignment: true  # Don't assign to PR author
+
+  # Capacity management
+  capacity_rules:
+    check_current_workload: true
+    include_draft_prs: false
+    weight_by_priority:
+      p0: 3  # Critical items count as 3 units
+      p1: 2  # High priority counts as 2 units
+      p2: 1  # Normal priority counts as 1 unit
+
+  # Escalation rules
+  escalation:
+    no_response_hours: 24
+    escalate_to_lead: true
+    escalate_priority: true  # Bump priority when escalating
+
+# Team structure for escalation
+team_structure:
+  leads:
+    - "nitesh"
+  managers:
+    - "manager1"
+
+  escalation_matrix:
+    frontend: ["nitesh"]
+    backend: ["backup1"]
+    ci: ["nitesh"]
+    infra: ["nitesh"]
+    db: ["backup1"]
+
+# Notification preferences per maintainer
+notifications:
+  nitesh:
+    email: "nitesh@example.com"
+    slack: "@nitesh"
+    preferred_channels: ["email", "github"]
+    notification_hours: { start: 9, end: 17 }
+    emergency_contact: true
+
+  backup1:
+    email: "backup1@example.com"
+    slack: "@backup1"
+    preferred_channels: ["slack", "github"]
+    notification_hours: { start: 8, end: 16 }
+    emergency_contact: false
+
+# Assignment history tracking (for analytics)
+tracking:
+  keep_history_days: 90
+  metrics_to_track:
+    - "assignment_to_first_response"
+    - "assignment_to_completion"
+    - "workload_balance"
+    - "area_match_accuracy"
+
+# Integration settings
+integrations:
+  github:
+    assign_on_pr: true
+    assign_on_issue: true
+    comment_on_assignment: true
+    use_draft_comments: false
+
+  slack:
+    notify_on_assignment: false
+    notify_on_escalation: true
+    channel: "#dev-assignments"
+
+  calendar:
+    check_availability: false  # Requires calendar integration
+    respect_pto: false         # Requires PTO system integration

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-09-27T21:40:59.317Z",
+  "generated_at": "2025-09-27T22:23:41.869Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -43,8 +43,8 @@
       "head_ref": "codex/refactor-analytics-initialization-with-useeffect",
       "draft": false,
       "status_bucket": "needs_review",
-      "classification_confidence": 0.9,
-      "classification_details": "0/1 required approvals",
+      "classification_confidence": 0.8,
+      "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5)",
       "linked_issues": [],
       "updated_at": "2025-09-27T02:26:46Z",
       "created_at": "2025-09-27T02:25:09Z",
@@ -61,8 +61,8 @@
       "head_ref": "7-invoice-filter-ui",
       "draft": false,
       "status_bucket": "needs_review",
-      "classification_confidence": 0.9,
-      "classification_details": "0/1 required approvals",
+      "classification_confidence": 0.8,
+      "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5)",
       "linked_issues": [],
       "updated_at": "2025-09-26T07:12:24Z",
       "created_at": "2025-09-24T11:42:27Z",
@@ -81,7 +81,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 3,
+      "days_since_update": 4,
       "updated_at": "2025-09-24T10:03:46Z",
       "created_at": "2025-09-24T10:03:46Z",
       "author": "Nitsur10"
@@ -96,7 +96,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 3,
+      "days_since_update": 4,
       "updated_at": "2025-09-24T10:02:09Z",
       "created_at": "2025-09-24T10:02:09Z",
       "author": "Nitsur10"
@@ -111,7 +111,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 3,
+      "days_since_update": 4,
       "updated_at": "2025-09-24T09:47:48Z",
       "created_at": "2025-09-24T09:47:48Z",
       "author": "Nitsur10"
@@ -126,7 +126,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 3,
+      "days_since_update": 4,
       "updated_at": "2025-09-24T09:45:58Z",
       "created_at": "2025-09-24T09:45:58Z",
       "author": "Nitsur10"
@@ -148,10 +148,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 2815,
-    "api_calls_made": 13,
-    "api_calls_failed": 2,
-    "rate_limit_remaining": "4984",
+    "execution_time_ms": 2971,
+    "api_calls_made": 14,
+    "api_calls_failed": 3,
+    "rate_limit_remaining": "4986",
     "errors": [
       {
         "message": "API call failed: Branch protection has been disabled on this repository. - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -162,7 +162,7 @@
           "message": "Branch protection has been disabled on this repository. - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-09-27T21:40:58.103Z"
+        "timestamp": "2025-09-27T22:23:40.151Z"
       },
       {
         "message": "API call failed: Branch protection has been disabled on this repository. - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -173,7 +173,18 @@
           "message": "Branch protection has been disabled on this repository. - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-09-27T21:40:59.215Z"
+        "timestamp": "2025-09-27T22:23:40.922Z"
+      },
+      {
+        "message": "API call failed: Branch protection has been disabled on this repository. - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+        "context": {
+          "operation": "newApi",
+          "params": "{\"owner\":\"Nitsur10\",\"repo\":\"invoice-dashboard-deploy\",\"branch\":\"main\"}",
+          "status": 404,
+          "message": "Branch protection has been disabled on this repository. - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+          "retries": 0
+        },
+        "timestamp": "2025-09-27T22:23:41.767Z"
       }
     ]
   },
@@ -205,8 +216,8 @@
           "head_ref": "codex/refactor-analytics-initialization-with-useeffect",
           "draft": false,
           "status_bucket": "needs_review",
-          "classification_confidence": 0.9,
-          "classification_details": "0/1 required approvals",
+          "classification_confidence": 0.8,
+          "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5)",
           "linked_issues": [],
           "updated_at": "2025-09-27T02:26:46Z",
           "created_at": "2025-09-27T02:25:09Z",
@@ -223,8 +234,8 @@
           "head_ref": "7-invoice-filter-ui",
           "draft": false,
           "status_bucket": "needs_review",
-          "classification_confidence": 0.9,
-          "classification_details": "0/1 required approvals",
+          "classification_confidence": 0.8,
+          "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5)",
           "linked_issues": [],
           "updated_at": "2025-09-26T07:12:24Z",
           "created_at": "2025-09-24T11:42:27Z",
@@ -243,7 +254,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 3,
+          "days_since_update": 4,
           "updated_at": "2025-09-24T10:03:46Z",
           "created_at": "2025-09-24T10:03:46Z",
           "author": "Nitsur10"
@@ -258,7 +269,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 3,
+          "days_since_update": 4,
           "updated_at": "2025-09-24T10:02:09Z",
           "created_at": "2025-09-24T10:02:09Z",
           "author": "Nitsur10"
@@ -273,7 +284,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 3,
+          "days_since_update": 4,
           "updated_at": "2025-09-24T09:47:48Z",
           "created_at": "2025-09-24T09:47:48Z",
           "author": "Nitsur10"
@@ -288,7 +299,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 3,
+          "days_since_update": 4,
           "updated_at": "2025-09-24T09:45:58Z",
           "created_at": "2025-09-24T09:45:58Z",
           "author": "Nitsur10"
@@ -310,7 +321,7 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-09-27T21:40:59.215Z",
+        "processed_at": "2025-09-27T22:23:41.767Z",
         "pr_count": 3,
         "issue_count": 5
       }

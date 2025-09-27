@@ -1,0 +1,160 @@
+# Portfolio Control Board - Policy Configuration
+# Defines SLA policies, priority mappings, and business rules
+
+# Priority-based SLA definitions
+priorities:
+  p0:
+    pr_sla_hours: 24          # Critical PRs must be reviewed within 24h
+    issue_sla_hours: 48       # Critical issues must be triaged within 48h
+    business_hours_only: false
+    weekends_excluded: false
+    auto_escalate: true
+    escalation_chain: ["lead", "manager"]
+    readiness_threshold: 90   # Higher bar for critical changes
+
+  p1:
+    pr_sla_hours: 48          # High priority PRs within 48h
+    issue_sla_hours: 120      # High priority issues within 5 days
+    business_hours_only: true
+    weekends_excluded: true
+    auto_escalate: false
+    escalation_chain: ["lead"]
+    readiness_threshold: 80
+
+  p2:
+    pr_sla_hours: 120         # Normal priority within 5 days
+    issue_sla_hours: 240      # Normal issues within 10 days
+    business_hours_only: true
+    weekends_excluded: true
+    auto_escalate: false
+    escalation_chain: []
+    readiness_threshold: 70
+
+# Enhanced label classification mappings
+labels:
+  # Type classifications
+  bug: ["bug", "defect", "error", "broken", "regression", "fix"]
+  feature: ["enhancement", "feature", "feat", "improvement", "new"]
+  documentation: ["docs", "documentation", "readme", "guide"]
+  maintenance: ["chore", "refactor", "cleanup", "deps", "maintenance"]
+
+  # Priority classifications (auto-detected from content)
+  priority_p0: ["p0", "priority:0", "critical", "urgent", "hotfix", "security"]
+  priority_p1: ["p1", "priority:1", "high", "important"]
+  priority_p2: ["p2", "priority:2", "medium", "normal"]
+  priority_p3: ["p3", "priority:3", "low", "minor"]
+
+  # Status classifications
+  blocked: ["blocked", "needs-info", "waiting", "dependencies", "on-hold"]
+  ready: ["ready-for-review", "ready", "approved"]
+  wip: ["wip", "work-in-progress", "draft", "do-not-merge"]
+
+# Content analysis patterns for auto-classification
+content_patterns:
+  bug_indicators:
+    title: ["error", "fail", "broke", "crash", "exception", "bug", "fix"]
+    body: ["stack trace", "error message", "reproduction steps", "expected.*actual"]
+    confidence_boost: 0.3
+
+  feature_indicators:
+    title: ["feat", "feature", "add", "implement", "new"]
+    body: ["user story", "acceptance criteria", "feature request"]
+    confidence_boost: 0.2
+
+  security_indicators:
+    title: ["security", "vulnerability", "exploit", "cve"]
+    body: ["security issue", "vulnerability", "exploit", "injection"]
+    priority_boost: "p0"
+    confidence_boost: 0.4
+
+# Auto-linking rules
+linking_rules:
+  branch_patterns:
+    - pattern: "^(fix|feat|bug)/(\\d+)-"
+      suggests: "Fixes #$2"
+      confidence: 0.8
+    - pattern: "^(feature|enhancement)/(\\d+)"
+      suggests: "Closes #$2"
+      confidence: 0.7
+
+  body_patterns:
+    - pattern: "(?:fix|resolve|close)(?:s|d)?\\s+(?:#(\\d+)|issue\\s+(\\d+))"
+      extract_issue: true
+      confidence: 0.9
+
+# Business rules
+business_rules:
+  timezone: "Australia/Sydney"
+  business_hours:
+    start: 9
+    end: 17
+  holidays: []  # Can be populated with specific dates
+
+  # Auto-comment rules
+  auto_comment:
+    enabled: true
+    cooldown_hours: 24        # Minimum time between comments on same PR
+    max_comments_per_pr: 3    # Never spam more than 3 auto-comments
+    triggers:
+      - event: "checks_failed"
+        template: "failing_checks"
+      - event: "sla_overdue"
+        template: "sla_violation"
+      - event: "needs_labels"
+        template: "label_hygiene"
+
+# Comment templates
+comment_templates:
+  failing_checks: |
+    🔍 **Automated Check Analysis**
+
+    This PR has failing checks that need attention:
+    {{failure_summary}}
+
+    **Quick actions:**
+    - Check the [workflow logs]({{workflow_url}}) for details
+    - Review the failing test output
+    - Push fixes to this branch to re-trigger checks
+
+    _This comment was generated automatically by the Portfolio Control Board._
+
+  sla_violation: |
+    ⏰ **SLA Notice**
+
+    This {{item_type}} has exceeded its SLA timeline:
+    - **Priority**: {{priority}} ({{sla_hours}}h limit)
+    - **Age**: {{age_hours}}h ({{overdue_hours}}h overdue)
+
+    **Suggested actions:**
+    {{#if needs_review}}
+    - Assign reviewers: {{suggested_reviewers}}
+    {{/if}}
+    {{#if needs_labels}}
+    - Add missing labels: {{suggested_labels}}
+    {{/if}}
+
+    _This notice was generated automatically by the Portfolio Control Board._
+
+  label_hygiene: |
+    🏷️ **Label Hygiene Suggestion**
+
+    Based on content analysis, this {{item_type}} might benefit from these labels:
+    {{#each suggested_labels}}
+    - `{{label}}` ({{confidence}}% confidence) - {{reason}}
+    {{/each}}
+
+    **Auto-detected classification:**
+    - **Type**: {{detected_type}}
+    - **Priority**: {{detected_priority}}
+
+    _This suggestion was generated automatically by the Portfolio Control Board._
+
+# Feature flags for gradual rollout
+feature_flags:
+  readiness_scoring: true
+  sla_enforcement: true
+  auto_classification: true
+  auto_comments: false        # Start disabled for safety
+  auto_assignment: false      # Start disabled for safety
+  webhook_notifications: true
+  notion_sync: false          # Requires setup

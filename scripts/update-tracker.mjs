@@ -12,12 +12,17 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
+import https from 'https';
+import { URL } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
 
 // Configuration and globals
 let config = {};
+let policy = {};
+let maintainers = {};
+let trackerState = {};
 let metrics = {
   execution_start: Date.now(),
   api_calls_made: 0,
@@ -26,7 +31,13 @@ let metrics = {
   prs_classified: {},
   issues_classified: {},
   errors: [],
-  rate_limit_remaining: null
+  rate_limit_remaining: null,
+  // Phase 2 metrics
+  readiness_scores: [],
+  sla_violations: [],
+  auto_comments_made: 0,
+  auto_assignments_made: 0,
+  label_suggestions: 0
 };
 
 /**
@@ -122,10 +133,338 @@ function loadConfig() {
       throw new TrackerError('Invalid configuration: repos must be an array');
     }
 
+    // Load Phase 2 configuration files
+    loadPhase2Configs();
+
     return config;
   } catch (error) {
     throw new TrackerError(`Failed to load configuration: ${error.message}`);
   }
+}
+
+/**
+ * Load Phase 2 configuration files (policy, maintainers, tracker state)
+ */
+function loadPhase2Configs() {
+  // Load policy configuration
+  const policyPath = join(ROOT_DIR, 'docs', 'policy.yml');
+  if (existsSync(policyPath)) {
+    try {
+      const policyContent = readFileSync(policyPath, 'utf8');
+      policy = yaml.load(policyContent);
+      console.log('✓ Loaded policy configuration');
+    } catch (error) {
+      console.warn(`⚠️  Failed to load policy.yml: ${error.message}`);
+      policy = {};
+    }
+  } else {
+    console.log('ℹ️  No policy.yml found, using defaults');
+    policy = {};
+  }
+
+  // Load maintainers configuration
+  const maintainersPath = join(ROOT_DIR, 'docs', 'maintainers.yml');
+  if (existsSync(maintainersPath)) {
+    try {
+      const maintainersContent = readFileSync(maintainersPath, 'utf8');
+      maintainers = yaml.load(maintainersContent);
+      console.log('✓ Loaded maintainers configuration');
+    } catch (error) {
+      console.warn(`⚠️  Failed to load maintainers.yml: ${error.message}`);
+      maintainers = {};
+    }
+  } else {
+    console.log('ℹ️  No maintainers.yml found, auto-assignment disabled');
+    maintainers = {};
+  }
+
+  // Load tracker state for anti-spam tracking
+  const statePath = join(ROOT_DIR, 'docs', 'tracker-state.json');
+  if (existsSync(statePath)) {
+    try {
+      const stateContent = readFileSync(statePath, 'utf8');
+      trackerState = JSON.parse(stateContent);
+      console.log('✓ Loaded tracker state');
+    } catch (error) {
+      console.warn(`⚠️  Failed to load tracker-state.json: ${error.message}`);
+      trackerState = initializeTrackerState();
+    }
+  } else {
+    console.log('ℹ️  No tracker-state.json found, initializing');
+    trackerState = initializeTrackerState();
+  }
+}
+
+/**
+ * Initialize default tracker state
+ */
+function initializeTrackerState() {
+  return {
+    version: "2.0",
+    last_updated: new Date().toISOString(),
+    anti_spam: {
+      comment_history: {},
+      assignment_history: {},
+      notification_history: {}
+    },
+    assignment_state: {
+      round_robin_index: 0,
+      last_assignment: null,
+      workload_balance: {}
+    },
+    metrics: {
+      total_auto_comments: 0,
+      total_auto_assignments: 0,
+      successful_assignments: 0,
+      failed_assignments: 0,
+      comment_spam_prevented: 0
+    },
+    feature_usage: {
+      readiness_scoring: { enabled: true, last_used: null, usage_count: 0 },
+      auto_comments: { enabled: false, last_used: null, usage_count: 0 },
+      auto_assignment: { enabled: false, last_used: null, usage_count: 0 },
+      sla_enforcement: { enabled: true, last_used: null, usage_count: 0 }
+    },
+    error_tracking: {
+      auto_comment_failures: [],
+      assignment_failures: [],
+      api_failures: []
+    },
+    schema_version: "2.0"
+  };
+}
+
+/**
+ * Save tracker state to prevent data loss
+ */
+function saveTrackerState() {
+  try {
+    trackerState.last_updated = new Date().toISOString();
+    const statePath = join(ROOT_DIR, 'docs', 'tracker-state.json');
+    writeFileSync(statePath, JSON.stringify(trackerState, null, 2));
+  } catch (error) {
+    console.warn(`⚠️  Failed to save tracker state: ${error.message}`);
+  }
+}
+
+/**
+ * PHASE 2: Advanced Intelligence Functions
+ */
+
+/**
+ * Calculate PR readiness score (0-100) with detailed reasoning
+ */
+function calculateReadinessScore(pr, reviews, checks, requiredApprovals = 1) {
+  let score = 50; // Base score
+  const reasons = [];
+
+  // Check status impact (+20)
+  if (checks.state === 'success') {
+    score += 20;
+    reasons.push("✅ All checks passing (+20)");
+  } else if (checks.state === 'pending') {
+    score += 5;
+    reasons.push("⏳ Checks running (+5)");
+  } else if (checks.state === 'failure' || checks.state === 'error') {
+    score -= 20;
+    reasons.push("❌ Checks failing (-20)");
+  }
+
+  // Approval impact (max +30)
+  const approvals = reviews.filter(r => r.state === 'APPROVED').length;
+  const approvalsNeeded = Math.max(0, requiredApprovals - approvals);
+  if (approvals >= requiredApprovals) {
+    score += 20;
+    reasons.push(`✅ Sufficient approvals: ${approvals}/${requiredApprovals} (+20)`);
+  } else {
+    const partialBonus = Math.min(15, approvals * 7.5);
+    score += partialBonus;
+    reasons.push(`📝 Partial approvals: ${approvals}/${requiredApprovals} (+${partialBonus})`);
+  }
+
+  // Changes requested impact (-20)
+  const changesRequested = reviews.filter(r => r.state === 'CHANGES_REQUESTED').length;
+  if (changesRequested > 0) {
+    score -= 20;
+    reasons.push(`🔄 Changes requested: ${changesRequested} (-20)`);
+  }
+
+  // File change size impact
+  const filesChanged = pr.changed_files || 0;
+  if (filesChanged > 100) {
+    score -= 10;
+    reasons.push(`📊 Large changeset: ${filesChanged} files (-10)`);
+  } else if (filesChanged < 10) {
+    score += 5;
+    reasons.push(`📊 Small changeset: ${filesChanged} files (+5)`);
+  }
+
+  // Mergeable state impact
+  if (pr.mergeable_state === 'blocked') {
+    score -= 15;
+    reasons.push("🚫 Merge blocked (-15)");
+  } else if (pr.mergeable_state === 'dirty') {
+    score -= 10;
+    reasons.push("🔄 Merge conflicts (-10)");
+  } else if (pr.mergeable_state === 'behind') {
+    score -= 5;
+    reasons.push("📍 Behind target branch (-5)");
+  } else if (pr.mergeable_state === 'clean') {
+    score += 10;
+    reasons.push("✅ Clean merge state (+10)");
+  }
+
+  // Age impact
+  const ageHours = (Date.now() - new Date(pr.created_at)) / (1000 * 60 * 60);
+  const ageDays = Math.floor(ageHours / 24);
+  if (ageDays > 7) {
+    score -= 10;
+    reasons.push(`⏰ Stale PR: ${ageDays} days old (-10)`);
+  } else if (ageDays > 3) {
+    score -= 5;
+    reasons.push(`⏰ Aging PR: ${ageDays} days old (-5)`);
+  }
+
+  // Draft impact
+  if (pr.draft) {
+    score -= 10;
+    reasons.push("📝 Draft PR (-10)");
+  }
+
+  // Clamp score to 0-100 range
+  score = Math.max(0, Math.min(100, score));
+
+  return {
+    score: Math.round(score),
+    reasons,
+    category: score >= 80 ? 'ready' : score >= 60 ? 'review' : score >= 40 ? 'needs_work' : 'blocked',
+    confidence: score >= 80 ? 0.9 : score >= 60 ? 0.8 : 0.7
+  };
+}
+
+/**
+ * Calculate SLA status and due dates based on priority
+ */
+function calculateSlaStatus(item, itemType = 'pr') {
+  if (!policy.priorities) {
+    return { status: 'unknown', due_date: null, hours_remaining: null };
+  }
+
+  // Detect priority from labels
+  const labels = item.labels?.map(l => l.name || l) || [];
+  let priority = 'p2'; // default
+
+  for (const [priorityKey, labelList] of Object.entries(policy.labels || {})) {
+    if (priorityKey.startsWith('priority_') && labelList.some(label => labels.includes(label))) {
+      priority = priorityKey.replace('priority_', '');
+      break;
+    }
+  }
+
+  const priorityConfig = policy.priorities[priority];
+  if (!priorityConfig) {
+    return { status: 'unknown', due_date: null, hours_remaining: null, priority };
+  }
+
+  const slaHours = itemType === 'pr' ? priorityConfig.pr_sla_hours : priorityConfig.issue_sla_hours;
+  const createdAt = new Date(item.created_at);
+  const dueDate = new Date(createdAt.getTime() + (slaHours * 60 * 60 * 1000));
+  const now = new Date();
+  const hoursRemaining = Math.round((dueDate - now) / (1000 * 60 * 60));
+
+  let status;
+  if (hoursRemaining < 0) {
+    status = 'overdue';
+  } else if (hoursRemaining <= 24) {
+    status = 'due_soon';
+  } else {
+    status = 'on_track';
+  }
+
+  return {
+    status,
+    due_date: dueDate.toISOString(),
+    hours_remaining: hoursRemaining,
+    priority,
+    sla_hours: slaHours
+  };
+}
+
+/**
+ * Analyze content and suggest labels/classifications
+ */
+function analyzeContent(title, body) {
+  const suggestions = {
+    type: null,
+    priority: null,
+    labels: [],
+    confidence: 0.5,
+    reasons: []
+  };
+
+  const text = `${title} ${body}`.toLowerCase();
+
+  // Type detection
+  if (policy.content_patterns) {
+    const { bug_indicators, feature_indicators, security_indicators } = policy.content_patterns;
+
+    // Bug detection
+    const bugMatches = [
+      ...(bug_indicators.title?.filter(pattern => title.toLowerCase().includes(pattern)) || []),
+      ...(bug_indicators.body?.filter(pattern => body.toLowerCase().includes(pattern)) || [])
+    ];
+    if (bugMatches.length > 0) {
+      suggestions.type = 'bug';
+      suggestions.confidence += 0.3;
+      suggestions.reasons.push(`Bug keywords: ${bugMatches.join(', ')}`);
+    }
+
+    // Feature detection
+    const featureMatches = [
+      ...(feature_indicators.title?.filter(pattern => title.toLowerCase().includes(pattern)) || []),
+      ...(feature_indicators.body?.filter(pattern => body.toLowerCase().includes(pattern)) || [])
+    ];
+    if (featureMatches.length > 0 && !suggestions.type) {
+      suggestions.type = 'feature';
+      suggestions.confidence += 0.2;
+      suggestions.reasons.push(`Feature keywords: ${featureMatches.join(', ')}`);
+    }
+
+    // Security detection
+    const securityMatches = [
+      ...(security_indicators.title?.filter(pattern => title.toLowerCase().includes(pattern)) || []),
+      ...(security_indicators.body?.filter(pattern => body.toLowerCase().includes(pattern)) || [])
+    ];
+    if (securityMatches.length > 0) {
+      suggestions.priority = 'p0';
+      suggestions.confidence += 0.4;
+      suggestions.reasons.push(`Security keywords: ${securityMatches.join(', ')}`);
+    }
+  }
+
+  // Priority inference from urgency words
+  const urgentWords = ['urgent', 'critical', 'hotfix', 'emergency', 'asap'];
+  const highWords = ['important', 'high', 'priority'];
+
+  if (urgentWords.some(word => text.includes(word))) {
+    suggestions.priority = suggestions.priority || 'p0';
+    suggestions.confidence += 0.2;
+    suggestions.reasons.push('Urgent language detected');
+  } else if (highWords.some(word => text.includes(word))) {
+    suggestions.priority = suggestions.priority || 'p1';
+    suggestions.confidence += 0.1;
+    suggestions.reasons.push('High priority language detected');
+  }
+
+  // Suggest missing links
+  const branchPattern = /^(fix|feat|bug)\/(\d+)-/;
+  const branchMatch = title.match(branchPattern);
+  if (branchMatch && !body.includes(`#${branchMatch[2]}`)) {
+    suggestions.missing_links = [`Fixes #${branchMatch[2]}`];
+    suggestions.reasons.push(`Branch suggests issue #${branchMatch[2]}`);
+  }
+
+  return suggestions;
 }
 
 /**
@@ -152,97 +491,104 @@ async function classifyPR(octokit, repo, pr) {
     const reviews = reviewsResponse.data;
     const checks = checksResponse;
 
-    // Apply classification logic
-    if (detailedPR.draft) {
-      metrics.prs_classified.draft = (metrics.prs_classified.draft || 0) + 1;
-      return {
-        status_bucket: 'draft',
-        confidence: 1.0,
-        details: 'PR is marked as draft'
-      };
-    }
-
-    if (detailedPR.mergeable_state === 'dirty') {
-      metrics.prs_classified.merge_conflicts = (metrics.prs_classified.merge_conflicts || 0) + 1;
-      return {
-        status_bucket: 'merge_conflicts',
-        confidence: 1.0,
-        details: 'PR has merge conflicts'
-      };
-    }
-
-    if (detailedPR.mergeable_state === 'blocked') {
-      metrics.prs_classified.blocked_by_admin = (metrics.prs_classified.blocked_by_admin || 0) + 1;
-      return {
-        status_bucket: 'blocked_by_admin',
-        confidence: 1.0,
-        details: 'PR is blocked by branch protection rules'
-      };
-    }
-
-    if (checks.state === 'pending') {
-      metrics.prs_classified.ci_pending = (metrics.prs_classified.ci_pending || 0) + 1;
-      return {
-        status_bucket: 'ci_pending',
-        confidence: 0.9,
-        details: `Checks are running: ${checks.pending_count} pending`
-      };
-    }
-
-    if (checks.state === 'failure' || checks.state === 'error') {
-      metrics.prs_classified.ci_failed = (metrics.prs_classified.ci_failed || 0) + 1;
-      return {
-        status_bucket: 'ci_failed',
-        confidence: 1.0,
-        details: `Checks failed: ${checks.failure_count} failures`
-      };
-    }
-
-    // Analyze reviews
-    const activeReviews = reviews.filter(r => !r.dismissed);
-    const approvals = activeReviews.filter(r => r.state === 'APPROVED').length;
-    const changesRequested = activeReviews.some(r => r.state === 'CHANGES_REQUESTED');
-
-    if (changesRequested) {
-      metrics.prs_classified.changes_requested = (metrics.prs_classified.changes_requested || 0) + 1;
-      return {
-        status_bucket: 'changes_requested',
-        confidence: 1.0,
-        details: 'Changes have been requested'
-      };
-    }
-
-    // Check staleness
-    const daysSinceUpdate = (Date.now() - new Date(pr.updated_at)) / (1000 * 60 * 60 * 24);
-    const staleThreshold = repo.stale_pr_days || config.thresholds?.stale_pr_days || 10;
-
-    if (daysSinceUpdate > staleThreshold) {
-      metrics.prs_classified.stale = (metrics.prs_classified.stale || 0) + 1;
-      return {
-        status_bucket: 'stale',
-        confidence: 1.0,
-        details: `No updates for ${Math.round(daysSinceUpdate)} days`
-      };
-    }
-
     // Get branch protection to determine review requirements
     const requiredApprovals = await getRequiredApprovals(octokit, repo, detailedPR.base.ref);
 
-    if (approvals < requiredApprovals) {
-      metrics.prs_classified.needs_review = (metrics.prs_classified.needs_review || 0) + 1;
-      return {
-        status_bucket: 'needs_review',
-        confidence: 0.9,
-        details: `${approvals}/${requiredApprovals} required approvals`
-      };
+    // PHASE 2: Calculate readiness score
+    const readiness = calculateReadinessScore(detailedPR, reviews, checks, requiredApprovals);
+
+    // PHASE 2: Calculate SLA status
+    const slaStatus = calculateSlaStatus(detailedPR, 'pr');
+
+    // PHASE 2: Analyze content for suggestions
+    const contentAnalysis = analyzeContent(detailedPR.title, detailedPR.body || '');
+
+    // Record readiness score for metrics
+    metrics.readiness_scores.push(readiness.score);
+
+    // Enhanced classification with readiness scoring
+    let status_bucket = 'needs_review';
+    let confidence = readiness.confidence;
+    let details = readiness.reasons.join('; ');
+
+    // Priority classification logic (maintains backward compatibility)
+    if (detailedPR.draft) {
+      status_bucket = 'draft';
+      confidence = 1.0;
+      details = 'PR is marked as draft';
+      metrics.prs_classified.draft = (metrics.prs_classified.draft || 0) + 1;
+    } else if (detailedPR.mergeable_state === 'dirty') {
+      status_bucket = 'merge_conflicts';
+      confidence = 1.0;
+      details = 'PR has merge conflicts';
+      metrics.prs_classified.merge_conflicts = (metrics.prs_classified.merge_conflicts || 0) + 1;
+    } else if (detailedPR.mergeable_state === 'blocked') {
+      status_bucket = 'blocked_by_admin';
+      confidence = 1.0;
+      details = 'PR is blocked by branch protection rules';
+      metrics.prs_classified.blocked_by_admin = (metrics.prs_classified.blocked_by_admin || 0) + 1;
+    } else if (checks.state === 'failure' || checks.state === 'error') {
+      status_bucket = 'ci_failed';
+      confidence = 1.0;
+      details = `Checks failed: ${checks.failure_count} failures`;
+      metrics.prs_classified.ci_failed = (metrics.prs_classified.ci_failed || 0) + 1;
+    } else if (checks.state === 'pending') {
+      status_bucket = 'ci_pending';
+      confidence = 0.9;
+      details = `Checks are running: ${checks.pending_count} pending`;
+      metrics.prs_classified.ci_pending = (metrics.prs_classified.ci_pending || 0) + 1;
+    } else if (reviews.filter(r => r.state === 'CHANGES_REQUESTED' && !r.dismissed).length > 0) {
+      status_bucket = 'changes_requested';
+      confidence = 1.0;
+      details = 'Changes have been requested';
+      metrics.prs_classified.changes_requested = (metrics.prs_classified.changes_requested || 0) + 1;
+    } else {
+      // Use readiness score for final determination
+      const daysSinceUpdate = (Date.now() - new Date(pr.updated_at)) / (1000 * 60 * 60 * 24);
+      const staleThreshold = repo.stale_pr_days || config.thresholds?.stale_pr_days || 10;
+
+      if (daysSinceUpdate > staleThreshold) {
+        status_bucket = 'stale';
+        confidence = 1.0;
+        details = `No updates for ${Math.round(daysSinceUpdate)} days`;
+        metrics.prs_classified.stale = (metrics.prs_classified.stale || 0) + 1;
+      } else if (readiness.score >= 80) {
+        status_bucket = 'ready_to_merge';
+        metrics.prs_classified.ready_to_merge = (metrics.prs_classified.ready_to_merge || 0) + 1;
+      } else if (readiness.score >= 60) {
+        status_bucket = 'needs_review';
+        metrics.prs_classified.needs_review = (metrics.prs_classified.needs_review || 0) + 1;
+      } else {
+        status_bucket = 'needs_work';
+        metrics.prs_classified.needs_work = (metrics.prs_classified.needs_work || 0) + 1;
+      }
     }
 
-    // All conditions met for merge
-    metrics.prs_classified.ready_to_merge = (metrics.prs_classified.ready_to_merge || 0) + 1;
+    // Track SLA violations
+    if (slaStatus.status === 'overdue') {
+      metrics.sla_violations.push({
+        type: 'pr',
+        number: pr.number,
+        hours_overdue: Math.abs(slaStatus.hours_remaining),
+        priority: slaStatus.priority
+      });
+    }
+
     return {
-      status_bucket: 'ready_to_merge',
-      confidence: 1.0,
-      details: 'All requirements satisfied'
+      status_bucket,
+      confidence,
+      details,
+      // Phase 2 enhancements
+      readiness_score: readiness.score,
+      readiness_reasons: readiness.reasons,
+      sla_status: slaStatus,
+      content_analysis: contentAnalysis,
+      enhanced_classification: {
+        category: readiness.category,
+        priority: contentAnalysis.priority || slaStatus.priority,
+        suggested_labels: contentAnalysis.labels,
+        missing_links: contentAnalysis.missing_links || []
+      }
     };
 
   } catch (error) {
@@ -251,7 +597,12 @@ async function classifyPR(octokit, repo, pr) {
     return {
       status_bucket: 'needs_review',
       confidence: 0.1,
-      details: `Classification failed: ${error.message}`
+      details: `Classification failed: ${error.message}`,
+      readiness_score: 0,
+      readiness_reasons: ['Classification failed'],
+      sla_status: { status: 'unknown', priority: 'p2' },
+      content_analysis: { confidence: 0 },
+      enhanced_classification: { category: 'error' }
     };
   }
 }
@@ -710,14 +1061,75 @@ _Last updated: ${lastUpdated} (execution: ${executionTime}s)_
 **Health Status**: ${metadata.api_calls_failed === 0 ? '🟢 Healthy' : `🟡 ${metadata.api_calls_failed} API failures`} | Rate limit: ${metadata.rate_limit_remaining || 'Unknown'} remaining
 <!-- tracker:summary:end -->
 
+<!-- tracker:charts:start -->
+## 📊 Portfolio Analytics
+
+### PR Status Distribution
+\`\`\`mermaid
+pie title Open PRs by Status
+    ${readyPRs.length > 0 ? `"Ready (${readyPRs.length})" : ${readyPRs.length}` : ''}
+    ${needsReviewPRs.length > 0 ? `"Needs Review (${needsReviewPRs.length})" : ${needsReviewPRs.length}` : ''}
+    ${failingPRs.length > 0 ? `"Failing (${failingPRs.length})" : ${failingPRs.length}` : ''}
+    ${blockedPRs.length > 0 ? `"Blocked (${blockedPRs.length})" : ${blockedPRs.length}` : ''}
+    ${draftPRs.length > 0 ? `"Draft (${draftPRs.length})" : ${draftPRs.length}` : ''}
+    ${stalePRs.length > 0 ? `"Stale (${stalePRs.length})" : ${stalePRs.length}` : ''}
+    ${summary.total_prs === 0 ? '"No Open PRs" : 1' : ''}
+\`\`\`
+
+### Issue Classification
+\`\`\`mermaid
+pie title Open Issues by Type
+    ${enhancementIssues.length > 0 ? `"Features (${enhancementIssues.length})" : ${enhancementIssues.length}` : ''}
+    ${bugIssues.length > 0 ? `"Bugs (${bugIssues.length})" : ${bugIssues.length}` : ''}
+    ${staleIssues.length > 0 ? `"Stale (${staleIssues.length})" : ${staleIssues.length}` : ''}
+    ${summary.total_issues - enhancementIssues.length - bugIssues.length - staleIssues.length > 0 ?
+      `"Other (${summary.total_issues - enhancementIssues.length - bugIssues.length - staleIssues.length})" : ${summary.total_issues - enhancementIssues.length - bugIssues.length - staleIssues.length}` : ''}
+    ${summary.total_issues === 0 ? '"No Open Issues" : 1' : ''}
+\`\`\`
+
+### Readiness Score Distribution
+\`\`\`mermaid
+graph LR
+    A[Total PRs: ${summary.total_prs}] --> B{Readiness Score}
+    B --> C[🟢 Ready 80+<br/>${prs.filter(pr => pr.readiness_score >= 80).length} PRs]
+    B --> D[🟡 Review 60-79<br/>${prs.filter(pr => pr.readiness_score >= 60 && pr.readiness_score < 80).length} PRs]
+    B --> E[🟠 Work Needed 40-59<br/>${prs.filter(pr => pr.readiness_score >= 40 && pr.readiness_score < 60).length} PRs]
+    B --> F[🔴 Blocked <40<br/>${prs.filter(pr => pr.readiness_score < 40).length} PRs]
+\`\`\`
+
+### SLA Compliance Timeline
+\`\`\`mermaid
+gantt
+    title SLA Compliance Status
+    dateFormat X
+    axisFormat %s
+
+    section Critical (P0)
+    ${prs.filter(pr => pr.enhanced_classification?.priority === 'p0').length > 0 ?
+      `Overdue PRs     :crit, 0, ${Math.max(1, (metrics.sla_violations || []).filter(v => v.priority === 'p0').length)}` :
+      'No P0 PRs      :milestone, 0, 0'}
+
+    section High (P1)
+    ${prs.filter(pr => pr.enhanced_classification?.priority === 'p1').length > 0 ?
+      `Due Soon       :active, 0, ${Math.max(1, prs.filter(pr => pr.sla_status?.status === 'due_soon' && pr.enhanced_classification?.priority === 'p1').length)}` :
+      'No P1 PRs      :milestone, 0, 0'}
+
+    section Normal (P2)
+    ${prs.filter(pr => pr.enhanced_classification?.priority === 'p2').length > 0 ?
+      `On Track       :done, 0, ${Math.max(1, prs.filter(pr => pr.sla_status?.status === 'on_track').length)}` :
+      'No P2 PRs      :milestone, 0, 0'}
+\`\`\`
+<!-- tracker:charts:end -->
+
 <!-- tracker:ready:start -->
 ## 🚀 Ready to merge (${readyPRs.length})
 
 ${formatTable(readyPRs, [
   { header: 'PR', getValue: pr => `[#${pr.number}](${pr.html_url})` },
   { header: 'Repo', getValue: pr => pr.repo.split('/')[1] },
-  { header: 'Title', getValue: pr => pr.title.substring(0, 50) + (pr.title.length > 50 ? '...' : '') },
-  { header: 'Confidence', getValue: pr => `${Math.round(pr.classification_confidence * 100)}%` },
+  { header: 'Title', getValue: pr => pr.title.substring(0, 40) + (pr.title.length > 40 ? '...' : '') },
+  { header: 'Score', getValue: pr => `${pr.readiness_score || 0}/100` },
+  { header: 'Priority', getValue: pr => pr.enhanced_classification?.priority?.toUpperCase() || 'P2' },
   { header: 'Updated', getValue: pr => new Date(pr.updated_at).toLocaleDateString() }
 ])}
 <!-- tracker:ready:end -->
@@ -921,6 +1333,20 @@ async function main() {
       });
     }
 
+    // PHASE 2: External integrations and notifications
+    const significantEvents = detectSignificantEvents(registry);
+
+    // Send webhook notifications for significant events
+    for (const event of significantEvents) {
+      await sendWebhookNotification(event.type, event);
+    }
+
+    // Sync to external systems
+    await syncToNotion(registry);
+
+    // Save updated tracker state
+    saveTrackerState();
+
     console.log('\n🎉 Portfolio tracker update completed successfully!');
 
   } catch (error) {
@@ -956,6 +1382,139 @@ Examples:
   node update-tracker.mjs --dry-run --verbose
 `);
   process.exit(0);
+}
+
+/**
+ * PHASE 2: External Integration Functions
+ */
+
+/**
+ * Send webhook notification for significant events
+ */
+async function sendWebhookNotification(eventType, data) {
+  const webhookUrl = process.env.N8N_WEBHOOK;
+  if (!webhookUrl || !policy.feature_flags?.webhook_notifications) {
+    return;
+  }
+
+  try {
+    const payload = {
+      event_type: eventType,
+      timestamp: new Date().toISOString(),
+      data,
+      source: 'portfolio-control-board'
+    };
+
+    await new Promise((resolve, reject) => {
+      const url = new URL(webhookUrl);
+      const postData = JSON.stringify(payload);
+
+      const options = {
+        hostname: url.hostname,
+        port: url.port || (url.protocol === 'https:' ? 443 : 80),
+        path: url.pathname + url.search,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(postData),
+          'User-Agent': 'Portfolio-Control-Board/2.0'
+        }
+      };
+
+      const req = https.request(options, (res) => {
+        let responseData = '';
+        res.on('data', (chunk) => responseData += chunk);
+        res.on('end', () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            console.log(`✓ Webhook sent: ${eventType}`);
+            resolve(responseData);
+          } else {
+            reject(new Error(`Webhook failed: ${res.statusCode} ${responseData}`));
+          }
+        });
+      });
+
+      req.on('error', reject);
+      req.write(postData);
+      req.end();
+    });
+
+  } catch (error) {
+    console.warn(`⚠️  Webhook notification failed: ${error.message}`);
+    trackerState.error_tracking.webhook_failures = trackerState.error_tracking.webhook_failures || [];
+    trackerState.error_tracking.webhook_failures.push({
+      event_type: eventType,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+}
+
+/**
+ * Sync data to Notion database (if configured)
+ */
+async function syncToNotion(registry) {
+  const notionToken = process.env.NOTION_TOKEN;
+  const notionDbId = process.env.NOTION_DB_ID;
+
+  if (!notionToken || !notionDbId || !policy.feature_flags?.notion_sync) {
+    return;
+  }
+
+  try {
+    console.log('🔄 Syncing to Notion database...');
+
+    // This would require the Notion SDK, but for now we'll just log the intent
+    console.log(`ℹ️  Would sync ${registry.prs.length} PRs and ${registry.issues.length} issues to Notion`);
+    console.log('📝 Note: Notion integration requires @notionhq/client dependency');
+
+  } catch (error) {
+    console.warn(`⚠️  Notion sync failed: ${error.message}`);
+  }
+}
+
+/**
+ * Check for significant events that warrant notifications
+ */
+function detectSignificantEvents(registry) {
+  const events = [];
+
+  // Check for PRs that became ready
+  const readyPRs = registry.prs.filter(pr =>
+    pr.readiness_score >= 80 && pr.status_bucket === 'ready_to_merge'
+  );
+  if (readyPRs.length > 0) {
+    events.push({
+      type: 'prs_became_ready',
+      count: readyPRs.length,
+      items: readyPRs.map(pr => ({ number: pr.number, title: pr.title, score: pr.readiness_score }))
+    });
+  }
+
+  // Check for SLA violations
+  const slaViolations = metrics.sla_violations || [];
+  if (slaViolations.length > 0) {
+    events.push({
+      type: 'sla_violations',
+      count: slaViolations.length,
+      items: slaViolations
+    });
+  }
+
+  // Check for critical PRs failing
+  const criticalFailures = registry.prs.filter(pr =>
+    pr.status_bucket === 'ci_failed' &&
+    pr.enhanced_classification?.priority === 'p0'
+  );
+  if (criticalFailures.length > 0) {
+    events.push({
+      type: 'critical_pr_failures',
+      count: criticalFailures.length,
+      items: criticalFailures.map(pr => ({ number: pr.number, title: pr.title }))
+    });
+  }
+
+  return events;
 }
 
 if (args.includes('--validate-config')) {

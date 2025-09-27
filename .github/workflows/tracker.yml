@@ -42,8 +42,8 @@ on:
 # Permissions for the workflow
 permissions:
   contents: write           # Write tracker files
-  pull-requests: read       # Read PR data
-  issues: read             # Read issue data
+  pull-requests: write      # Read PR data + auto-comments/assignments (Phase 2)
+  issues: write            # Read issue data + auto-comments/assignments (Phase 2)
   checks: read             # Read check status
   actions: read            # Read workflow data
 
@@ -97,6 +97,10 @@ jobs:
           node scripts/update-tracker.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Phase 2 integrations (optional)
+          N8N_WEBHOOK: ${{ secrets.N8N_WEBHOOK }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DB_ID: ${{ secrets.NOTION_DB_ID }}
 
       - name: 📊 Check for changes
         id: changes
