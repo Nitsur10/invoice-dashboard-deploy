@@ -1,0 +1,54 @@
+# Portfolio Issues & PRs Control Board Configuration
+# This file configures the automated tracker for monitoring repository health
+
+# Repository configuration
+repos:
+  - name: "Nitsur10/invoice-dashboard-deploy"
+    stale_pr_days: 10
+    stale_issue_days: 14
+    required_labels: ["ready-for-review"]
+    excluded_labels: ["wip", "do-not-merge", "draft"]
+    priority: "high"  # high, medium, low - affects update frequency
+
+# Label classification mappings
+labels:
+  bug: ["bug", "defect", "issue", "error", "broken"]
+  enhancement: ["feature", "enhancement", "improvement", "feat"]
+  question: ["question", "help wanted", "discussion", "support"]
+  blocked: ["blocked", "waiting", "on-hold", "dependencies"]
+
+# API and performance configuration
+rate_limiting:
+  max_retries: 3
+  base_delay_ms: 1000
+  max_delay_ms: 30000
+  requests_per_hour: 4500  # Leave buffer under 5000 limit
+
+# Classification thresholds
+thresholds:
+  stale_pr_days: 10
+  stale_issue_days: 14
+  critical_pr_count: 5  # Alert if more than 5 failing PRs
+  review_timeout_days: 7  # PRs needing review for >7 days
+
+# Output configuration
+output:
+  json_pretty_print: true
+  markdown_table_limit: 50  # Max rows per table
+  include_metrics: true
+  include_health_check: true
+
+# Notifications (optional)
+notifications:
+  slack_webhook: "${SLACK_WEBHOOK_URL}"
+  discord_webhook: "${DISCORD_WEBHOOK_URL}"
+  email_recipients: []
+  critical_only: true  # Only notify for critical issues
+
+# Advanced features
+features:
+  cross_repo_linking: true
+  branch_protection_check: true
+  check_runs_api: true
+  commit_status_api: true
+  historical_tracking: false  # Enable for trending data
