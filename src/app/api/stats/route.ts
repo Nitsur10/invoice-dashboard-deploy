@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isSupabaseConfigured } from '@/lib/server/env';
-import { supabaseAdmin } from '@/lib/server/supabase-admin';
+import { getSupabaseAdmin } from '@/lib/server/supabase-admin';
 import { mockInvoiceData } from '@/lib/sample-data';
 
 type DashboardStatsResponse = {
@@ -13,8 +13,11 @@ type DashboardStatsResponse = {
     overdueAmount: number
     overduePayments: number
     trends: {
-      invoices: number
-      amount: number
+      invoices: number | null
+      amount: number | null
+      invoicesDelta: number
+      amountDelta: number
+      hasPriorData: boolean
     }
   }
   breakdowns: {
@@ -34,6 +37,11 @@ function parseDateParam(value: string | null): string | null {
   if (!value) return null
   const d = new Date(value)
   return Number.isNaN(d.getTime()) ? null : d.toISOString()
+}
+
+function calculateMoMPercentage(current: number, previous: number): number | null {
+  if (previous === 0) return null;
+  return ((current - previous) / previous) * 100;
 }
 
 function deriveInvoiceStatus(amountDue: unknown, dueDate: unknown, issueDate: unknown, now: Date): 'pending' | 'paid' | 'overdue' {
@@ -81,13 +89,14 @@ export async function GET(request: NextRequest) {
     let rows: Array<{ total: number; amount_due?: number | null; due_date?: string | null; category?: string | null; supplier_name?: string | null; created_at?: string | null }>
 
     if (isSupabaseConfigured()) {
-      const primaryTable = process.env.SUPABASE_INVOICES_TABLE || 'invoices'
-      const fallbackTable = primaryTable === 'invoices' ? 'Invoice' : 'invoices'
+      try {
+        const primaryTable = process.env.SUPABASE_INVOICES_TABLE || 'invoices'
+        const fallbackTable = primaryTable === 'invoices' ? 'Invoice' : 'invoices'
 
-      const buildQuery = (table: string) => {
-        // Fetch broadly; we'll apply flexible date filtering in-memory
-        return supabaseAdmin.from(table).select('*').limit(5000)
-      }
+        const buildQuery = (table: string) => {
+          // Fetch broadly; we'll apply flexible date filtering in-memory
+          return getSupabaseAdmin().from(table).select('*').limit(5000)
+        }
 
       let resp = await buildQuery(primaryTable)
       if (resp.error) {
@@ -103,7 +112,7 @@ export async function GET(request: NextRequest) {
               pendingPayments: 0,
               overdueAmount: 0,
               overduePayments: 0,
-              trends: { invoices: 0, amount: 0 },
+              trends: { invoices: null, amount: null, invoicesDelta: 0, amountDelta: 0, hasPriorData: false },
             },
             breakdowns: { categories: [], topVendors: [] },
             metadata: { generatedAt: new Date().toISOString(), dateRange: { from: fromIso, to: toIso }, periodDays: 0 },
@@ -112,6 +121,27 @@ export async function GET(request: NextRequest) {
         rows = (fb.data ?? []) as any
       } else {
         rows = (resp.data ?? []) as any
+      }
+      } catch (error) {
+        console.error('Supabase query failed:', error);
+        // Fall back to mock data
+        rows = mockInvoiceData
+          .filter((inv) => {
+            const created = inv.receivedDate ?? inv.issueDate
+            if (!created) return false
+            const createdIso = typeof created === 'string' ? created : (created as Date).toISOString()
+            if (fromIso && createdIso < fromIso) return false
+            if (toIso && createdIso > toIso) return false
+            return true
+          })
+          .map((inv) => ({
+            total: inv.amount ?? 0,
+            amount_due: inv.amountDue ?? inv.amount ?? 0,
+            due_date: inv.dueDate ? (typeof inv.dueDate === 'string' ? inv.dueDate : inv.dueDate.toISOString()) : null,
+            category: inv.category ?? 'Uncategorized',
+            supplier_name: inv.vendorName ?? 'Unknown Vendor',
+            created_at: inv.receivedDate ? (typeof inv.receivedDate === 'string' ? inv.receivedDate : inv.receivedDate.toISOString()) : null,
+          }))
       }
     } else {
       // Local mock data path
@@ -134,7 +164,7 @@ export async function GET(request: NextRequest) {
         }))
     }
 
-    // Aggregate
+    // Aggregate current period
     let totalInvoices = 0
     let totalAmount = 0
     let paidAmount = 0
@@ -251,6 +281,45 @@ export async function GET(request: NextRequest) {
     const processingStatus = Array.from(byStatus.entries()).map(([status, v]) => ({ status, count: v.count, amount: v.amount }))
       .sort((a, b) => b.count - a.count)
 
+    // Calculate previous period for MoM trends
+    let previousPeriodInvoices = 0
+    let previousPeriodAmount = 0
+    let hasPriorData = false
+
+    if (fromIso && toIso) {
+      // Calculate previous period date range
+      const currentStart = new Date(fromIso)
+      const currentEnd = new Date(toIso)
+      const periodDays = Math.ceil((currentEnd.getTime() - currentStart.getTime()) / (1000 * 60 * 60 * 24)) + 1
+
+      const previousStart = new Date(currentStart)
+      previousStart.setDate(previousStart.getDate() - periodDays)
+      const previousEnd = new Date(currentEnd)
+      previousEnd.setDate(previousEnd.getDate() - periodDays)
+
+      const previousFromIso = previousStart.toISOString()
+      const previousToIso = previousEnd.toISOString()
+
+      // Filter for previous period
+      for (const r of rows as any[]) {
+        const createdIso = pickDateIso(r, ['invoice_date', 'invoiceDate', 'received_date', 'receivedDate', 'created_at', 'createdAt'])
+
+        if (!createdIso) continue
+        if (createdIso < previousFromIso || createdIso > previousToIso) continue
+
+        previousPeriodInvoices += 1
+        const amount = Number(pick(r, ['total', 'amount', 'total_amount', 'grand_total'], 0)) || 0
+        previousPeriodAmount += amount
+        hasPriorData = true
+      }
+    }
+
+    // Calculate MoM percentages
+    const invoiceTrend = hasPriorData ? calculateMoMPercentage(totalInvoices, previousPeriodInvoices) : null
+    const amountTrend = hasPriorData ? calculateMoMPercentage(totalAmount, previousPeriodAmount) : null
+    const invoicesDelta = totalInvoices - previousPeriodInvoices
+    const amountDelta = totalAmount - previousPeriodAmount
+
     // Summary logging
     // console.log(`[Stats API] Processing summary:`, {
     //   totalRows: rows.length,
@@ -272,8 +341,11 @@ export async function GET(request: NextRequest) {
         overdueAmount,
         overduePayments,
         trends: {
-          invoices: totalInvoices,
-          amount: totalAmount,
+          invoices: invoiceTrend,
+          amount: amountTrend,
+          invoicesDelta,
+          amountDelta,
+          hasPriorData,
         },
       },
       breakdowns: {
@@ -301,7 +373,7 @@ export async function GET(request: NextRequest) {
           pendingPayments: 0,
           overdueAmount: 0,
           overduePayments: 0,
-          trends: { invoices: 0, amount: 0 },
+          trends: { invoices: null, amount: null, invoicesDelta: 0, amountDelta: 0, hasPriorData: false },
         },
         breakdowns: { processingStatus: [], categories: [], topVendors: [] },
         metadata: { generatedAt: new Date().toISOString(), dateRange: { from: null, to: null }, periodDays: 0 },

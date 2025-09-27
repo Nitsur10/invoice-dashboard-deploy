@@ -1,7 +1,7 @@
 # Issue: Show invoice description in list instead of supplier name
 
 ## Summary
-In the invoices table, the `Supplier` column should be replaced with the invoice description (first line). Hovering over the truncated text should reveal the full description via tooltip.
+In the invoices table, the `Supplier` column should be replaced with the invoice description (line_1_desc line). Hovering over the truncated text should reveal the full description via tooltip.
 
 ## Scope
 - Update `invoiceColumns` to swap the supplier column for a description column.
