@@ -6,7 +6,7 @@ import {
   SortingState,
   PaginationState,
 } from "@tanstack/react-table"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 
 import { DataTable } from "@/components/invoices/data-table"
 import { invoiceColumns } from "@/components/invoices/columns"
@@ -83,7 +83,7 @@ export function InvoicesView() {
     queryKey: ['invoices', apiParams] as const,
     queryFn: () => fetchInvoices(apiParams),
     staleTime: 2 * 60 * 1000,
-    placeholderData: 'keepPreviousData',
+    placeholderData: keepPreviousData,
     enabled: typeof window !== 'undefined',
   })
 
