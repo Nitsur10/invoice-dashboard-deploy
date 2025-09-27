@@ -30,7 +30,7 @@ import {
 import { fetchInvoices, fetchInvoiceFacets, fetchInvoiceSavedViews, createInvoiceSavedView, deleteInvoiceSavedView } from "@/lib/api/invoices"
 import { cn, formatCurrency } from "@/lib/utils"
 import { InvoiceFiltersProvider, useInvoiceFilters } from "@/hooks/use-invoices-filters"
-import { InvoiceFilterSidebar } from "@/components/invoices/filter-sidebar"
+import { InvoiceFilterPopover } from "@/components/invoices/filter-popover"
 import { InvoiceFilterDrawer } from "@/components/invoices/filter-drawer"
 import { InvoiceFilterChips } from "@/components/invoices/filter-chips"
 import { ExportProgressButton } from "@/components/invoices/export-progress-button"
@@ -49,7 +49,7 @@ export default function InvoicesPage() {
 }
 
 export function InvoicesView() {
-  const { filters, setFilters, reset } = useInvoiceFilters()
+  const { filters, setFilters, reset, toggleStatus } = useInvoiceFilters()
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 20 })
@@ -297,42 +297,8 @@ export function InvoicesView() {
 
   // Status card click handlers
   const handleStatusCardClick = React.useCallback((status: string) => {
-    const isCurrentlyActive = filters.statuses.includes(status)
-
-    setFilters((current) => {
-      const currentStatuses = [...current.statuses]
-      const statusIndex = currentStatuses.indexOf(status)
-
-      if (statusIndex >= 0) {
-        // Remove status if already selected
-        currentStatuses.splice(statusIndex, 1)
-      } else {
-        // Add status if not selected
-        currentStatuses.push(status)
-      }
-
-      return {
-        ...current,
-        statuses: currentStatuses
-      }
-    })
-
-    // Update screen reader announcement
-    if (isCurrentlyActive) {
-      setFilterAnnouncement(`${status} filter removed`)
-    } else {
-      setFilterAnnouncement(`${status} filter activated`)
-    }
-
-    // Clear announcement after 2 seconds
-    setTimeout(() => setFilterAnnouncement(''), 2000)
-
-    // Scroll to table if needed
-    const tableElement = document.querySelector('[data-testid="invoice-table"]')
-    if (tableElement && window.innerWidth < 1024) { // Mobile/tablet breakpoint
-      tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }, [setFilters, filters.statuses])
+    toggleStatus(status as any)
+  }, [toggleStatus])
 
   const handleStatusCardKeyDown = React.useCallback((event: React.KeyboardEvent, status: string) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -396,6 +362,11 @@ export function InvoicesView() {
             <Bookmark className="mr-2 h-4 w-4" />
             Saved views
           </Button>
+          <InvoiceFilterPopover
+            facets={facetsQuery.data?.facets}
+            isLoading={facetsQuery.isLoading}
+            className="hidden md:block"
+          />
           <Button
             variant="outline"
             size="sm"
@@ -453,150 +424,146 @@ export function InvoicesView() {
         </Alert>
       )}
 
-      <div className="lg:grid lg:grid-cols-[280px,1fr] lg:gap-8">
-        <InvoiceFilterSidebar facets={facetsQuery.data?.facets} isLoading={facetsQuery.isLoading} />
+      <div className="space-y-4">
+        <InvoiceFilterChips savedViews={savedViews} />
 
-        <div className="space-y-4">
-          <InvoiceFilterChips savedViews={savedViews} />
-
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-            <Card className="rpd-card" data-testid="summary-card-total">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <FileText className="h-4 w-4 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">
-                      Total Invoices
-                    </p>
-                    <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
-                  </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <Card className="rpd-card" data-testid="summary-card-total">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-sm font-medium text-slate-600">
+                    Total Invoices
+                  </p>
+                  <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card className="rpd-card" data-testid="summary-card-amount">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="h-4 w-4 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">
-                      Current Page Total
-                    </p>
-                    <p className="text-2xl font-bold text-slate-900">
-                      {formatCurrency(stats.totalAmount)}
-                    </p>
-                  </div>
+          <Card className="rpd-card" data-testid="summary-card-amount">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-sm font-medium text-slate-600">
+                    Current Page Total
+                  </p>
+                  <p className="text-2xl font-bold text-slate-900">
+                    {formatCurrency(stats.totalAmount)}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card
-              className={cn(
-                "rpd-card cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-amber-500 focus-within:ring-offset-2",
-                isStatusActive('pending') && "ring-2 ring-amber-500 bg-amber-50"
-              )}
-              role="button"
-              tabIndex={0}
-              aria-pressed={isStatusActive('pending')}
-              aria-label={`Filter by pending invoices - currently ${isStatusActive('pending') ? 'filtered' : 'not filtered'}`}
-              data-testid="status-card-pending"
-              onClick={() => handleStatusCardClick('pending')}
-              onKeyDown={(e) => handleStatusCardKeyDown(e, 'pending')}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-amber-600" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Pending</p>
-                    <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
-                  </div>
+          <Card
+            className={cn(
+              "rpd-card cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-amber-500 focus-within:ring-offset-2",
+              isStatusActive('pending') && "ring-2 ring-amber-500 bg-amber-50"
+            )}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isStatusActive('pending')}
+            aria-label={`Filter by pending invoices - currently ${isStatusActive('pending') ? 'filtered' : 'not filtered'}`}
+            data-testid="status-card-pending"
+            onClick={() => handleStatusCardClick('pending')}
+            onKeyDown={(e) => handleStatusCardKeyDown(e, 'pending')}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Clock className="h-4 w-4 text-amber-600" />
+                <div>
+                  <p className="text-sm font-medium text-slate-600">Pending</p>
+                  <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card
-              className={cn(
-                "rpd-card cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2",
-                isStatusActive('paid') && "ring-2 ring-emerald-500 bg-emerald-50"
-              )}
-              role="button"
-              tabIndex={0}
-              aria-pressed={isStatusActive('paid')}
-              aria-label={`Filter by paid invoices - currently ${isStatusActive('paid') ? 'filtered' : 'not filtered'}`}
-              data-testid="status-card-paid"
-              onClick={() => handleStatusCardClick('paid')}
-              onKeyDown={(e) => handleStatusCardKeyDown(e, 'paid')}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Paid</p>
-                    <p className="text-2xl font-bold text-emerald-600">{stats.paid}</p>
-                  </div>
+          <Card
+            className={cn(
+              "rpd-card cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2",
+              isStatusActive('paid') && "ring-2 ring-emerald-500 bg-emerald-50"
+            )}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isStatusActive('paid')}
+            aria-label={`Filter by paid invoices - currently ${isStatusActive('paid') ? 'filtered' : 'not filtered'}`}
+            data-testid="status-card-paid"
+            onClick={() => handleStatusCardClick('paid')}
+            onKeyDown={(e) => handleStatusCardKeyDown(e, 'paid')}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <div>
+                  <p className="text-sm font-medium text-slate-600">Paid</p>
+                  <p className="text-2xl font-bold text-emerald-600">{stats.paid}</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card
-              className={cn(
-                "rpd-card cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-rose-500 focus-within:ring-offset-2",
-                isStatusActive('overdue') && "ring-2 ring-rose-500 bg-rose-50"
-              )}
-              role="button"
-              tabIndex={0}
-              aria-pressed={isStatusActive('overdue')}
-              aria-label={`Filter by overdue invoices - currently ${isStatusActive('overdue') ? 'filtered' : 'not filtered'}`}
-              data-testid="status-card-overdue"
-              onClick={() => handleStatusCardClick('overdue')}
-              onKeyDown={(e) => handleStatusCardKeyDown(e, 'overdue')}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <AlertTriangle className="h-4 w-4 text-rose-600" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Overdue</p>
-                    <p className="text-2xl font-bold text-rose-600">{stats.overdue}</p>
-                  </div>
+          <Card
+            className={cn(
+              "rpd-card cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-rose-500 focus-within:ring-offset-2",
+              isStatusActive('overdue') && "ring-2 ring-rose-500 bg-rose-50"
+            )}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isStatusActive('overdue')}
+            aria-label={`Filter by overdue invoices - currently ${isStatusActive('overdue') ? 'filtered' : 'not filtered'}`}
+            data-testid="status-card-overdue"
+            onClick={() => handleStatusCardClick('overdue')}
+            onKeyDown={(e) => handleStatusCardKeyDown(e, 'overdue')}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-4 w-4 text-rose-600" />
+                <div>
+                  <p className="text-sm font-medium text-slate-600">Overdue</p>
+                  <p className="text-2xl font-bold text-rose-600">{stats.overdue}</p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Invoice List</span>
-                <Badge variant="secondary">Page {pagination.pageIndex + 1} of {pageCount}</Badge>
-              </CardTitle>
-              <CardDescription className="space-y-1">
-                <span>Use the toolbar filters and saved views to hone in on the records you need.</span>
-                <span className="block text-xs text-slate-500">{showingMessage}</span>
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div data-testid="invoice-table">
-                <DataTable
-                  columns={invoiceColumns}
-                  data={invoices}
-                  pageCount={pageCount}
-                  pageSize={pagination.pageSize}
-                  pageIndex={pagination.pageIndex}
-                  onPaginationChange={handlePaginationChange}
-                  onSortingChange={handleSortingChange}
-                  onColumnFiltersChange={handleColumnFiltersChange}
-                  sorting={sorting}
-                  columnFilters={columnFilters}
-                  isLoading={isLoading}
-                  manualPagination
-                  manualSorting
-                  manualFiltering
-                  facets={facetsQuery.data?.facets}
-                />
               </div>
             </CardContent>
           </Card>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Invoice List</span>
+              <Badge variant="secondary">Page {pagination.pageIndex + 1} of {pageCount}</Badge>
+            </CardTitle>
+            <CardDescription className="space-y-1">
+              <span>Use the toolbar filters and saved views to hone in on the records you need.</span>
+              <span className="block text-xs text-slate-500">{showingMessage}</span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div data-testid="invoice-table">
+              <DataTable
+                columns={invoiceColumns}
+                data={invoices}
+                pageCount={pageCount}
+                pageSize={pagination.pageSize}
+                pageIndex={pagination.pageIndex}
+                onPaginationChange={handlePaginationChange}
+                onSortingChange={handleSortingChange}
+                onColumnFiltersChange={handleColumnFiltersChange}
+                sorting={sorting}
+                columnFilters={columnFilters}
+                isLoading={isLoading}
+                manualPagination
+                manualSorting
+                manualFiltering
+                facets={facetsQuery.data?.facets}
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

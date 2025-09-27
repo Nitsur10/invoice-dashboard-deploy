@@ -53,8 +53,10 @@ export function StatsCards() {
       title: 'Total Invoices',
       value: stats.overview.totalInvoices.toLocaleString(),
       icon: FileText,
-      trend: `${stats.overview.trends.invoices > 0 ? '+' : ''}${stats.overview.trends.invoices.toFixed(1)}%`,
-      trendUp: stats.overview.trends.invoices > 0,
+      trend: stats.overview.trends.invoices !== null
+        ? `${stats.overview.trends.invoices > 0 ? '+' : ''}${stats.overview.trends.invoices.toFixed(1)}%`
+        : 'N/A',
+      trendUp: typeof stats.overview.trends.invoices === 'number' ? stats.overview.trends.invoices > 0 : false,
       type: 'primary' as const,
     },
     {
@@ -62,8 +64,10 @@ export function StatsCards() {
       title: 'Total Amount',
       value: `$${stats.overview.totalAmount.toLocaleString('en-AU', { minimumFractionDigits: 2 })}`,
       icon: DollarSign,
-      trend: `${stats.overview.trends.amount > 0 ? '+' : ''}${stats.overview.trends.amount.toFixed(1)}%`,
-      trendUp: stats.overview.trends.amount > 0,
+      trend: stats.overview.trends.amount !== null
+        ? `${stats.overview.trends.amount > 0 ? '+' : ''}${stats.overview.trends.amount.toFixed(1)}%`
+        : 'N/A',
+      trendUp: typeof stats.overview.trends.amount === 'number' ? stats.overview.trends.amount > 0 : false,
       type: 'success' as const,
     },
     {

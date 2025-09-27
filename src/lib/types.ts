@@ -43,8 +43,11 @@ export interface ExtendedDashboardStats {
     overdueAmount: number
     paidAmount: number
     trends: {
-      invoices: number
-      amount: number
+      invoices: number | null
+      amount: number | null
+      invoicesDelta: number
+      amountDelta: number
+      hasPriorData: boolean
     }
   }
   breakdowns: {
