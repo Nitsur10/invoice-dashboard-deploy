@@ -9,6 +9,7 @@ export interface Invoice {
   dueDate: Date;
   status: PaymentStatus;
   description: string;
+  line_1_desc?: string;
   category: string;
   paymentTerms: string;
   invoiceUrl?: string;
