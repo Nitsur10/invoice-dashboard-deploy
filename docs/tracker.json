@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-09-27T21:48:04.299Z",
+  "generated_at": "2025-09-27T21:48:59.662Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -148,10 +148,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1388,
+    "execution_time_ms": 1324,
     "api_calls_made": 13,
     "api_calls_failed": 2,
-    "rate_limit_remaining": "4952",
+    "rate_limit_remaining": "4924",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -162,7 +162,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-09-27T21:48:03.845Z"
+        "timestamp": "2025-09-27T21:48:59.206Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -173,7 +173,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-09-27T21:48:04.198Z"
+        "timestamp": "2025-09-27T21:48:59.561Z"
       }
     ]
   },
@@ -310,7 +310,7 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-09-27T21:48:04.198Z",
+        "processed_at": "2025-09-27T21:48:59.561Z",
         "pr_count": 3,
         "issue_count": 5
       }
