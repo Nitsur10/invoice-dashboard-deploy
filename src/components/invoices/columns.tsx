@@ -190,7 +190,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
     },
   },
   {
-    accessorKey: "line_1_desc",
+    accessorKey: "description",
     header: ({ column }) => {
       return (
         <Button
@@ -204,7 +204,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       )
     },
     cell: ({ row }) => {
-      const description = row.getValue("line_1_desc") as string
+      const description = (row.getValue("description") as string) ?? (row.getValue("line_1_desc") as string) ?? ""
       return <DescriptionCell description={description} />
     },
   },
