@@ -1,0 +1,286 @@
+name: Portfolio Control Board Tracker
+
+# Update the portfolio tracker on schedule and repository events
+on:
+  # Daily at 9:00 AM Australia/Sydney
+  schedule:
+    - cron: '0 23 * * *'  # 23:00 UTC = 9:00 AM Sydney (AEST)
+    - cron: '0 22 * * *'  # 22:00 UTC = 9:00 AM Sydney (AEDT) during daylight saving
+
+  # Repository events that affect PR/Issue status
+  pull_request:
+    types: [opened, closed, reopened, ready_for_review, converted_to_draft]
+  pull_request_review:
+    types: [submitted, dismissed]
+  check_suite:
+    types: [completed]
+  issues:
+    types: [opened, closed, reopened, labeled, unlabeled]
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: 'Comma-separated list of repos (overrides config)'
+        required: false
+        type: string
+      verbose:
+        description: 'Enable verbose logging'
+        required: false
+        type: boolean
+        default: false
+
+  # When tracker config changes
+  push:
+    branches:
+      - main
+    paths:
+      - 'tracker.config.yml'
+      - 'scripts/update-tracker.mjs'
+      - '.github/workflows/tracker.yml'
+
+# Permissions for the workflow
+permissions:
+  contents: write           # Write tracker files
+  pull-requests: read       # Read PR data
+  issues: read             # Read issue data
+  checks: read             # Read check status
+  actions: read            # Read workflow data
+
+jobs:
+  update-tracker:
+    name: Update Portfolio Tracker
+    runs-on: ubuntu-latest
+    timeout-minutes: 15     # Prevent runaway executions
+
+    steps:
+      - name: 📂 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 🔧 Install dependencies
+        run: |
+          # Check if we need js-yaml for the tracker
+          if ! npm list js-yaml > /dev/null 2>&1; then
+            echo "Installing js-yaml for tracker configuration..."
+            npm install js-yaml @octokit/rest
+          fi
+
+      - name: 🏥 Validate configuration
+        run: node scripts/update-tracker.mjs --validate-config
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔄 Update tracker data
+        run: |
+          # Set environment variables for tracker
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.repos }}" ]]; then
+            export REPOS="${{ github.event.inputs.repos }}"
+            echo "Using repos from workflow input: $REPOS"
+          fi
+
+          if [[ "${{ github.event.inputs.verbose }}" == "true" ]]; then
+            export VERBOSE=true
+            echo "Verbose logging enabled"
+          fi
+
+          # Run the tracker
+          echo "🚀 Starting tracker update..."
+          node scripts/update-tracker.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📊 Check for changes
+        id: changes
+        run: |
+          # Check if tracker files were modified
+          if git diff --quiet docs/tracker.json docs/tracker.md; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected in tracker files"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in tracker files"
+            echo "Files changed:"
+            git diff --name-only docs/tracker.json docs/tracker.md || true
+          fi
+
+      - name: 📈 Display summary
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          echo "📋 Tracker Update Summary"
+          echo "========================"
+
+          # Extract key metrics from tracker.json if it exists
+          if [[ -f "docs/tracker.json" ]]; then
+            # Use jq if available, otherwise basic parsing
+            if command -v jq > /dev/null; then
+              echo "Repositories: $(jq -r '.summary.total_repos // 0' docs/tracker.json)"
+              echo "Open PRs: $(jq -r '.summary.total_prs // 0' docs/tracker.json)"
+              echo "Open Issues: $(jq -r '.summary.total_issues // 0' docs/tracker.json)"
+              echo "API Calls: $(jq -r '.metadata.api_calls_made // 0' docs/tracker.json)"
+              echo "Execution Time: $(jq -r '.metadata.execution_time_ms // 0' docs/tracker.json)ms"
+              echo "Errors: $(jq -r '.metadata.errors | length' docs/tracker.json)"
+            else
+              echo "Tracker data updated (jq not available for detailed summary)"
+            fi
+          fi
+
+          echo ""
+          echo "📁 Files updated:"
+          ls -la docs/tracker.*
+
+      - name: 💾 Commit and push changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          # Configure git for automated commits
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Add the changed files
+          git add docs/tracker.json docs/tracker.md
+
+          # Create commit with metadata
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          TRIGGER="${{ github.event_name }}"
+
+          # Get summary stats for commit message
+          if command -v jq > /dev/null && [[ -f "docs/tracker.json" ]]; then
+            PR_COUNT=$(jq -r '.summary.total_prs // 0' docs/tracker.json)
+            ISSUE_COUNT=$(jq -r '.summary.total_issues // 0' docs/tracker.json)
+            COMMIT_MSG="chore(tracker): update portfolio dashboard - ${PR_COUNT} PRs, ${ISSUE_COUNT} issues"
+          else
+            COMMIT_MSG="chore(tracker): update portfolio dashboard"
+          fi
+
+          # Commit with detailed message
+          git commit -m "$COMMIT_MSG" -m "Triggered by: $TRIGGER at $TIMESTAMP" -m "🤖 Generated with [Claude Code](https://claude.ai/code)" -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+
+          # Push to the repository
+          git push origin main
+
+          echo "✅ Changes committed and pushed successfully"
+
+      - name: 📋 Create issue on errors
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🚨 Portfolio Tracker Update Failed - ${new Date().toISOString().split('T')[0]}`;
+            const body = `
+            ## Portfolio Tracker Update Failed
+
+            **Workflow:** ${{ github.workflow }}
+            **Run ID:** ${{ github.run_id }}
+            **Trigger:** ${{ github.event_name }}
+            **Time:** ${new Date().toISOString()}
+
+            ### Details
+            The portfolio tracker failed to update successfully. This could be due to:
+            - GitHub API rate limiting
+            - Configuration issues
+            - Network connectivity problems
+            - Changes in repository structure
+
+            ### Action Required
+            1. Check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            2. Verify the \`tracker.config.yml\` configuration
+            3. Ensure GitHub token has proper permissions
+            4. Run tracker manually: \`npm run update:tracker\`
+
+            ### Auto-generated
+            This issue was automatically created by the Portfolio Control Board tracker workflow.
+
+            /label: bug, tracker, automation
+            `;
+
+            // Check if there's already an open issue for tracker failures
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'tracker,automation'
+            });
+
+            // Only create new issue if none exists
+            if (existingIssues.data.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['bug', 'tracker', 'automation']
+              });
+              console.log('Created issue for tracker failure');
+            } else {
+              console.log('Existing tracker failure issue found, skipping creation');
+            }
+
+      - name: 📤 Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tracker-failure-logs
+          path: |
+            docs/tracker.json
+            docs/tracker.md
+            logs/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # Optional: Health check job that runs on different schedule
+  health-check:
+    name: Tracker Health Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+      - name: 📂 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🏥 Validate tracker files
+        run: |
+          echo "🔍 Checking tracker file health..."
+
+          # Check if files exist
+          if [[ ! -f "docs/tracker.json" ]]; then
+            echo "❌ tracker.json is missing"
+            exit 1
+          fi
+
+          if [[ ! -f "docs/tracker.md" ]]; then
+            echo "❌ tracker.md is missing"
+            exit 1
+          fi
+
+          # Validate JSON structure
+          if command -v jq > /dev/null; then
+            if ! jq . docs/tracker.json > /dev/null; then
+              echo "❌ tracker.json is not valid JSON"
+              exit 1
+            fi
+
+            # Check data freshness (should be updated within last 25 hours)
+            GENERATED_AT=$(jq -r '.generated_at' docs/tracker.json)
+            if [[ "$GENERATED_AT" != "null" ]]; then
+              GENERATED_TIMESTAMP=$(date -d "$GENERATED_AT" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%S" "${GENERATED_AT%.*}" +%s 2>/dev/null || echo "0")
+              CURRENT_TIMESTAMP=$(date +%s)
+              AGE_HOURS=$(( (CURRENT_TIMESTAMP - GENERATED_TIMESTAMP) / 3600 ))
+
+              if [[ $AGE_HOURS -gt 25 ]]; then
+                echo "⚠️ Tracker data is ${AGE_HOURS} hours old (should be <25h)"
+                exit 1
+              else
+                echo "✅ Tracker data is ${AGE_HOURS} hours old (healthy)"
+              fi
+            fi
+          fi
+
+          echo "✅ Tracker files are healthy"
