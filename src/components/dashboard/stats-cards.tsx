@@ -56,7 +56,7 @@ export function StatsCards() {
       trend: stats.overview.trends.invoices !== null
         ? `${stats.overview.trends.invoices > 0 ? '+' : ''}${stats.overview.trends.invoices.toFixed(1)}%`
         : 'N/A',
-      trendUp: stats.overview.trends.invoices ? stats.overview.trends.invoices > 0 : false,
+      trendUp: typeof stats.overview.trends.invoices === 'number' ? stats.overview.trends.invoices > 0 : false,
       type: 'primary' as const,
     },
     {
@@ -67,7 +67,7 @@ export function StatsCards() {
       trend: stats.overview.trends.amount !== null
         ? `${stats.overview.trends.amount > 0 ? '+' : ''}${stats.overview.trends.amount.toFixed(1)}%`
         : 'N/A',
-      trendUp: stats.overview.trends.amount ? stats.overview.trends.amount > 0 : false,
+      trendUp: typeof stats.overview.trends.amount === 'number' ? stats.overview.trends.amount > 0 : false,
       type: 'success' as const,
     },
     {
