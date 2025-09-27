@@ -92,7 +92,6 @@ export function InvoiceFilterPopover({
           facets={facets}
           isLoading={isLoading}
           onClose={handleClose}
-          variant="popover"
         />
       </PopoverContent>
     </Popover>
