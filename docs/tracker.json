@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-09-27T22:25:53.005Z",
+  "generated_at": "2025-09-27T22:30:02.931Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -10,9 +10,8 @@
     "failed_repos": 0,
     "total_prs": 4,
     "prs_by_status": {
-      "ci_pending": 1,
-      "ci_failed": 1,
-      "needs_review": 2
+      "needs_review": 3,
+      "ci_failed": 1
     },
     "total_issues": 5,
     "issues_by_classification": {},
@@ -27,11 +26,11 @@
       "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/17",
       "head_ref": "tracker-phase-2",
       "draft": false,
-      "status_bucket": "ci_pending",
+      "status_bucket": "needs_review",
       "classification_confidence": 0.9,
-      "classification_details": "Checks are running: 2 pending",
+      "classification_details": "0/1 required approvals",
       "linked_issues": [],
-      "updated_at": "2025-09-27T22:25:07Z",
+      "updated_at": "2025-09-27T22:27:56Z",
       "created_at": "2025-09-27T22:25:00Z",
       "author": "Nitsur10",
       "labels": []
@@ -165,10 +164,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1773,
-    "api_calls_made": 16,
-    "api_calls_failed": 2,
-    "rate_limit_remaining": "4895",
+    "execution_time_ms": 1784,
+    "api_calls_made": 17,
+    "api_calls_failed": 3,
+    "rate_limit_remaining": "4878",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -179,7 +178,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-09-27T22:25:52.380Z"
+        "timestamp": "2025-09-27T22:30:01.993Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -190,7 +189,18 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-09-27T22:25:52.904Z"
+        "timestamp": "2025-09-27T22:30:02.496Z"
+      },
+      {
+        "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+        "context": {
+          "operation": "newApi",
+          "params": "{\"owner\":\"Nitsur10\",\"repo\":\"invoice-dashboard-deploy\",\"branch\":\"main\"}",
+          "status": 403,
+          "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+          "retries": 0
+        },
+        "timestamp": "2025-09-27T22:30:02.829Z"
       }
     ]
   },
@@ -205,11 +215,11 @@
           "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/17",
           "head_ref": "tracker-phase-2",
           "draft": false,
-          "status_bucket": "ci_pending",
+          "status_bucket": "needs_review",
           "classification_confidence": 0.9,
-          "classification_details": "Checks are running: 2 pending",
+          "classification_details": "0/1 required approvals",
           "linked_issues": [],
-          "updated_at": "2025-09-27T22:25:07Z",
+          "updated_at": "2025-09-27T22:27:56Z",
           "created_at": "2025-09-27T22:25:00Z",
           "author": "Nitsur10",
           "labels": []
@@ -343,7 +353,7 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-09-27T22:25:52.904Z",
+        "processed_at": "2025-09-27T22:30:02.829Z",
         "pr_count": 4,
         "issue_count": 5
       }
