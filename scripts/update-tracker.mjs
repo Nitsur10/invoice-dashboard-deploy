@@ -41,6 +41,71 @@ let metrics = {
 };
 
 /**
+ * Enhanced validation utilities
+ */
+function validateConfig(config) {
+  if (!config || typeof config !== 'object') {
+    throw new TrackerError('Configuration is required and must be an object');
+  }
+
+  if (!config.repos || !Array.isArray(config.repos) || config.repos.length === 0) {
+    throw new TrackerError('Configuration must include at least one repository');
+  }
+
+  // Validate repo format
+  config.repos.forEach((repo, index) => {
+    if (typeof repo === 'string') {
+      if (!repo.includes('/') || repo.split('/').length !== 2) {
+        throw new TrackerError(`Invalid repo format at index ${index}: "${repo}". Expected "owner/repo"`);
+      }
+    } else if (typeof repo === 'object') {
+      if (!repo.name || !repo.name.includes('/')) {
+        throw new TrackerError(`Invalid repo object at index ${index}: missing or invalid name property`);
+      }
+    } else {
+      throw new TrackerError(`Invalid repo type at index ${index}: expected string or object`);
+    }
+  });
+
+  return true;
+}
+
+function validatePRData(pr) {
+  if (!pr || typeof pr !== 'object') return false;
+
+  const required = ['number', 'title', 'html_url', 'head', 'draft', 'updated_at', 'created_at', 'user'];
+  return required.every(field => {
+    if (field === 'head') return pr.head && pr.head.ref;
+    if (field === 'user') return pr.user && pr.user.login;
+    return pr[field] !== undefined && pr[field] !== null;
+  });
+}
+
+function validateIssueData(issue) {
+  if (!issue || typeof issue !== 'object') return false;
+
+  const required = ['number', 'title', 'html_url', 'updated_at', 'created_at', 'user'];
+  return required.every(field => {
+    if (field === 'user') return issue.user && issue.user.login;
+    return issue[field] !== undefined && issue[field] !== null;
+  });
+}
+
+function sanitizeData(data, fallback = {}) {
+  if (!data || typeof data !== 'object') return fallback;
+
+  // Remove undefined/null values and ensure basic structure
+  const sanitized = {};
+  Object.keys(data).forEach(key => {
+    if (data[key] !== undefined && data[key] !== null) {
+      sanitized[key] = data[key];
+    }
+  });
+
+  return { ...fallback, ...sanitized };
+}
+
+/**
  * Enhanced error handling with context and recovery
  */
 class TrackerError extends Error {
@@ -75,7 +140,7 @@ async function makeApiCall(octokit, operation, params, retries = 0) {
       console.warn(`Rate limit exceeded. Waiting ${Math.round(waitTime/1000)}s...`);
       await sleep(waitTime);
 
-      if (retries < config.rate_limiting?.max_retries || 3) {
+      if (retries < (config.rate_limiting?.max_retries || 3)) {
         return makeApiCall(octokit, operation, params, retries + 1);
       }
     }
@@ -128,17 +193,40 @@ function loadConfig() {
     const configContent = readFileSync(configPath, 'utf8');
     config = yaml.load(configContent);
 
-    // Validate required fields
-    if (!config.repos || !Array.isArray(config.repos)) {
-      throw new TrackerError('Invalid configuration: repos must be an array');
-    }
+    // Comprehensive validation
+    validateConfig(config);
+
+    // Sanitize and set defaults
+    config = sanitizeData(config, {
+      rate_limiting: {
+        max_retries: 3,
+        base_delay_ms: 1000,
+        max_delay_ms: 30000,
+        requests_per_hour: 4500
+      },
+      thresholds: {
+        stale_pr_days: 10,
+        stale_issue_days: 14,
+        critical_pr_count: 5,
+        review_timeout_days: 7
+      },
+      output: {
+        json_pretty_print: true,
+        markdown_table_limit: 50,
+        include_metrics: true,
+        include_health_check: true
+      }
+    });
 
     // Load Phase 2 configuration files
     loadPhase2Configs();
 
     return config;
   } catch (error) {
-    throw new TrackerError(`Failed to load configuration: ${error.message}`);
+    if (error instanceof TrackerError) {
+      throw error;
+    }
+    throw new TrackerError(`Failed to load configuration: ${error.message}`, { configPath });
   }
 }
 
@@ -626,7 +714,13 @@ async function waitForMergeableState(octokit, repo, prNumber, maxAttempts = 5) {
   }
 
   // Return with unknown state if still not computed
-  return { ...arguments[2], mergeable_state: 'unknown' };
+  // Since we can't get the mergeable state, return a minimal PR object
+  const response = await makeApiCall(octokit, octokit.rest.pulls.get, {
+    owner: arguments[1].owner,
+    repo: arguments[1].name,
+    pull_number: arguments[2]
+  });
+  return { ...response.data, mergeable_state: 'unknown' };
 }
 
 /**
@@ -839,11 +933,23 @@ async function processRepository(octokit, repoConfig) {
 
     console.log(`Found ${prs.length} PRs and ${issues.length} issues`);
 
-    // Process PRs with classification
+    // Process PRs with classification and validation
     const processedPRs = [];
     for (const pr of prs) {
-      const classification = await classifyPR(octokit, repo, pr);
-      const linkedIssues = extractLinkedIssues(pr);
+      // Validate PR data before processing
+      if (!validatePRData(pr)) {
+        console.warn(`⚠️  Skipping invalid PR data: ${pr?.number || 'unknown'} in ${repo.owner}/${repo.name}`);
+        metrics.errors.push({
+          message: 'Invalid PR data structure',
+          context: { repo: `${repo.owner}/${repo.name}`, pr_number: pr?.number, pr_title: pr?.title },
+          timestamp: new Date().toISOString()
+        });
+        continue;
+      }
+
+      try {
+        const classification = await classifyPR(octokit, repo, pr);
+        const linkedIssues = extractLinkedIssues(pr);
 
       processedPRs.push({
         repo: `${repo.owner}/${repo.name}`,
@@ -860,14 +966,62 @@ async function processRepository(octokit, repoConfig) {
         updated_at: pr.updated_at,
         created_at: pr.created_at,
         author: pr.user.login,
-        labels: pr.labels.map(l => l.name)
+        labels: pr.labels.map(l => l.name),
+        // CRITICAL: Phase 2 fields that were missing
+        readiness_score: classification.readiness_score || 0,
+        readiness_reasons: classification.readiness_reasons || [],
+        sla_status: classification.sla_status || { status: 'unknown', priority: 'p2' },
+        content_analysis: classification.content_analysis || { confidence: 0 },
+        enhanced_classification: classification.enhanced_classification || { category: 'unknown' }
       });
+      } catch (error) {
+        console.warn(`⚠️  Failed to process PR #${pr.number}: ${error.message}`);
+        metrics.errors.push({
+          message: `PR processing failed: ${error.message}`,
+          context: { repo: `${repo.owner}/${repo.name}`, pr_number: pr.number, pr_title: pr.title },
+          timestamp: new Date().toISOString()
+        });
+
+        // Add fallback PR data to avoid breaking the pipeline
+        processedPRs.push(sanitizeData({
+          repo: `${repo.owner}/${repo.name}`,
+          number: pr.number,
+          title: pr.title || 'Unknown',
+          html_url: pr.html_url || '',
+          head_ref: pr.head?.ref || 'unknown',
+          draft: pr.draft || false,
+          status_bucket: 'error',
+          classification_confidence: 0,
+          classification_details: `Processing failed: ${error.message}`,
+          updated_at: pr.updated_at,
+          created_at: pr.created_at,
+          author: pr.user?.login || 'unknown',
+          labels: [],
+          readiness_score: 0,
+          readiness_reasons: ['Processing failed'],
+          sla_status: { status: 'error', priority: 'p2' },
+          content_analysis: { confidence: 0 },
+          enhanced_classification: { category: 'error' }
+        }));
+      }
     }
 
-    // Process Issues with classification
+    // Process Issues with classification and validation
     const processedIssues = [];
     for (const issue of issues) {
-      const classification = classifyIssue(issue, repo);
+      // Validate issue data before processing
+      if (!validateIssueData(issue)) {
+        console.warn(`⚠️  Skipping invalid issue data: ${issue?.number || 'unknown'} in ${repo.owner}/${repo.name}`);
+        metrics.errors.push({
+          message: 'Invalid issue data structure',
+          context: { repo: `${repo.owner}/${repo.name}`, issue_number: issue?.number, issue_title: issue?.title },
+          timestamp: new Date().toISOString()
+        });
+        continue;
+      }
+
+      try {
+        const classification = classifyIssue(issue, repo);
 
       processedIssues.push({
         repo: `${repo.owner}/${repo.name}`,
@@ -885,6 +1039,31 @@ async function processRepository(octokit, repoConfig) {
         created_at: issue.created_at,
         author: issue.user.login
       });
+      } catch (error) {
+        console.warn(`⚠️  Failed to process issue #${issue.number}: ${error.message}`);
+        metrics.errors.push({
+          message: `Issue processing failed: ${error.message}`,
+          context: { repo: `${repo.owner}/${repo.name}`, issue_number: issue.number, issue_title: issue.title },
+          timestamp: new Date().toISOString()
+        });
+
+        // Add fallback issue data to avoid breaking the pipeline
+        processedIssues.push(sanitizeData({
+          repo: `${repo.owner}/${repo.name}`,
+          number: issue.number,
+          title: issue.title || 'Unknown',
+          html_url: issue.html_url || '',
+          labels: [],
+          assignees: [],
+          classification: 'error',
+          classification_confidence: 0,
+          is_stale: false,
+          days_since_update: 0,
+          updated_at: issue.updated_at,
+          created_at: issue.created_at,
+          author: issue.user?.login || 'unknown'
+        }));
+      }
     }
 
     metrics.repos_processed++;
