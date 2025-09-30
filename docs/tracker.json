@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-09-30T11:23:56.183Z",
+  "generated_at": "2025-09-30T11:37:27.320Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -13,8 +13,10 @@
       "needs_review": 3,
       "ci_failed": 1
     },
-    "total_issues": 5,
-    "issues_by_classification": {},
+    "total_issues": 6,
+    "issues_by_classification": {
+      "bug": 1
+    },
     "stale_prs": 0,
     "stale_issues": 0
   },
@@ -87,6 +89,24 @@
     }
   ],
   "issues": [
+    {
+      "repo": "Nitsur10/invoice-dashboard-deploy",
+      "number": 18,
+      "title": "Fix invoice summary cards to show database totals not page counts",
+      "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/18",
+      "labels": [
+        "bug",
+        "enhancement"
+      ],
+      "assignees": [],
+      "classification": "bug",
+      "classification_confidence": 0.9,
+      "is_stale": false,
+      "days_since_update": 0,
+      "updated_at": "2025-09-30T11:36:41Z",
+      "created_at": "2025-09-30T11:36:41Z",
+      "author": "Nitsur10"
+    },
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
       "number": 8,
@@ -164,10 +184,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 2554,
+    "execution_time_ms": 1886,
     "api_calls_made": 17,
     "api_calls_failed": 3,
-    "rate_limit_remaining": "4968",
+    "rate_limit_remaining": "4951",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -178,7 +198,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-09-30T11:23:54.669Z"
+        "timestamp": "2025-09-30T11:37:26.123Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -189,7 +209,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-09-30T11:23:55.557Z"
+        "timestamp": "2025-09-30T11:37:26.762Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -200,7 +220,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-09-30T11:23:56.082Z"
+        "timestamp": "2025-09-30T11:37:27.219Z"
       }
     ]
   },
@@ -278,6 +298,24 @@
       "issues": [
         {
           "repo": "Nitsur10/invoice-dashboard-deploy",
+          "number": 18,
+          "title": "Fix invoice summary cards to show database totals not page counts",
+          "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/18",
+          "labels": [
+            "bug",
+            "enhancement"
+          ],
+          "assignees": [],
+          "classification": "bug",
+          "classification_confidence": 0.9,
+          "is_stale": false,
+          "days_since_update": 0,
+          "updated_at": "2025-09-30T11:36:41Z",
+          "created_at": "2025-09-30T11:36:41Z",
+          "author": "Nitsur10"
+        },
+        {
+          "repo": "Nitsur10/invoice-dashboard-deploy",
           "number": 8,
           "title": "Replace supplier column with description in invoice list",
           "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/8",
@@ -353,9 +391,9 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-09-30T11:23:56.082Z",
+        "processed_at": "2025-09-30T11:37:27.219Z",
         "pr_count": 4,
-        "issue_count": 5
+        "issue_count": 6
       }
     }
   ]
