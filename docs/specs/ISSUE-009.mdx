@@ -1,0 +1,216 @@
+# ISSUE-009: Invoice Summary Cards Database Totals
+
+**Issue**: [#18](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/18)
+**Priority**: P1
+**Risk**: Medium
+**Estimated Effort**: 2 hours
+
+## Problem Statement
+
+Invoice page summary cards (Pending/Paid/Overdue) currently calculate status counts from the current page of results only, not the entire database. This leads to incorrect metrics when users navigate beyond page 1.
+
+### Current Behavior
+```typescript
+// src/app/(dashboard)/invoices/page.tsx:172-184
+const stats = React.useMemo(() => {
+  return {
+    total: totalCount,  // ✅ Correct - from pagination
+    totalAmount: invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0),  // ✅ Correct - page-specific
+    pending: invoices.filter((inv) => inv.status === 'pending').length,  // ❌ Wrong - page only
+    paid: invoices.filter((inv) => inv.status === 'paid').length,  // ❌ Wrong - page only
+    overdue: invoices.filter((inv) => inv.status === 'overdue').length,  // ❌ Wrong - page only
+  }
+}, [invoices, totalCount])
+```
+
+**Bug**: `invoices` array contains only current page data (20 items default), not all database records.
+
+## Technical Solution
+
+### Backend Changes
+
+#### 1. Database Query Strategy
+Add parallel aggregation query in `/api/invoices` route handler:
+
+```sql
+SELECT
+  status,
+  COUNT(*) as count
+FROM invoices
+WHERE {same filters as main query}
+GROUP BY status
+```
+
+**Performance**: Uses database index on `status` column. Expected < 100ms even with 100k+ records.
+
+#### 2. API Contract Update
+
+**Response Structure** (`src/lib/api/invoices.ts`):
+```typescript
+export interface InvoicesResponse {
+  data: Invoice[]
+  pagination: {
+    total: number
+    pageCount: number
+    pageSize: number
+    pageIndex: number
+  }
+  statusCounts: {  // ✨ NEW
+    pending: number
+    paid: number
+    overdue: number
+  }
+}
+```
+
+**Implementation** (`src/app/api/invoices/route.ts`):
+```typescript
+// Execute both queries in parallel
+const [invoicesResult, statusCountsResult] = await Promise.all([
+  // Existing paginated query
+  supabase
+    .from(tableName)
+    .select('*', { count: 'exact' })
+    .range(offset, offset + limit - 1)
+    // ... filters
+  ,
+  // New aggregation query
+  supabase
+    .from(tableName)
+    .select('status')
+    // ... same filters as above
+])
+
+// Transform status counts
+const statusCounts = {
+  pending: 0,
+  paid: 0,
+  overdue: 0
+}
+
+statusCountsResult.data?.forEach(row => {
+  const status = row.status.toLowerCase()
+  if (status === 'pending' || status === 'paid' || status === 'overdue') {
+    statusCounts[status]++
+  }
+})
+```
+
+### Frontend Changes
+
+#### Update Stats Calculation
+**File**: `src/app/(dashboard)/invoices/page.tsx`
+
+```typescript
+const stats = React.useMemo(() => {
+  const pageAmount = invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0)
+
+  return {
+    total: totalCount,
+    totalAmount: pageAmount,  // Remains page-specific
+    pending: data?.statusCounts?.pending ?? 0,  // ✨ From API
+    paid: data?.statusCounts?.paid ?? 0,        // ✨ From API
+    overdue: data?.statusCounts?.overdue ?? 0,  // ✨ From API
+  }
+}, [invoices, totalCount, data?.statusCounts])
+```
+
+**Key Points**:
+- `total` remains from `pagination.total`
+- `totalAmount` remains page-specific (sum of current page)
+- Status counts now come from `data.statusCounts` (database totals)
+
+## Performance Requirements
+
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| Stats query time | < 500ms | `npm run validate:perf` |
+| Main query impact | < 10% overhead | Compare before/after |
+| Database load | No full table scan | EXPLAIN query plan |
+
+### Optimization Strategies
+
+1. **Database Index**: Ensure `status` column is indexed
+   ```sql
+   CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+   ```
+
+2. **Parallel Execution**: Both queries run simultaneously via `Promise.all()`
+
+3. **Caching**: Consider React Query staleTime if stats don't change frequently
+
+## Error Handling
+
+### API Failures
+```typescript
+// Frontend graceful degradation
+const stats = React.useMemo(() => ({
+  total: totalCount,
+  totalAmount: invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0),
+  pending: data?.statusCounts?.pending ?? 0,  // Fallback to 0
+  paid: data?.statusCounts?.paid ?? 0,
+  overdue: data?.statusCounts?.overdue ?? 0,
+}), [invoices, totalCount, data?.statusCounts])
+```
+
+### Null Handling
+- Backend returns `{ pending: 0, paid: 0, overdue: 0 }` if no data
+- Frontend uses nullish coalescing (`??`) for safety
+
+## Testing Strategy
+
+### Unit Tests
+**File**: `src/app/api/invoices/__tests__/stats-aggregation.test.ts`
+- ✅ Status counts match database totals
+- ✅ Filters apply to both queries consistently
+- ✅ Performance < 500ms with 10k records
+- ✅ Null/empty data handled gracefully
+
+### Integration Tests
+**File**: `src/components/invoices/__tests__/invoice-stats-cards.test.tsx`
+- ✅ Cards display API statusCounts, not page-filtered counts
+- ✅ Stats persist when changing pages
+- ✅ "Current Page Total" remains page-specific
+- ✅ Loading states render correctly
+
+### E2E Tests
+**File**: `tests-e2e/invoice-stats.spec.ts`
+- ✅ Navigate to page 2, verify Pending count unchanged
+- ✅ Apply status filter, verify counts update correctly
+- ✅ Verify all 5 cards display correct values
+
+## Migration Path
+
+### Phase 1: Backend Implementation
+1. Add `statusCounts` query to `/api/invoices`
+2. Update TypeScript types
+3. Deploy backend changes (backward compatible)
+
+### Phase 2: Frontend Adoption
+1. Update stats calculation to use `data.statusCounts`
+2. Remove client-side filtering logic
+3. Deploy frontend changes
+
+### Rollback Plan
+If issues arise, frontend can fall back to old calculation:
+```typescript
+pending: data?.statusCounts?.pending ?? invoices.filter(...).length
+```
+
+## Acceptance Criteria
+
+- [x] Backend returns `statusCounts` in `/api/invoices` response
+- [x] Status counts reflect entire database, not just current page
+- [x] Counts update correctly when filters applied
+- [x] "Current Page Total" remains page-specific
+- [x] Performance < 500ms for stats query
+- [x] All tests pass (unit + integration + e2e)
+- [x] TypeScript compilation passes
+- [x] No accessibility regressions
+
+## References
+
+- Issue: `docs/issues/issue-009-invoice-stats-accuracy.md`
+- Bug location: `src/app/(dashboard)/invoices/page.tsx:172-184`
+- API types: `src/lib/api/invoices.ts`
+- Stats pattern: `src/app/api/stats/route.ts`

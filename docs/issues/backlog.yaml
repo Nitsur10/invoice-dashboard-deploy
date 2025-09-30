@@ -121,3 +121,21 @@ issues:
     labels: ["frontend", "ux"]
     priority: "P2"
 
+  - title: "Fix invoice summary cards to show database totals not page counts"
+    body: |
+      Problem: Invoice page summary cards (Pending/Paid/Overdue) calculate counts from current page data only, not the entire database.
+      Impact: When users navigate to page 2+, the status counts are misleading and don't reflect true business metrics.
+      Recommendation:
+        - Move status aggregation from client-side to backend in `/api/invoices` response or create dedicated stats endpoint.
+        - Update invoices page to display true database totals for each status regardless of pagination.
+        - Maintain "Current Page Total" as page-specific sum while other cards show global counts.
+        - Use efficient database aggregation (e.g., COUNT with GROUP BY) to avoid performance issues.
+      Acceptance:
+        - Pending/Paid/Overdue cards display accurate totals across entire database.
+        - Counts remain correct when user changes pages or applies filters.
+        - Stats load performantly (< 500ms) and don't degrade table loading speed.
+        - Total Invoices count continues to work correctly from pagination.total.
+      Notes: See `docs/issues/issue-009-invoice-stats-accuracy.md`. Current bug at `src/app/(dashboard)/invoices/page.tsx:172-184`.
+    labels: ["frontend", "backend", "analytics"]
+    priority: "P1"
+

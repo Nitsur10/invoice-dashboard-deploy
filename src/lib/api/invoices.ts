@@ -43,6 +43,11 @@ export interface InvoicesResponse {
     pageSize: number
     pageIndex: number
   }
+  statusCounts: {
+    pending: number
+    paid: number
+    overdue: number
+  }
 }
 
 export interface InvoiceFacetsResponse {

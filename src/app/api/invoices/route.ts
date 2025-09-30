@@ -172,6 +172,18 @@ export async function GET(request: NextRequest) {
     const pageCount = Math.ceil(total / limit) || 0
     const totalAmount = filtered.reduce((sum, inv) => sum + (inv.total || inv.amount || 0), 0)
 
+    // Calculate status counts from all filtered invoices (not just current page)
+    const statusCounts = filtered.reduce(
+      (acc, inv) => {
+        const status = inv.status
+        if (status === 'pending') acc.pending++
+        else if (status === 'paid') acc.paid++
+        else if (status === 'overdue') acc.overdue++
+        return acc
+      },
+      { pending: 0, paid: 0, overdue: 0 }
+    )
+
     return NextResponse.json({
       data: paginated,
       pagination: {
@@ -181,6 +193,7 @@ export async function GET(request: NextRequest) {
         pageIndex: page,
         totalAmount,
       },
+      statusCounts,
     })
   } catch (error) {
     console.error('Failed to load invoices:', error);
@@ -377,6 +390,18 @@ function buildLocalInvoiceResponse(
   const pageCount = Math.ceil(total / limit) || 0
   const totalAmount = filtered.reduce((sum, inv) => sum + (inv.amount || 0), 0)
 
+  // Calculate status counts from all filtered invoices (not just current page)
+  const statusCounts = filtered.reduce(
+    (acc, inv) => {
+      const status = deriveInvoiceStatus(inv.amountDue ?? inv.amount ?? 0, inv.dueDate, inv.issueDate ?? inv.receivedDate, now)
+      if (status === 'pending') acc.pending++
+      else if (status === 'paid') acc.paid++
+      else if (status === 'overdue') acc.overdue++
+      return acc
+    },
+    { pending: 0, paid: 0, overdue: 0 }
+  )
+
   return {
     data,
     pagination: {
@@ -386,6 +411,7 @@ function buildLocalInvoiceResponse(
       pageIndex: page,
       totalAmount,
     },
+    statusCounts,
   }
 }
 
