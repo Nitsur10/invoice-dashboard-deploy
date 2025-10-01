@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-10-01T05:21:32.708Z",
+  "generated_at": "2025-10-01T06:14:28.624Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -8,8 +8,9 @@
     "total_repos": 1,
     "successful_repos": 1,
     "failed_repos": 0,
-    "total_prs": 5,
+    "total_prs": 6,
     "prs_by_status": {
+      "ci_pending": 1,
       "needs_review": 4,
       "ci_failed": 1
     },
@@ -21,6 +22,22 @@
     "stale_issues": 0
   },
   "prs": [
+    {
+      "repo": "Nitsur10/invoice-dashboard-deploy",
+      "number": 20,
+      "title": "feat: mobile & desktop responsive design (#10)",
+      "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/20",
+      "head_ref": "10-mobile-responsive-design",
+      "draft": false,
+      "status_bucket": "ci_pending",
+      "classification_confidence": 0.9,
+      "classification_details": "Checks are running: 1 pending",
+      "linked_issues": [],
+      "updated_at": "2025-10-01T06:14:23Z",
+      "created_at": "2025-10-01T06:14:23Z",
+      "author": "Nitsur10",
+      "labels": []
+    },
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
       "number": 19,
@@ -206,10 +223,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 2040,
-    "api_calls_made": 21,
+    "execution_time_ms": 2458,
+    "api_calls_made": 24,
     "api_calls_failed": 4,
-    "rate_limit_remaining": "4960",
+    "rate_limit_remaining": "4936",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -220,7 +237,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-01T05:21:31.351Z"
+        "timestamp": "2025-10-01T06:14:27.265Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -231,7 +248,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-01T05:21:31.698Z"
+        "timestamp": "2025-10-01T06:14:27.619Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -242,7 +259,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-01T05:21:32.269Z"
+        "timestamp": "2025-10-01T06:14:28.201Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -253,7 +270,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-01T05:21:32.606Z"
+        "timestamp": "2025-10-01T06:14:28.523Z"
       }
     ]
   },
@@ -261,6 +278,22 @@
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
       "prs": [
+        {
+          "repo": "Nitsur10/invoice-dashboard-deploy",
+          "number": 20,
+          "title": "feat: mobile & desktop responsive design (#10)",
+          "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/20",
+          "head_ref": "10-mobile-responsive-design",
+          "draft": false,
+          "status_bucket": "ci_pending",
+          "classification_confidence": 0.9,
+          "classification_details": "Checks are running: 1 pending",
+          "linked_issues": [],
+          "updated_at": "2025-10-01T06:14:23Z",
+          "created_at": "2025-10-01T06:14:23Z",
+          "author": "Nitsur10",
+          "labels": []
+        },
         {
           "repo": "Nitsur10/invoice-dashboard-deploy",
           "number": 19,
@@ -446,8 +479,8 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-10-01T05:21:32.607Z",
-        "pr_count": 5,
+        "processed_at": "2025-10-01T06:14:28.523Z",
+        "pr_count": 6,
         "issue_count": 6
       }
     }
