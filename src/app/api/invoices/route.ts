@@ -434,8 +434,13 @@ function filterLocalInvoices(invoices: typeof mockInvoiceData, filters: Normalis
     }
 
     if (filters.statuses.length) {
-      const derivedStatus = deriveInvoiceStatus(invoice.amountDue ?? invoice.amount ?? 0, invoice.dueDate, invoice.issueDate ?? invoice.receivedDate, now)
-      if (!filters.statuses.includes(derivedStatus)) {
+      // Use the invoice's already-assigned status to match statusCounts logic
+      // For Supabase data, invoice.status was assigned during mapping (line 143)
+      // For mock data, status will be derived by buildLocalInvoiceResponse (line 380)
+      const status = invoice.status
+        ? (typeof invoice.status === 'string' ? invoice.status.toLowerCase() : invoice.status)
+        : deriveInvoiceStatus(invoice.amountDue ?? invoice.amount ?? 0, invoice.dueDate, invoice.issueDate ?? invoice.receivedDate, now)
+      if (!filters.statuses.includes(status)) {
         return false
       }
     }
