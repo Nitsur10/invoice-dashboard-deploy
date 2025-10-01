@@ -1,4 +1,4 @@
-import { Sidebar } from '@/components/layout/sidebar'
+import { ResponsiveSidebar } from '@/components/layout/responsive-sidebar'
 import { Header } from '@/components/layout/header'
 import { getSupabaseServerComponentClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
@@ -36,18 +36,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
         Skip to main content
       </a>
       
-      {/* Sidebar Navigation */}
-      <nav 
-        role="navigation" 
-        aria-label="Main navigation"
-        className="fixed inset-y-0 z-50 flex w-72 flex-col"
-      >
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto glass-sidebar">
-          <Sidebar />
-        </div>
-      </nav>
-      
-      <div className="flex flex-col flex-1 pl-72">
+      {/* Responsive Sidebar Navigation */}
+      <ResponsiveSidebar />
+
+      <div className="flex flex-col flex-1 pl-0 md:pl-72">
         {/* Header */}
         <header 
           role="banner"
@@ -57,10 +49,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </header>
         
         {/* Main Content */}
-        <main 
+        <main
           id="main-content"
-          role="main" 
-          className="flex-1 p-6"
+          role="main"
+          className="flex-1 p-4 md:p-6"
         >
           <div className="mx-auto max-w-7xl">
             {children}

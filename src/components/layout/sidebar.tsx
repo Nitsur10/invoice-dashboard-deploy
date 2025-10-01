@@ -16,6 +16,7 @@ import {
 
 interface SidebarProps {
   className?: string;
+  onNavigate?: () => void;
 }
 
 const getNavigation = (invoiceCount?: number) => [
@@ -51,7 +52,7 @@ const getNavigation = (invoiceCount?: number) => [
   },
 ];
 
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar({ className, onNavigate }: SidebarProps) {
   const pathname = usePathname();
   const { data: invoiceCount } = useInvoiceCount();
   const navigation = getNavigation(invoiceCount);
@@ -83,6 +84,7 @@ export function Sidebar({ className }: SidebarProps) {
                 <Link
                   key={item.name}
                   href={item.href}
+                  onClick={onNavigate}
                   className={cn(
                     'group flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium',
                     'relative overflow-hidden transition-all duration-300 ease-out',
