@@ -139,3 +139,25 @@ issues:
     labels: ["frontend", "backend", "analytics"]
     priority: "P1"
 
+  - title: "Implement mobile & desktop responsive design"
+    body: |
+      Problem: Dashboard uses fixed 288px sidebar layout that breaks on mobile devices (< 768px). Invoice table with 10+ columns is unusable on small screens. Users cannot access navigation, view invoices, or interpret charts on mobile.
+      Impact: Mobile users (field workers, executives) cannot use the application, limiting accessibility and market reach.
+      Recommendation:
+        - Refactor layout to use collapsible sidebar with mobile drawer pattern (hamburger menu).
+        - Implement card-based mobile view for invoice table as alternative to horizontal scroll.
+        - Optimize dashboard grids and charts for tablet (768-1024px) and mobile (< 768px) breakpoints.
+        - Ensure touch-friendly interactions (44x44px minimum) and accessibility compliance.
+        - Add responsive utility hooks (useMediaQuery, useBreakpoint) for component logic.
+      Acceptance:
+        - Sidebar collapses to drawer on mobile with hamburger toggle; main content adjusts padding.
+        - Invoice table renders as card list on mobile, shows essential data with expand option.
+        - Dashboard grids use responsive columns (1 → 2 → 4 → 5 based on viewport).
+        - Charts readable on mobile with appropriate heights and label strategies.
+        - All touch targets ≥ 44x44px; no horizontal scroll on any viewport.
+        - Lighthouse mobile score > 90; E2E tests pass on mobile viewports.
+        - Desktop experience maintained without regressions.
+      Notes: See docs/issues/issue-010-mobile-responsiveness.md and docs/findings/mobile-responsiveness-assessment.md. Estimated effort: 15-25 days.
+    labels: ["frontend", "ux", "mobile", "responsive", "accessibility", "enhancement"]
+    priority: "P1"
+

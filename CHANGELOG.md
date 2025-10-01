@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Mobile & Desktop Responsive Design (ISSUE-10)**: Complete mobile and tablet support for dashboard
+  - Responsive hooks: `useMediaQuery`, `useBreakpoint`, `useCurrentBreakpoint` for viewport detection
+  - Mobile drawer navigation with hamburger menu (< 768px)
+  - Card-based invoice list view for mobile devices (replaces table on small screens)
+  - Touch-friendly interactions with 44x44px minimum touch targets
+  - Progressive grid scaling: 1 → 2 → 4 → 5 columns across breakpoints
+  - SSR-safe responsive logic with proper hydration
+  - No horizontal scroll on any viewport size
+  - Full accessibility support (ARIA labels, keyboard navigation, focus trap)
+
 - **Invoice Description Column (ISSUE-8)**: Replace duplicate supplier column with invoice description in table view
   - Text truncation with first-line display for improved readability
   - Native HTML tooltip on hover showing full description text
@@ -16,14 +26,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fallback display ("—") for empty descriptions
   - Preserves existing vendor filtering functionality through primary vendor column
 
-### Technical Details
+### Changed
+- **Dashboard Layout**: Switched from fixed sidebar to responsive sidebar with adaptive padding (`pl-0 md:pl-72`)
+- **Invoice Table**: Now uses `DataTableResponsive` wrapper that conditionally renders table (desktop) or cards (mobile)
+- **Stats Grids**: Updated to progressive scaling `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5`
+
+### Technical Details (ISSUE-10)
+- Added responsive hook system (`src/hooks/useMediaQuery.ts`, `src/hooks/useBreakpoint.ts`)
+- Implemented `ResponsiveSidebar` component with mobile drawer pattern
+- Created `InvoiceCard` and `InvoiceCardList` components for mobile data views
+- Added `DataTableResponsive` wrapper for viewport-adaptive table rendering
+- Comprehensive test coverage: 125+ test cases (unit tests + E2E Playwright tests)
+- Zero security vulnerabilities (npm audit clean)
+- Type-safe breakpoint detection with compile-time validation
+- ADR document: `docs/adr/ADR-010-mobile-responsive-architecture.md`
+
+### Technical Details (ISSUE-8)
 - Added `DescriptionCell` component with conditional tooltip display logic
 - Implemented first-line extraction from multi-line descriptions
 - Added comprehensive test coverage including accessibility, responsive design, and integration tests
 - Maintains backward compatibility with existing data export functionality
 - No breaking changes to API or database schema
 
-### Files Modified
+### Files Modified (ISSUE-10)
+- `src/app/(dashboard)/layout.tsx`: Integrated ResponsiveSidebar with adaptive padding
+- `src/components/layout/sidebar.tsx`: Added onNavigate callback prop for drawer close
+- `src/app/(dashboard)/invoices/page.tsx`: Switched to DataTableResponsive with responsive grids
+
+### Files Modified (ISSUE-8)
 - `src/components/invoices/columns.tsx`: Added description column with `DescriptionCell` component
 - Added comprehensive test suite covering accessibility and responsive behavior
 
