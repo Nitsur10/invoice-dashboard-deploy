@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-10-02T22:22:33.545Z",
+  "generated_at": "2025-10-02T23:21:51.119Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -222,10 +222,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 4643,
+    "execution_time_ms": 2886,
     "api_calls_made": 25,
     "api_calls_failed": 5,
-    "rate_limit_remaining": "4976",
+    "rate_limit_remaining": "4951",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -236,7 +236,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-02T22:22:30.584Z"
+        "timestamp": "2025-10-02T23:21:49.284Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -247,7 +247,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-02T22:22:31.115Z"
+        "timestamp": "2025-10-02T23:21:49.625Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -258,7 +258,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-02T22:22:32.007Z"
+        "timestamp": "2025-10-02T23:21:49.988Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -269,7 +269,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-02T22:22:32.877Z"
+        "timestamp": "2025-10-02T23:21:50.588Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -280,7 +280,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-02T22:22:33.443Z"
+        "timestamp": "2025-10-02T23:21:51.018Z"
       }
     ]
   },
@@ -489,7 +489,7 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-10-02T22:22:33.444Z",
+        "processed_at": "2025-10-02T23:21:51.018Z",
         "pr_count": 6,
         "issue_count": 6
       }
