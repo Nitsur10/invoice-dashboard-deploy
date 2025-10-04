@@ -1,14 +1,14 @@
 <!-- tracker:summary:start -->
 # Issues & PRs Control Board
 
-_Last updated: 10/4/2025, 10:29:44 AM (execution: 2s)_
+_Last updated: 10/4/2025, 10:36:44 AM (execution: 2s)_
 
 **At a glance**
 - **Repos**: 1 (1 success, 0 failed)
 - **Open PRs**: 3 | Ready: 0 | Needs review: 2 | Failing: 1 | Blocked: 0 | Draft: 0 | Stale: 0
-- **Open Issues**: 5 | Features: 0 | Bugs: 0 | Stale: 0
+- **Open Issues**: 6 | Features: 0 | Bugs: 1 | Stale: 0
 
-**Health Status**: 🟡 3 API failures | Rate limit: 4973 remaining
+**Health Status**: 🟡 3 API failures | Rate limit: 4898 remaining
 <!-- tracker:summary:end -->
 
 <!-- tracker:charts:start -->
@@ -30,7 +30,7 @@ pie title Open PRs by Status
 ```mermaid
 pie title Open Issues by Type
     
-    
+    "Bugs (1)" : 1
     
     "Other (5)" : 5
     
@@ -119,9 +119,11 @@ _No items found_
 <!-- tracker:features:end -->
 
 <!-- tracker:bugs:start -->
-## 🐛 Bugs (0)
+## 🐛 Bugs (1)
 
-_No items found_
+| Issue | Repo | Title | Assignee | Updated |
+|:----:|:---:|:----:|:-------:|:------:|
+| [#21](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/21) | invoice-dashboard-deploy | 🚨 Portfolio Tracker Update Failed - 2025-10-04 | Unassigned | 10/4/2025 |
 
 <!-- tracker:bugs:end -->
 
