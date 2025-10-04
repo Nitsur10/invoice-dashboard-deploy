@@ -52,3 +52,16 @@ features:
   check_runs_api: true
   commit_status_api: true
   historical_tracking: false  # Enable for trending data
+
+# Phase 2 feature flags for gradual rollout
+phase2_features:
+  readiness_scoring: true      # PR readiness scoring (0-100)
+  sla_enforcement: true        # SLA policy and due date tracking
+  auto_classification: true   # Content analysis and label suggestions
+  mermaid_charts: true         # Enhanced dashboard with charts
+  auto_comments: false         # Auto-comments on failing PRs (start disabled)
+  auto_assignment: false       # Round-robin auto-assignment (start disabled)
+  webhook_notifications: true # n8n webhook integration
+  notion_sync: false          # Notion database sync (requires setup)
+  anti_spam_protection: true  # Comment and assignment tracking
+  enhanced_metrics: true      # SLA violations and readiness analytics

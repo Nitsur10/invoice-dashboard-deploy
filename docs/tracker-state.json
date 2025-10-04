@@ -1,0 +1,49 @@
+{
+  "version": "2.0",
+  "last_updated": "2025-09-27T22:23:41.883Z",
+  "anti_spam": {
+    "comment_history": {},
+    "assignment_history": {},
+    "notification_history": {}
+  },
+  "assignment_state": {
+    "round_robin_index": 0,
+    "last_assignment": null,
+    "workload_balance": {}
+  },
+  "metrics": {
+    "total_auto_comments": 0,
+    "total_auto_assignments": 0,
+    "successful_assignments": 0,
+    "failed_assignments": 0,
+    "comment_spam_prevented": 0
+  },
+  "feature_usage": {
+    "readiness_scoring": {
+      "enabled": true,
+      "last_used": null,
+      "usage_count": 0
+    },
+    "auto_comments": {
+      "enabled": false,
+      "last_used": null,
+      "usage_count": 0
+    },
+    "auto_assignment": {
+      "enabled": false,
+      "last_used": null,
+      "usage_count": 0
+    },
+    "sla_enforcement": {
+      "enabled": true,
+      "last_used": null,
+      "usage_count": 0
+    }
+  },
+  "error_tracking": {
+    "auto_comment_failures": [],
+    "assignment_failures": [],
+    "api_failures": []
+  },
+  "schema_version": "2.0"
+}

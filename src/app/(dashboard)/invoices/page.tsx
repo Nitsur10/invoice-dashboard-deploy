@@ -9,6 +9,7 @@ import {
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 
 import { DataTable } from "@/components/invoices/data-table"
+import { DataTableResponsive } from "@/components/invoices/data-table-responsive"
 import { invoiceColumns } from "@/components/invoices/columns"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -170,18 +171,16 @@ export function InvoicesView() {
   const pageCount = data?.pagination?.pageCount ?? 0
 
   const stats = React.useMemo(() => {
-    if (!invoices.length) {
-      return { total: totalCount, totalAmount: 0, pending: 0, paid: 0, overdue: 0 }
-    }
+    const pageAmount = invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0)
 
     return {
       total: totalCount,
-      totalAmount: invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0),
-      pending: invoices.filter((inv) => inv.status === 'pending').length,
-      paid: invoices.filter((inv) => inv.status === 'paid').length,
-      overdue: invoices.filter((inv) => inv.status === 'overdue').length,
+      totalAmount: pageAmount,  // Remains page-specific
+      pending: data?.statusCounts?.pending ?? 0,   // From API (database total)
+      paid: data?.statusCounts?.paid ?? 0,         // From API (database total)
+      overdue: data?.statusCounts?.overdue ?? 0,   // From API (database total)
     }
-  }, [invoices, totalCount])
+  }, [invoices, totalCount, data?.statusCounts])
 
   const pageBaseIndex = pagination.pageIndex * pagination.pageSize
   const pageStart = invoices.length ? pageBaseIndex + 1 : 0
@@ -312,7 +311,7 @@ export function InvoicesView() {
   }, [filters.statuses])
 
   return (
-    <div className="max-w-8xl mx-auto px-6 space-y-6 py-8">
+    <div className="max-w-8xl mx-auto px-4 sm:px-6 space-y-6 py-8">
       {/* Screen reader announcements for filter changes */}
       <div aria-live="polite" className="sr-only">
         <div data-testid="filter-announcements">{filterAnnouncement}</div>
@@ -427,7 +426,7 @@ export function InvoicesView() {
       <div className="space-y-4">
         <InvoiceFilterChips savedViews={savedViews} />
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
           <Card className="rpd-card" data-testid="summary-card-total">
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
@@ -542,9 +541,9 @@ export function InvoicesView() {
               <span className="block text-xs text-slate-500">{showingMessage}</span>
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-0 md:p-6">
             <div data-testid="invoice-table">
-              <DataTable
+              <DataTableResponsive
                 columns={invoiceColumns}
                 data={invoices}
                 pageCount={pageCount}

@@ -1,0 +1,957 @@
+# ISSUE-010: Mobile & Desktop Responsive Design
+
+**Issue**: [#10](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/10)
+**Priority**: P1
+**Risk**: Medium
+**Estimated Effort**: 15-25 days (3-5 weeks)
+
+## Problem Statement
+
+The RPD Invoice Dashboard is currently desktop-only with a fixed 288px sidebar that breaks on mobile viewports (< 768px). Users on mobile devices experience:
+- Sidebar overlaying or pushing content off-screen
+- Invoice table with 10+ columns requiring horizontal scroll (poor UX)
+- Hidden navigation elements and user context
+- Charts with cramped labels and fixed heights
+- Touch targets smaller than accessibility guidelines (< 44px)
+
+This blocks mobile users (field workers, executives) from accessing critical invoice data on-the-go.
+
+## Current Architecture Issues
+
+### Layout System
+```tsx
+// src/app/(dashboard)/layout.tsx:43,50
+<nav className="fixed inset-y-0 z-50 flex w-72 flex-col">
+  <Sidebar />
+</nav>
+<div className="flex flex-col flex-1 pl-72">
+  <Header />
+  <main>{children}</main>
+</div>
+```
+
+**Problem**: Fixed 288px width and padding not responsive.
+
+### Invoice Table
+```tsx
+// src/app/(dashboard)/invoices/page.tsx
+<DataTable
+  columns={invoiceColumns} // 10+ columns
+  data={invoices}
+/>
+```
+
+**Problem**: 10+ columns with `whitespace-nowrap` cause horizontal scroll on mobile.
+
+### Dashboard Grids
+```tsx
+// src/app/(dashboard)/dashboard/page.tsx:278
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <StatusBreakdown />
+  <TopVendors />
+</div>
+```
+
+**Problem**: Missing intermediate breakpoints for tablets (768-1024px).
+
+## Technical Solution
+
+### Architecture Changes
+
+#### 1. Responsive Hooks Infrastructure
+
+**New Files**:
+- `src/hooks/useMediaQuery.ts`
+- `src/hooks/useBreakpoint.ts`
+
+**Implementation**:
+```typescript
+// useMediaQuery.ts
+import { useState, useEffect } from 'react'
+
+export function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false)
+
+  useEffect(() => {
+    const media = window.matchMedia(query)
+
+    // Set initial value
+    setMatches(media.matches)
+
+    // Create listener
+    const listener = (e: MediaQueryListEvent) => setMatches(e.matches)
+
+    // Add listener
+    media.addEventListener('change', listener)
+
+    // Cleanup
+    return () => media.removeEventListener('change', listener)
+  }, [query])
+
+  return matches
+}
+
+// useBreakpoint.ts
+import { useMediaQuery } from './useMediaQuery'
+
+type Breakpoint = 'sm' | 'md' | 'lg' | 'xl' | '2xl'
+
+const breakpoints: Record<Breakpoint, string> = {
+  sm: '(min-width: 640px)',
+  md: '(min-width: 768px)',
+  lg: '(min-width: 1024px)',
+  xl: '(min-width: 1280px)',
+  '2xl': '(min-width: 1400px)'
+}
+
+export function useBreakpoint(breakpoint: Breakpoint): boolean {
+  return useMediaQuery(breakpoints[breakpoint])
+}
+
+// Helper hook for current breakpoint name
+export function useCurrentBreakpoint(): Breakpoint | 'xs' {
+  const is2xl = useBreakpoint('2xl')
+  const isXl = useBreakpoint('xl')
+  const isLg = useBreakpoint('lg')
+  const isMd = useBreakpoint('md')
+  const isSm = useBreakpoint('sm')
+
+  if (is2xl) return '2xl'
+  if (isXl) return 'xl'
+  if (isLg) return 'lg'
+  if (isMd) return 'md'
+  if (isSm) return 'sm'
+  return 'xs'
+}
+```
+
+#### 2. Layout System Refactor
+
+**New Components**:
+- `src/components/layout/responsive-sidebar.tsx` - Sidebar with collapse state
+- `src/components/layout/mobile-drawer.tsx` - Slide-in drawer for mobile
+- `src/components/layout/hamburger-button.tsx` - Menu toggle button
+
+**Modified Files**:
+- `src/app/(dashboard)/layout.tsx` - Use responsive wrapper
+- `src/components/layout/sidebar.tsx` - Add mobile-friendly styling
+- `src/components/layout/header.tsx` - Responsive user info
+
+**Implementation**:
+```tsx
+// responsive-sidebar.tsx
+'use client'
+
+import { useState } from 'react'
+import { Menu, X } from 'lucide-react'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
+import { Sidebar } from './sidebar'
+import { Button } from '@/components/ui/button'
+
+export function ResponsiveSidebar() {
+  const isMobile = !useBreakpoint('md')
+  const [isOpen, setIsOpen] = useState(false)
+
+  // Desktop: Fixed sidebar
+  if (!isMobile) {
+    return (
+      <nav
+        role="navigation"
+        aria-label="Main navigation"
+        className="fixed inset-y-0 z-50 flex w-72 flex-col"
+      >
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto glass-sidebar">
+          <Sidebar />
+        </div>
+      </nav>
+    )
+  }
+
+  // Mobile: Drawer + Hamburger
+  return (
+    <>
+      {/* Hamburger Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 left-4 z-50 md:hidden"
+        onClick={() => setIsOpen(true)}
+        aria-label="Open navigation menu"
+      >
+        <Menu className="h-6 w-6" />
+      </Button>
+
+      {/* Backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Drawer */}
+      <nav
+        role="navigation"
+        aria-label="Main navigation"
+        className={`fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 md:hidden ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex h-full flex-col gap-y-5 overflow-y-auto glass-sidebar">
+          {/* Close button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4"
+            onClick={() => setIsOpen(false)}
+            aria-label="Close navigation menu"
+          >
+            <X className="h-6 w-6" />
+          </Button>
+
+          <Sidebar onNavigate={() => setIsOpen(false)} />
+        </div>
+      </nav>
+    </>
+  )
+}
+
+// Updated layout.tsx
+import { ResponsiveSidebar } from '@/components/layout/responsive-sidebar'
+
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // ... auth check code ...
+
+  return (
+    <div className="flex min-h-screen relative z-10">
+      {/* Skip to content */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:px-4 focus:py-2"
+      >
+        Skip to main content
+      </a>
+
+      {/* Responsive Sidebar */}
+      <ResponsiveSidebar />
+
+      {/* Main Content - Responsive padding */}
+      <div className="flex flex-col flex-1 pl-0 md:pl-72">
+        <Header />
+        <main
+          id="main-content"
+          role="main"
+          className="flex-1 p-4 md:p-6"
+        >
+          <div className="mx-auto max-w-7xl">
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
+  )
+}
+
+// Updated sidebar.tsx - Add onNavigate prop
+export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+  // ... existing code ...
+
+  return (
+    <div className="pb-12 min-h-screen w-full bg-card border-r border/50">
+      {/* ... logo ... */}
+
+      <div className="px-3">
+        <nav className="space-y-2">
+          {navigation.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              onClick={onNavigate} // Close drawer on navigate
+              className={/* ... */}
+            >
+              {/* ... */}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      {/* ... */}
+    </div>
+  )
+}
+```
+
+#### 3. Invoice Table Mobile View
+
+**New Components**:
+- `src/components/invoices/invoice-card-list.tsx` - Card-based list wrapper
+- `src/components/invoices/invoice-card.tsx` - Individual invoice card
+- `src/components/invoices/data-table-responsive.tsx` - Responsive table wrapper
+
+**Implementation**:
+```tsx
+// invoice-card.tsx
+'use client'
+
+import { useState } from 'react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { formatCurrency, formatDateForSydney } from '@/lib/utils'
+import type { Invoice } from '@/lib/types'
+
+interface InvoiceCardProps {
+  invoice: Invoice
+}
+
+export function InvoiceCard({ invoice }: InvoiceCardProps) {
+  const [expanded, setExpanded] = useState(false)
+
+  const statusVariant = {
+    paid: 'default',
+    pending: 'secondary',
+    overdue: 'destructive'
+  }[invoice.status] as any
+
+  return (
+    <Card
+      className="w-full hover:shadow-md transition-shadow"
+      data-testid="invoice-card"
+    >
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1">
+            <span className="font-semibold text-base">
+              {invoice.invoiceNumber}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {invoice.category}
+            </span>
+          </div>
+          <Badge variant={statusVariant}>
+            {invoice.status.toUpperCase()}
+          </Badge>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-3">
+        {/* Essential Info */}
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between items-center">
+            <span className="text-muted-foreground">Amount:</span>
+            <span className="font-semibold text-base">
+              {formatCurrency(invoice.amount)}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <span className="text-muted-foreground">Vendor:</span>
+            <span className="truncate ml-2 max-w-[60%] text-right">
+              {invoice.vendorName}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <span className="text-muted-foreground">Due Date:</span>
+            <span>{formatDateForSydney(invoice.dueDate).split(' ')[0]}</span>
+          </div>
+        </div>
+
+        {/* Expandable Details */}
+        {expanded && (
+          <div className="pt-3 border-t space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Issue Date:</span>
+              <span>{formatDateForSydney(invoice.issueDate).split(' ')[0]}</span>
+            </div>
+
+            {invoice.paidDate && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Paid Date:</span>
+                <span>{formatDateForSydney(invoice.paidDate).split(' ')[0]}</span>
+              </div>
+            )}
+
+            {invoice.description && (
+              <div className="pt-2">
+                <span className="text-muted-foreground block mb-1">Description:</span>
+                <span className="text-xs">{invoice.description}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Expand/Collapse Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full mt-2 h-9"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? (
+            <>
+              <ChevronUp className="h-4 w-4 mr-2" />
+              Show Less
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-4 w-4 mr-2" />
+              Show More
+            </>
+          )}
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}
+
+// invoice-card-list.tsx
+import { InvoiceCard } from './invoice-card'
+import type { Invoice } from '@/lib/types'
+
+interface InvoiceCardListProps {
+  invoices: Invoice[]
+}
+
+export function InvoiceCardList({ invoices }: InvoiceCardListProps) {
+  if (invoices.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        No invoices found
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {invoices.map((invoice) => (
+        <InvoiceCard key={invoice.id} invoice={invoice} />
+      ))}
+    </div>
+  )
+}
+
+// data-table-responsive.tsx
+'use client'
+
+import { useBreakpoint } from '@/hooks/useBreakpoint'
+import { DataTable } from './data-table'
+import { InvoiceCardList } from './invoice-card-list'
+import type { Invoice } from '@/lib/types'
+
+interface DataTableResponsiveProps {
+  // All DataTable props
+  columns: any[]
+  data: Invoice[]
+  pageCount: number
+  pageSize: number
+  pageIndex: number
+  onPaginationChange: any
+  onSortingChange: any
+  onColumnFiltersChange: any
+  sorting: any
+  columnFilters: any
+  isLoading?: boolean
+  manualPagination?: boolean
+  manualSorting?: boolean
+  manualFiltering?: boolean
+  facets?: any
+}
+
+export function DataTableResponsive(props: DataTableResponsiveProps) {
+  const isMobile = !useBreakpoint('md')
+
+  // Mobile: Card view
+  if (isMobile) {
+    return <InvoiceCardList invoices={props.data} />
+  }
+
+  // Desktop: Table view
+  return <DataTable {...props} />
+}
+
+// Updated invoices/page.tsx
+import { DataTableResponsive } from '@/components/invoices/data-table-responsive'
+
+export function InvoicesView() {
+  // ... existing code ...
+
+  return (
+    <div className="max-w-8xl mx-auto px-4 sm:px-6 space-y-6 py-8">
+      {/* ... header and stats ... */}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Invoice List</CardTitle>
+          <CardDescription className="hidden md:block">
+            {showingMessage}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0 md:p-6">
+          <DataTableResponsive
+            columns={invoiceColumns}
+            data={invoices}
+            // ... other props ...
+          />
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+```
+
+#### 4. Dashboard Grid Optimization
+
+**Modified Files**:
+- `src/app/(dashboard)/dashboard/page.tsx`
+
+**Changes**:
+```tsx
+// Before
+<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+
+// After
+<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+
+// Before
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+// After
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+
+// Stats Cards Grid
+<div className="rpd-grid-responsive">
+  {/* Before: No clear pattern */}
+  {/* After: */}
+  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+```
+
+#### 5. Chart Responsiveness
+
+**Modified Files**:
+- `src/components/charts/top-vendors.tsx`
+- `src/components/charts/supplier-breakdown.tsx`
+
+**Implementation Pattern**:
+```tsx
+// top-vendors.tsx
+'use client'
+
+import { useBreakpoint } from '@/hooks/useBreakpoint'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+
+export function TopVendors({
+  data,
+  isLoading,
+}: {
+  data: Array<{ vendor: string; count: number; amount: number }>
+  isLoading?: boolean
+}) {
+  const isMobile = !useBreakpoint('sm')
+  const isTablet = useBreakpoint('sm') && !useBreakpoint('lg')
+
+  // Adjust data size for smaller screens
+  const displayData = isMobile
+    ? data.slice(0, 5)
+    : isTablet
+    ? data.slice(0, 6)
+    : data.slice(0, 8)
+
+  const vendors = displayData.map(v => ({
+    name: v.vendor,
+    amount: Math.round(v.amount || 0),
+  }))
+
+  // Responsive chart height
+  const chartHeight = isMobile ? 300 : isTablet ? 320 : 350
+
+  // Responsive margins
+  const chartMargins = isMobile
+    ? { top: 10, right: 20, left: 60, bottom: 10 }
+    : { top: 20, right: 30, left: 20, bottom: 80 }
+
+  return (
+    <Card className="glass-card border-2 shadow-lg">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-xl font-bold flex items-center space-x-3">
+          <div className="w-4 h-4 bg-amber-600 rounded-full"></div>
+          <span>Top Vendors</span>
+        </CardTitle>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          {isMobile ? 'Top 5 vendors' : 'Hover for details'}
+        </p>
+      </CardHeader>
+      <CardContent style={{ height: chartHeight }}>
+        {isLoading ? (
+          <div className="h-full rounded bg-slate-100 dark:bg-slate-800 animate-pulse" />
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={vendors}
+              margin={chartMargins}
+              layout={isMobile ? "vertical" : "horizontal"}
+            >
+              {isMobile ? (
+                <>
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: '#374151' }}
+                    width={100}
+                  />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 12, fill: '#374151' }}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  />
+                </>
+              ) : (
+                <>
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: '#374151' }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    interval={0}
+                    tickFormatter={(value) => {
+                      if (value.length > 15) return value.substring(0, 13) + '...'
+                      return value
+                    }}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12, fill: '#374151' }}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    width={60}
+                  />
+                </>
+              )}
+              <Tooltip
+                formatter={(v: any) => [`$${Number(v).toLocaleString()}`, 'Amount']}
+                labelFormatter={(label) => `Vendor: ${label}`}
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  fontSize: '14px'
+                }}
+              />
+              <Bar
+                dataKey="amount"
+                fill="oklch(0.65 0.12 80)"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={isMobile ? 40 : 80}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+## Performance Requirements
+
+| Metric | Target | Validation Method |
+|--------|--------|-------------------|
+| Lighthouse Mobile Score | > 90 | Chrome DevTools Lighthouse |
+| Page Load (3G) | < 3s | Network throttling in DevTools |
+| Bundle Size Increase | < 50KB | `npm run bundle-budget` |
+| Layout Shift (CLS) | < 0.1 | Lighthouse Core Web Vitals |
+| Time to Interactive (TTI) | < 2s | Lighthouse |
+| First Contentful Paint | < 1.5s | Lighthouse |
+
+### Performance Optimizations
+- Lazy load charts on mobile (dynamic import)
+- Debounce window resize handlers
+- Use CSS transforms for animations (GPU-accelerated)
+- Minimize re-renders with React.memo on heavy components
+
+## Testing Strategy
+
+### Unit Tests
+
+**Files to Create**:
+- `src/hooks/__tests__/useMediaQuery.test.ts`
+- `src/hooks/__tests__/useBreakpoint.test.ts`
+- `src/components/layout/__tests__/responsive-sidebar.test.tsx`
+- `src/components/invoices/__tests__/invoice-card.test.tsx`
+- `src/components/invoices/__tests__/data-table-responsive.test.tsx`
+
+**Example Test**:
+```typescript
+// useMediaQuery.test.ts
+import { renderHook } from '@testing-library/react'
+import { useMediaQuery } from '../useMediaQuery'
+
+describe('useMediaQuery', () => {
+  it('returns true when media query matches', () => {
+    // Mock window.matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: jest.fn().mockImplementation(query => ({
+        matches: query === '(min-width: 768px)',
+        media: query,
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+      })),
+    })
+
+    const { result } = renderHook(() => useMediaQuery('(min-width: 768px)'))
+    expect(result.current).toBe(true)
+  })
+
+  it('returns false when media query does not match', () => {
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: jest.fn().mockImplementation(query => ({
+        matches: false,
+        media: query,
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+      })),
+    })
+
+    const { result } = renderHook(() => useMediaQuery('(min-width: 768px)'))
+    expect(result.current).toBe(false)
+  })
+})
+
+// responsive-sidebar.test.tsx
+import { render, screen } from '@testing-library/react'
+import { ResponsiveSidebar } from '../responsive-sidebar'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
+
+jest.mock('@/hooks/useBreakpoint')
+
+describe('ResponsiveSidebar', () => {
+  it('renders drawer and hamburger on mobile', () => {
+    (useBreakpoint as jest.Mock).mockReturnValue(false)
+
+    render(<ResponsiveSidebar />)
+
+    expect(screen.getByLabelText('Open navigation menu')).toBeInTheDocument()
+  })
+
+  it('renders fixed sidebar on desktop', () => {
+    (useBreakpoint as jest.Mock).mockReturnValue(true)
+
+    render(<ResponsiveSidebar />)
+
+    expect(screen.queryByLabelText('Open navigation menu')).not.toBeInTheDocument()
+    expect(screen.getByRole('navigation')).toHaveClass('fixed')
+  })
+})
+```
+
+### E2E Tests
+
+**File**: `tests-e2e/mobile-responsiveness.spec.ts`
+
+```typescript
+import { test, expect } from '@playwright/test'
+
+test.describe('Mobile Responsiveness', () => {
+  test.describe('Mobile viewport (375px)', () => {
+    test.use({ viewport: { width: 375, height: 667 } })
+
+    test('sidebar collapses to drawer with hamburger menu', async ({ page }) => {
+      await page.goto('/dashboard')
+
+      // Hamburger menu should be visible
+      const hamburger = page.locator('[aria-label="Open navigation menu"]')
+      await expect(hamburger).toBeVisible()
+
+      // Sidebar should be hidden initially
+      const sidebar = page.locator('nav[role="navigation"]')
+      await expect(sidebar).not.toBeVisible()
+
+      // Click hamburger to open drawer
+      await hamburger.click()
+
+      // Drawer should be visible
+      await expect(sidebar).toBeVisible()
+
+      // Backdrop should exist
+      await expect(page.locator('div.bg-black\\/50')).toBeVisible()
+
+      // Close button should exist
+      const closeBtn = page.locator('[aria-label="Close navigation menu"]')
+      await expect(closeBtn).toBeVisible()
+
+      // Click close button
+      await closeBtn.click()
+
+      // Drawer should hide
+      await expect(sidebar).not.toBeVisible()
+    })
+
+    test('invoice table shows card view on mobile', async ({ page }) => {
+      await page.goto('/invoices')
+
+      // Wait for data to load
+      await page.waitForSelector('[data-testid="invoice-card"]')
+
+      // Cards should be visible
+      const cards = page.locator('[data-testid="invoice-card"]')
+      await expect(cards.first()).toBeVisible()
+
+      // Table should not be visible
+      await expect(page.locator('table')).not.toBeVisible()
+
+      // Test expand/collapse
+      const firstCard = cards.first()
+      const expandBtn = firstCard.locator('button:has-text("Show More")')
+      await expandBtn.click()
+
+      // More details should appear
+      await expect(firstCard.locator('text=Issue Date:')).toBeVisible()
+    })
+
+    test('all interactive elements meet 44px touch target minimum', async ({ page }) => {
+      await page.goto('/dashboard')
+
+      // Get all buttons
+      const buttons = await page.locator('button').all()
+
+      for (const button of buttons) {
+        if (await button.isVisible()) {
+          const box = await button.boundingBox()
+          if (box) {
+            expect(box.width).toBeGreaterThanOrEqual(44)
+            expect(box.height).toBeGreaterThanOrEqual(44)
+          }
+        }
+      }
+    })
+
+    test('no horizontal scroll on any page', async ({ page }) => {
+      const pages = ['/dashboard', '/invoices', '/kanban', '/analytics']
+
+      for (const path of pages) {
+        await page.goto(path)
+        await page.waitForLoadState('networkidle')
+
+        const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+        const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
+
+        expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1) // Allow 1px tolerance
+      }
+    })
+  })
+
+  test.describe('Tablet viewport (768px)', () => {
+    test.use({ viewport: { width: 768, height: 1024 } })
+
+    test('sidebar is fixed on tablet', async ({ page }) => {
+      await page.goto('/dashboard')
+
+      const sidebar = page.locator('nav[role="navigation"]')
+      await expect(sidebar).toBeVisible()
+      await expect(sidebar).toHaveClass(/fixed/)
+    })
+
+    test('invoice table shows on tablet', async ({ page }) => {
+      await page.goto('/invoices')
+
+      await expect(page.locator('table')).toBeVisible()
+    })
+  })
+
+  test.describe('Desktop viewport (1280px)', () => {
+    test.use({ viewport: { width: 1280, height: 800 } })
+
+    test('desktop experience unchanged', async ({ page }) => {
+      await page.goto('/dashboard')
+
+      // Fixed sidebar visible
+      const sidebar = page.locator('nav[role="navigation"]')
+      await expect(sidebar).toBeVisible()
+      await expect(sidebar).toHaveClass(/fixed/)
+
+      // No hamburger menu
+      await expect(page.locator('[aria-label="Open navigation menu"]')).not.toBeVisible()
+    })
+  })
+})
+```
+
+## Migration Path
+
+### Phase 1: Foundation (No Breaking Changes)
+1. Create responsive hooks (`useMediaQuery`, `useBreakpoint`)
+2. Create new mobile components (drawer, cards)
+3. Test thoroughly in development
+4. Deploy without activating (behind feature flag if needed)
+
+### Phase 2: Gradual Rollout
+1. Update layout for mobile users first
+2. Monitor analytics for mobile user engagement
+3. Gather feedback through error tracking
+4. Adjust based on real usage patterns
+
+### Phase 3: Full Deployment
+1. Enable for all users
+2. Remove old code and feature flags
+3. Update documentation
+4. Announce mobile support to stakeholders
+
+### Rollback Plan
+If critical issues arise:
+1. Revert layout changes (sidebar back to fixed)
+2. Disable card view (force table view)
+3. Fix issues in development
+4. Re-deploy when stable
+
+## Acceptance Criteria
+
+- [x] Issue document created: `docs/issues/issue-010-mobile-responsiveness.md`
+- [x] Findings report created: `docs/findings/mobile-responsiveness-assessment.md`
+- [x] Backlog updated: `docs/issues/backlog.yaml`
+- [x] Spec document created: `docs/specs/ISSUE-010.mdx`
+- [ ] Responsive hooks implemented (`useMediaQuery`, `useBreakpoint`)
+- [ ] Layout system refactored with mobile drawer pattern
+- [ ] Invoice table has card view for mobile (< 768px)
+- [ ] Dashboard grids optimized for all breakpoints
+- [ ] Charts render appropriately on mobile devices
+- [ ] All touch targets meet 44x44px minimum
+- [ ] No horizontal scroll on any viewport size
+- [ ] Lighthouse mobile score > 90
+- [ ] All unit tests pass
+- [ ] All E2E tests pass on mobile/tablet/desktop viewports
+- [ ] Desktop experience maintained (regression tests pass)
+- [ ] Performance benchmarks met (< 3s load on 3G)
+- [ ] Accessibility audit passed (WCAG AA compliance)
+- [ ] Documentation complete (ADR, changelog)
+
+## References
+
+- **Issue**: `docs/issues/issue-010-mobile-responsiveness.md`
+- **Findings**: `docs/findings/mobile-responsiveness-assessment.md`
+- **Backlog**: `docs/issues/backlog.yaml` (Issue #10)
+- **Current Layout**: `src/app/(dashboard)/layout.tsx:43,50`
+- **Current Sidebar**: `src/components/layout/sidebar.tsx`
+- **Current Header**: `src/components/layout/header.tsx`
+- **Invoice Table**: `src/app/(dashboard)/invoices/page.tsx:428-565`
+- **Dashboard Page**: `src/app/(dashboard)/dashboard/page.tsx:278`
+- **Charts**: `src/components/charts/top-vendors.tsx`, `src/components/charts/supplier-breakdown.tsx`
+- **Tailwind Config**: `tailwind.config.js`
+- **Global Styles**: `src/app/globals.css`
+
+## Next Steps
+
+**Awaiting Token**: `APPLY`
+
+Once approved, implementation will begin with:
+1. Creating responsive hooks
+2. Refactoring layout system
+3. Building mobile card components
+4. Optimizing dashboard grids and charts
+5. Running comprehensive tests
+
+**Estimated Timeline**: 3-5 weeks for complete implementation and testing
