@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-10-04T10:36:44.575Z",
+  "generated_at": "2025-10-04T13:31:10.329Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -46,7 +46,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T03:14:27.000Z",
-        "hours_remaining": -55,
+        "hours_remaining": -58,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -95,7 +95,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T02:25:09.000Z",
-        "hours_remaining": -56,
+        "hours_remaining": -59,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -122,7 +122,7 @@
       "draft": false,
       "status_bucket": "needs_review",
       "classification_confidence": 0.8,
-      "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5); ⏰ Stale PR: 9 days old (-10)",
+      "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5); ⏰ Stale PR: 10 days old (-10)",
       "linked_issues": [],
       "updated_at": "2025-09-26T07:12:24Z",
       "created_at": "2025-09-24T11:42:27Z",
@@ -133,12 +133,12 @@
         "✅ All checks passing (+20)",
         "📝 Partial approvals: 0/1 (+0)",
         "📊 Small changeset: 0 files (+5)",
-        "⏰ Stale PR: 9 days old (-10)"
+        "⏰ Stale PR: 10 days old (-10)"
       ],
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-09-29T11:42:27.000Z",
-        "hours_remaining": -119,
+        "hours_remaining": -122,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -257,10 +257,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1626,
+    "execution_time_ms": 1845,
     "api_calls_made": 14,
     "api_calls_failed": 3,
-    "rate_limit_remaining": "4898",
+    "rate_limit_remaining": "4987",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -271,7 +271,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T10:36:43.776Z"
+        "timestamp": "2025-10-04T13:31:09.329Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -282,7 +282,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T10:36:44.094Z"
+        "timestamp": "2025-10-04T13:31:09.723Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -293,7 +293,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T10:36:44.474Z"
+        "timestamp": "2025-10-04T13:31:10.228Z"
       }
     ]
   },
@@ -326,7 +326,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T03:14:27.000Z",
-            "hours_remaining": -55,
+            "hours_remaining": -58,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -375,7 +375,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T02:25:09.000Z",
-            "hours_remaining": -56,
+            "hours_remaining": -59,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -402,7 +402,7 @@
           "draft": false,
           "status_bucket": "needs_review",
           "classification_confidence": 0.8,
-          "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5); ⏰ Stale PR: 9 days old (-10)",
+          "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5); ⏰ Stale PR: 10 days old (-10)",
           "linked_issues": [],
           "updated_at": "2025-09-26T07:12:24Z",
           "created_at": "2025-09-24T11:42:27Z",
@@ -413,12 +413,12 @@
             "✅ All checks passing (+20)",
             "📝 Partial approvals: 0/1 (+0)",
             "📊 Small changeset: 0 files (+5)",
-            "⏰ Stale PR: 9 days old (-10)"
+            "⏰ Stale PR: 10 days old (-10)"
           ],
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-09-29T11:42:27.000Z",
-            "hours_remaining": -119,
+            "hours_remaining": -122,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -537,7 +537,7 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-10-04T10:36:44.475Z",
+        "processed_at": "2025-10-04T13:31:10.229Z",
         "pr_count": 3,
         "issue_count": 6
       }
