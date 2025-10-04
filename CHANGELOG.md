@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Consistent UX with Invoices page clickable status cards pattern
   - Maintains all existing drag-and-drop functionality
 
+### Fixed
+- **Kanban Status Count Accuracy (ISSUE-11)**: Corrected status card counts to show accurate numbers
+  - Fixed overdue count showing "5" instead of actual count
+  - Replaced 5 separate API calls with single optimized query
+  - Client-side status counting for all 5 statuses (pending, in_review, approved, paid, overdue)
+  - Improved performance by reducing API calls from 5 to 1
+
 ### Added
 - **Mobile & Desktop Responsive Design (ISSUE-10)**: Complete mobile and tablet support for dashboard
   - Responsive hooks: `useMediaQuery`, `useBreakpoint`, `useCurrentBreakpoint` for viewport detection
