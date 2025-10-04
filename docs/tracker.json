@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-10-04T14:28:29.352Z",
+  "generated_at": "2025-10-04T22:21:50.136Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -51,7 +51,7 @@
       "sla_status": {
         "status": "on_track",
         "due_date": "2025-10-09T13:42:18.000Z",
-        "hours_remaining": 119,
+        "hours_remaining": 111,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -96,7 +96,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T03:14:27.000Z",
-        "hours_remaining": -59,
+        "hours_remaining": -67,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -145,7 +145,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T02:25:09.000Z",
-        "hours_remaining": -60,
+        "hours_remaining": -68,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -188,7 +188,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-09-29T11:42:27.000Z",
-        "hours_remaining": -123,
+        "hours_remaining": -131,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -240,7 +240,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 10,
+      "days_since_update": 11,
       "updated_at": "2025-09-24T10:03:46Z",
       "created_at": "2025-09-24T10:03:46Z",
       "author": "Nitsur10"
@@ -255,7 +255,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 10,
+      "days_since_update": 11,
       "updated_at": "2025-09-24T10:02:09Z",
       "created_at": "2025-09-24T10:02:09Z",
       "author": "Nitsur10"
@@ -270,7 +270,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 10,
+      "days_since_update": 11,
       "updated_at": "2025-09-24T09:47:48Z",
       "created_at": "2025-09-24T09:47:48Z",
       "author": "Nitsur10"
@@ -285,7 +285,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 10,
+      "days_since_update": 11,
       "updated_at": "2025-09-24T09:45:58Z",
       "created_at": "2025-09-24T09:45:58Z",
       "author": "Nitsur10"
@@ -300,17 +300,17 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 10,
+      "days_since_update": 11,
       "updated_at": "2025-09-24T09:38:50Z",
       "created_at": "2025-09-24T09:38:50Z",
       "author": "Nitsur10"
     }
   ],
   "metadata": {
-    "execution_time_ms": 1605,
+    "execution_time_ms": 2471,
     "api_calls_made": 18,
     "api_calls_failed": 4,
-    "rate_limit_remaining": "4822",
+    "rate_limit_remaining": "4983",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -321,7 +321,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T14:28:28.363Z"
+        "timestamp": "2025-10-04T22:21:48.802Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -332,7 +332,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T14:28:28.674Z"
+        "timestamp": "2025-10-04T22:21:49.246Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -343,7 +343,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T14:28:28.890Z"
+        "timestamp": "2025-10-04T22:21:49.587Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -354,7 +354,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T14:28:29.250Z"
+        "timestamp": "2025-10-04T22:21:50.034Z"
       }
     ]
   },
@@ -392,7 +392,7 @@
           "sla_status": {
             "status": "on_track",
             "due_date": "2025-10-09T13:42:18.000Z",
-            "hours_remaining": 119,
+            "hours_remaining": 111,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -437,7 +437,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T03:14:27.000Z",
-            "hours_remaining": -59,
+            "hours_remaining": -67,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -486,7 +486,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T02:25:09.000Z",
-            "hours_remaining": -60,
+            "hours_remaining": -68,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -529,7 +529,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-09-29T11:42:27.000Z",
-            "hours_remaining": -123,
+            "hours_remaining": -131,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -581,7 +581,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 10,
+          "days_since_update": 11,
           "updated_at": "2025-09-24T10:03:46Z",
           "created_at": "2025-09-24T10:03:46Z",
           "author": "Nitsur10"
@@ -596,7 +596,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 10,
+          "days_since_update": 11,
           "updated_at": "2025-09-24T10:02:09Z",
           "created_at": "2025-09-24T10:02:09Z",
           "author": "Nitsur10"
@@ -611,7 +611,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 10,
+          "days_since_update": 11,
           "updated_at": "2025-09-24T09:47:48Z",
           "created_at": "2025-09-24T09:47:48Z",
           "author": "Nitsur10"
@@ -626,7 +626,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 10,
+          "days_since_update": 11,
           "updated_at": "2025-09-24T09:45:58Z",
           "created_at": "2025-09-24T09:45:58Z",
           "author": "Nitsur10"
@@ -641,14 +641,14 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 10,
+          "days_since_update": 11,
           "updated_at": "2025-09-24T09:38:50Z",
           "created_at": "2025-09-24T09:38:50Z",
           "author": "Nitsur10"
         }
       ],
       "metadata": {
-        "processed_at": "2025-10-04T14:28:29.251Z",
+        "processed_at": "2025-10-04T22:21:50.035Z",
         "pr_count": 4,
         "issue_count": 6
       }
