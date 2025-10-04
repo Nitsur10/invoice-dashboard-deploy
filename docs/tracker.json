@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-10-04T23:22:12.030Z",
+  "generated_at": "2025-10-04T23:45:54.802Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -8,10 +8,10 @@
     "total_repos": 1,
     "successful_repos": 1,
     "failed_repos": 0,
-    "total_prs": 4,
+    "total_prs": 3,
     "prs_by_status": {
-      "needs_review": 3,
-      "ci_failed": 1
+      "ci_failed": 1,
+      "needs_review": 2
     },
     "total_issues": 6,
     "issues_by_classification": {
@@ -21,56 +21,6 @@
     "stale_issues": 0
   },
   "prs": [
-    {
-      "repo": "Nitsur10/invoice-dashboard-deploy",
-      "number": 22,
-      "title": "Kanban Board UX Improvements (#11)",
-      "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/22",
-      "head_ref": "11-kanban-ux-improvements",
-      "draft": false,
-      "status_bucket": "needs_review",
-      "classification_confidence": 0.8,
-      "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5)",
-      "linked_issues": [
-        {
-          "repo": "Nitsur10/invoice-dashboard-deploy",
-          "number": 11,
-          "type": "closes"
-        }
-      ],
-      "updated_at": "2025-10-04T14:13:07Z",
-      "created_at": "2025-10-04T13:42:18Z",
-      "author": "Nitsur10",
-      "labels": [],
-      "readiness_score": 75,
-      "readiness_reasons": [
-        "✅ All checks passing (+20)",
-        "📝 Partial approvals: 0/1 (+0)",
-        "📊 Small changeset: 0 files (+5)"
-      ],
-      "sla_status": {
-        "status": "on_track",
-        "due_date": "2025-10-09T13:42:18.000Z",
-        "hours_remaining": 110,
-        "priority": "p2",
-        "sla_hours": 120
-      },
-      "content_analysis": {
-        "type": null,
-        "priority": "p0",
-        "labels": [],
-        "confidence": 0.9,
-        "reasons": [
-          "Security keywords: security issue"
-        ]
-      },
-      "enhanced_classification": {
-        "category": "review",
-        "priority": "p0",
-        "suggested_labels": [],
-        "missing_links": []
-      }
-    },
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
       "number": 15,
@@ -96,7 +46,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T03:14:27.000Z",
-        "hours_remaining": -68,
+        "hours_remaining": -69,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -307,10 +257,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1881,
-    "api_calls_made": 18,
-    "api_calls_failed": 4,
-    "rate_limit_remaining": "4983",
+    "execution_time_ms": 1272,
+    "api_calls_made": 14,
+    "api_calls_failed": 3,
+    "rate_limit_remaining": "4969",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -321,7 +271,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T23:22:10.886Z"
+        "timestamp": "2025-10-04T23:45:54.181Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -332,7 +282,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T23:22:11.324Z"
+        "timestamp": "2025-10-04T23:45:54.402Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -343,18 +293,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T23:22:11.583Z"
-      },
-      {
-        "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
-        "context": {
-          "operation": "newApi",
-          "params": "{\"owner\":\"Nitsur10\",\"repo\":\"invoice-dashboard-deploy\",\"branch\":\"main\"}",
-          "status": 403,
-          "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
-          "retries": 0
-        },
-        "timestamp": "2025-10-04T23:22:11.928Z"
+        "timestamp": "2025-10-04T23:45:54.701Z"
       }
     ]
   },
@@ -362,56 +301,6 @@
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
       "prs": [
-        {
-          "repo": "Nitsur10/invoice-dashboard-deploy",
-          "number": 22,
-          "title": "Kanban Board UX Improvements (#11)",
-          "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/22",
-          "head_ref": "11-kanban-ux-improvements",
-          "draft": false,
-          "status_bucket": "needs_review",
-          "classification_confidence": 0.8,
-          "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5)",
-          "linked_issues": [
-            {
-              "repo": "Nitsur10/invoice-dashboard-deploy",
-              "number": 11,
-              "type": "closes"
-            }
-          ],
-          "updated_at": "2025-10-04T14:13:07Z",
-          "created_at": "2025-10-04T13:42:18Z",
-          "author": "Nitsur10",
-          "labels": [],
-          "readiness_score": 75,
-          "readiness_reasons": [
-            "✅ All checks passing (+20)",
-            "📝 Partial approvals: 0/1 (+0)",
-            "📊 Small changeset: 0 files (+5)"
-          ],
-          "sla_status": {
-            "status": "on_track",
-            "due_date": "2025-10-09T13:42:18.000Z",
-            "hours_remaining": 110,
-            "priority": "p2",
-            "sla_hours": 120
-          },
-          "content_analysis": {
-            "type": null,
-            "priority": "p0",
-            "labels": [],
-            "confidence": 0.9,
-            "reasons": [
-              "Security keywords: security issue"
-            ]
-          },
-          "enhanced_classification": {
-            "category": "review",
-            "priority": "p0",
-            "suggested_labels": [],
-            "missing_links": []
-          }
-        },
         {
           "repo": "Nitsur10/invoice-dashboard-deploy",
           "number": 15,
@@ -437,7 +326,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T03:14:27.000Z",
-            "hours_remaining": -68,
+            "hours_remaining": -69,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -648,8 +537,8 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-10-04T23:22:11.929Z",
-        "pr_count": 4,
+        "processed_at": "2025-10-04T23:45:54.702Z",
+        "pr_count": 3,
         "issue_count": 6
       }
     }
