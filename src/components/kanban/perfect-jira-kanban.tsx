@@ -107,7 +107,10 @@ function PerfectJiraCard({ invoice, isBeingDragged }: PerfectJiraCardProps) {
                 <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
                   {invoice.invoiceNumber}
                 </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 truncate">
+                <p
+                  className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2"
+                  title={invoice.description || invoice.subject}
+                >
                   {invoice.description || invoice.subject}
                 </p>
               </div>
