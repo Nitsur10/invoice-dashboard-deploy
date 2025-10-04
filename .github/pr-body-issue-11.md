@@ -4,10 +4,11 @@ Fixes #11
 
 ## Summary
 
-Enhanced the Kanban board with two key UX improvements:
+Enhanced the Kanban board with three key improvements:
 
 1. **Fixed description text overflow** - Card descriptions now show 2 lines with ellipsis instead of cutting off mid-word
 2. **Made status cards clickable filters** - Status summary cards (Pending, In Review, Approved, Paid, Overdue) now function as interactive filters, matching the pattern from the Invoices page
+3. **Fixed overdue count calculation** - Status cards now show accurate counts for all 5 statuses (was showing incorrect count due to inefficient API querying)
 
 ## Changes
 
@@ -45,6 +46,22 @@ the western boundary of John Powell Dr and O'Leary...
 4. Filter chips update automatically
 5. Click again to remove filter (toggle)
 
+### 3. Overdue Count Fix
+**File:** `src/app/(dashboard)/kanban/page.tsx:119-173`
+
+**Problem:** Status cards showed incorrect counts (e.g., overdue showed "5" instead of actual count)
+
+**Root Cause:**
+- Made 5 separate API calls (one per status)
+- Used `pagination.total` which returns filtered count, not per-status breakdown
+- Inefficient and inaccurate
+
+**Solution:**
+- Single API call fetches all invoices (limit: 1000)
+- Client-side counting with `reduce()` for each status
+- Accurate counts for: pending, in_review, approved, paid, overdue
+- Removed `useQueries` pattern (simplified code)
+
 ## Test Plan
 
 ### Manual Testing
@@ -58,6 +75,7 @@ the western boundary of John Powell Dr and O'Leary...
 - [x] Drag-and-drop still functional
 - [x] Multiple filters can be combined
 - [x] Toggle off works (click twice)
+- [x] **All status counts accurate** (pending, in_review, approved, paid, overdue)
 
 ### Automated Testing
 - E2E tests added: `tests-e2e/kanban-ux.spec.ts` (7 test cases)
@@ -78,10 +96,11 @@ the western boundary of John Powell Dr and O'Leary...
 
 ## Performance
 
-✅ **No performance impact:**
+✅ **Improved performance:**
 - Handlers memoized with `useCallback`
 - Pure CSS solution for line-clamp
-- No additional API calls
+- **Reduced from 5 API calls to 1** (status count optimization)
+- Single query with client-side counting is more efficient
 - Reuses existing filter system
 
 ## Risk Assessment
