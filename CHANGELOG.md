@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Kanban Board UX Improvements (ISSUE-11)**: Enhanced kanban card readability and interactive status filters
+  - Card description text now truncates to 2 lines with ellipsis (line-clamp-2)
+  - Full description visible on hover via native HTML tooltip
+  - Status summary cards are now clickable filters (Pending, In Review, Approved, Paid, Overdue)
+  - Visual feedback: ring indicators and background tint when status filter is active
+  - Full keyboard navigation support (Tab + Enter/Space)
+  - Screen reader announcements for filter state (ARIA attributes)
+  - Consistent UX with Invoices page clickable status cards pattern
+  - Maintains all existing drag-and-drop functionality
+
+### Fixed
+- **Kanban Status Count Accuracy (ISSUE-11)**: Corrected status card counts to show accurate numbers
+  - Fixed overdue count showing "5" instead of actual count
+  - Replaced 5 separate API calls with single optimized query
+  - Client-side status counting for all 5 statuses (pending, in_review, approved, paid, overdue)
+  - Improved performance by reducing API calls from 5 to 1
+
+### Added
 - **Mobile & Desktop Responsive Design (ISSUE-10)**: Complete mobile and tablet support for dashboard
   - Responsive hooks: `useMediaQuery`, `useBreakpoint`, `useCurrentBreakpoint` for viewport detection
   - Mobile drawer navigation with hamburger menu (< 768px)
