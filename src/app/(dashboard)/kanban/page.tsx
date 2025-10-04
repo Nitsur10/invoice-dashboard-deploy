@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { useQuery, useQueryClient, useQueries } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { KanbanBoard, BoardStatus } from '@/components/kanban/kanban-board';
 import { PerfectJiraKanban } from '@/components/kanban/perfect-jira-kanban';
 import { updateInvoiceStatus } from '@/lib/api/invoices';
@@ -116,26 +116,61 @@ function KanbanView() {
     overdue: invoices.filter((i) => i.status === 'overdue'),
   }), [invoices]);
 
-  // Fetch server-side totals per status (respects current filters)
-  const statusList: BoardStatus[] = ['pending','in_review','approved','paid','overdue'];
-  const totalsQueries = useQueries({
-    queries: statusList.map((s) => ({
-      queryKey: ['kanban-invoices-total', { ...apiParams, status: [s] }],
-      queryFn: () => fetchInvoices({ ...apiParams, status: [s], limit: 1 }),
-      staleTime: 2 * 60 * 1000,
-      enabled: typeof window !== 'undefined',
-    })),
+  // Fetch ALL invoices (without status filter) to get accurate counts
+  const allInvoicesParams = useMemo(() => ({
+    page: 0,
+    limit: 1000, // Get all invoices for counting
+    search: filters.search || undefined,
+    category: filters.categories.length ? filters.categories : undefined,
+    vendor: filters.vendors.length ? filters.vendors : undefined,
+    dateFrom: filters.dateRange?.start,
+    dateTo: filters.dateRange?.end,
+    amountMin: filters.amountRange?.min,
+    amountMax: filters.amountRange?.max,
+    savedViewId: filters.savedViewId,
+    // Explicitly exclude status filter to get all statuses
+  }), [filters.search, filters.categories, filters.vendors, filters.dateRange, filters.amountRange, filters.savedViewId]);
+
+  const { data: allInvoicesData } = useQuery({
+    queryKey: ['kanban-all-invoices', allInvoicesParams],
+    queryFn: async () => {
+      const result = await fetchInvoices(allInvoicesParams);
+      return result;
+    },
+    staleTime: 2 * 60 * 1000,
+    enabled: typeof window !== 'undefined',
   });
 
   const totalsByStatus = useMemo(() => {
-    const map: Partial<Record<BoardStatus, number>> = {};
-    statusList.forEach((s, idx) => {
-      const q = totalsQueries[idx];
-      const total = (q?.data as any)?.pagination?.total;
-      if (typeof total === 'number') map[s] = total;
+    if (!allInvoicesData?.data) {
+      return {
+        pending: 0,
+        in_review: 0,
+        approved: 0,
+        paid: 0,
+        overdue: 0,
+      };
+    }
+
+    // Count invoices by status from all data
+    const counts = (allInvoicesData.data as any[]).reduce((acc, inv) => {
+      const status = (inv.status ?? inv.paymentStatus ?? 'pending').toString().toLowerCase();
+      if (status === 'pending') acc.pending++;
+      else if (status === 'in_review') acc.in_review++;
+      else if (status === 'approved') acc.approved++;
+      else if (status === 'paid') acc.paid++;
+      else if (status === 'overdue') acc.overdue++;
+      return acc;
+    }, {
+      pending: 0,
+      in_review: 0,
+      approved: 0,
+      paid: 0,
+      overdue: 0,
     });
-    return map;
-  }, [totalsQueries]);
+
+    return counts;
+  }, [allInvoicesData]);
 
   const stats = useMemo(() => {
     const totalAmount = data?.pagination?.totalAmount ??
