@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-09-27T22:23:41.869Z",
+  "generated_at": "2025-10-03T23:21:28.888Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -8,17 +8,73 @@
     "total_repos": 1,
     "successful_repos": 1,
     "failed_repos": 0,
-    "total_prs": 3,
+    "total_prs": 6,
     "prs_by_status": {
-      "ci_failed": 1,
-      "needs_review": 2
+      "needs_review": 5,
+      "ci_failed": 1
     },
-    "total_issues": 5,
-    "issues_by_classification": {},
+    "total_issues": 6,
+    "issues_by_classification": {
+      "bug": 1
+    },
     "stale_prs": 0,
     "stale_issues": 0
   },
   "prs": [
+    {
+      "repo": "Nitsur10/invoice-dashboard-deploy",
+      "number": 20,
+      "title": "feat: mobile & desktop responsive design (#10)",
+      "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/20",
+      "head_ref": "10-mobile-responsive-design",
+      "draft": false,
+      "status_bucket": "needs_review",
+      "classification_confidence": 0.9,
+      "classification_details": "0/1 required approvals",
+      "linked_issues": [],
+      "updated_at": "2025-10-01T06:28:01Z",
+      "created_at": "2025-10-01T06:14:23Z",
+      "author": "Nitsur10",
+      "labels": []
+    },
+    {
+      "repo": "Nitsur10/invoice-dashboard-deploy",
+      "number": 19,
+      "title": "fix: Invoice summary cards show database totals not page counts",
+      "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/19",
+      "head_ref": "18-invoice-stats-accuracy",
+      "draft": false,
+      "status_bucket": "needs_review",
+      "classification_confidence": 0.9,
+      "classification_details": "0/1 required approvals",
+      "linked_issues": [
+        {
+          "repo": "Nitsur10/invoice-dashboard-deploy",
+          "number": 18,
+          "type": "closes"
+        }
+      ],
+      "updated_at": "2025-10-01T05:17:09Z",
+      "created_at": "2025-09-30T12:51:08Z",
+      "author": "Nitsur10",
+      "labels": []
+    },
+    {
+      "repo": "Nitsur10/invoice-dashboard-deploy",
+      "number": 17,
+      "title": "Control Board – Phase 2 Hardening & Automation Pack",
+      "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/17",
+      "head_ref": "tracker-phase-2",
+      "draft": false,
+      "status_bucket": "needs_review",
+      "classification_confidence": 0.9,
+      "classification_details": "0/1 required approvals",
+      "linked_issues": [],
+      "updated_at": "2025-09-30T11:17:24Z",
+      "created_at": "2025-09-27T22:25:00Z",
+      "author": "Nitsur10",
+      "labels": []
+    },
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
       "number": 15,
@@ -43,8 +99,8 @@
       "head_ref": "codex/refactor-analytics-initialization-with-useeffect",
       "draft": false,
       "status_bucket": "needs_review",
-      "classification_confidence": 0.8,
-      "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5)",
+      "classification_confidence": 0.9,
+      "classification_details": "0/1 required approvals",
       "linked_issues": [],
       "updated_at": "2025-09-27T02:26:46Z",
       "created_at": "2025-09-27T02:25:09Z",
@@ -61,8 +117,8 @@
       "head_ref": "7-invoice-filter-ui",
       "draft": false,
       "status_bucket": "needs_review",
-      "classification_confidence": 0.8,
-      "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5)",
+      "classification_confidence": 0.9,
+      "classification_details": "0/1 required approvals",
       "linked_issues": [],
       "updated_at": "2025-09-26T07:12:24Z",
       "created_at": "2025-09-24T11:42:27Z",
@@ -73,6 +129,24 @@
   "issues": [
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
+      "number": 18,
+      "title": "Fix invoice summary cards to show database totals not page counts",
+      "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/18",
+      "labels": [
+        "bug",
+        "enhancement"
+      ],
+      "assignees": [],
+      "classification": "bug",
+      "classification_confidence": 0.9,
+      "is_stale": false,
+      "days_since_update": 3,
+      "updated_at": "2025-09-30T11:36:41Z",
+      "created_at": "2025-09-30T11:36:41Z",
+      "author": "Nitsur10"
+    },
+    {
+      "repo": "Nitsur10/invoice-dashboard-deploy",
       "number": 8,
       "title": "Replace supplier column with description in invoice list",
       "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/8",
@@ -81,7 +155,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 4,
+      "days_since_update": 10,
       "updated_at": "2025-09-24T10:03:46Z",
       "created_at": "2025-09-24T10:03:46Z",
       "author": "Nitsur10"
@@ -96,7 +170,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 4,
+      "days_since_update": 10,
       "updated_at": "2025-09-24T10:02:09Z",
       "created_at": "2025-09-24T10:02:09Z",
       "author": "Nitsur10"
@@ -111,7 +185,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 4,
+      "days_since_update": 10,
       "updated_at": "2025-09-24T09:47:48Z",
       "created_at": "2025-09-24T09:47:48Z",
       "author": "Nitsur10"
@@ -126,7 +200,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 4,
+      "days_since_update": 10,
       "updated_at": "2025-09-24T09:45:58Z",
       "created_at": "2025-09-24T09:45:58Z",
       "author": "Nitsur10"
@@ -141,50 +215,72 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": false,
-      "days_since_update": 4,
+      "days_since_update": 10,
       "updated_at": "2025-09-24T09:38:50Z",
       "created_at": "2025-09-24T09:38:50Z",
       "author": "Nitsur10"
     }
   ],
   "metadata": {
-    "execution_time_ms": 2971,
-    "api_calls_made": 14,
-    "api_calls_failed": 3,
-    "rate_limit_remaining": "4986",
+    "execution_time_ms": 2422,
+    "api_calls_made": 25,
+    "api_calls_failed": 5,
+    "rate_limit_remaining": "4951",
     "errors": [
       {
-        "message": "API call failed: Branch protection has been disabled on this repository. - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+        "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
         "context": {
           "operation": "newApi",
           "params": "{\"owner\":\"Nitsur10\",\"repo\":\"invoice-dashboard-deploy\",\"branch\":\"main\"}",
-          "status": 404,
-          "message": "Branch protection has been disabled on this repository. - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+          "status": 403,
+          "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-09-27T22:23:40.151Z"
+        "timestamp": "2025-10-03T23:21:27.190Z"
       },
       {
-        "message": "API call failed: Branch protection has been disabled on this repository. - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+        "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
         "context": {
           "operation": "newApi",
           "params": "{\"owner\":\"Nitsur10\",\"repo\":\"invoice-dashboard-deploy\",\"branch\":\"main\"}",
-          "status": 404,
-          "message": "Branch protection has been disabled on this repository. - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+          "status": 403,
+          "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-09-27T22:23:40.922Z"
+        "timestamp": "2025-10-03T23:21:27.453Z"
       },
       {
-        "message": "API call failed: Branch protection has been disabled on this repository. - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+        "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
         "context": {
           "operation": "newApi",
           "params": "{\"owner\":\"Nitsur10\",\"repo\":\"invoice-dashboard-deploy\",\"branch\":\"main\"}",
-          "status": 404,
-          "message": "Branch protection has been disabled on this repository. - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+          "status": 403,
+          "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-09-27T22:23:41.767Z"
+        "timestamp": "2025-10-03T23:21:27.822Z"
+      },
+      {
+        "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+        "context": {
+          "operation": "newApi",
+          "params": "{\"owner\":\"Nitsur10\",\"repo\":\"invoice-dashboard-deploy\",\"branch\":\"main\"}",
+          "status": 403,
+          "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+          "retries": 0
+        },
+        "timestamp": "2025-10-03T23:21:28.429Z"
+      },
+      {
+        "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+        "context": {
+          "operation": "newApi",
+          "params": "{\"owner\":\"Nitsur10\",\"repo\":\"invoice-dashboard-deploy\",\"branch\":\"main\"}",
+          "status": 403,
+          "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+          "retries": 0
+        },
+        "timestamp": "2025-10-03T23:21:28.786Z"
       }
     ]
   },
@@ -192,6 +288,60 @@
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
       "prs": [
+        {
+          "repo": "Nitsur10/invoice-dashboard-deploy",
+          "number": 20,
+          "title": "feat: mobile & desktop responsive design (#10)",
+          "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/20",
+          "head_ref": "10-mobile-responsive-design",
+          "draft": false,
+          "status_bucket": "needs_review",
+          "classification_confidence": 0.9,
+          "classification_details": "0/1 required approvals",
+          "linked_issues": [],
+          "updated_at": "2025-10-01T06:28:01Z",
+          "created_at": "2025-10-01T06:14:23Z",
+          "author": "Nitsur10",
+          "labels": []
+        },
+        {
+          "repo": "Nitsur10/invoice-dashboard-deploy",
+          "number": 19,
+          "title": "fix: Invoice summary cards show database totals not page counts",
+          "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/19",
+          "head_ref": "18-invoice-stats-accuracy",
+          "draft": false,
+          "status_bucket": "needs_review",
+          "classification_confidence": 0.9,
+          "classification_details": "0/1 required approvals",
+          "linked_issues": [
+            {
+              "repo": "Nitsur10/invoice-dashboard-deploy",
+              "number": 18,
+              "type": "closes"
+            }
+          ],
+          "updated_at": "2025-10-01T05:17:09Z",
+          "created_at": "2025-09-30T12:51:08Z",
+          "author": "Nitsur10",
+          "labels": []
+        },
+        {
+          "repo": "Nitsur10/invoice-dashboard-deploy",
+          "number": 17,
+          "title": "Control Board – Phase 2 Hardening & Automation Pack",
+          "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/17",
+          "head_ref": "tracker-phase-2",
+          "draft": false,
+          "status_bucket": "needs_review",
+          "classification_confidence": 0.9,
+          "classification_details": "0/1 required approvals",
+          "linked_issues": [],
+          "updated_at": "2025-09-30T11:17:24Z",
+          "created_at": "2025-09-27T22:25:00Z",
+          "author": "Nitsur10",
+          "labels": []
+        },
         {
           "repo": "Nitsur10/invoice-dashboard-deploy",
           "number": 15,
@@ -216,8 +366,8 @@
           "head_ref": "codex/refactor-analytics-initialization-with-useeffect",
           "draft": false,
           "status_bucket": "needs_review",
-          "classification_confidence": 0.8,
-          "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5)",
+          "classification_confidence": 0.9,
+          "classification_details": "0/1 required approvals",
           "linked_issues": [],
           "updated_at": "2025-09-27T02:26:46Z",
           "created_at": "2025-09-27T02:25:09Z",
@@ -234,8 +384,8 @@
           "head_ref": "7-invoice-filter-ui",
           "draft": false,
           "status_bucket": "needs_review",
-          "classification_confidence": 0.8,
-          "classification_details": "✅ All checks passing (+20); 📝 Partial approvals: 0/1 (+0); 📊 Small changeset: 0 files (+5)",
+          "classification_confidence": 0.9,
+          "classification_details": "0/1 required approvals",
           "linked_issues": [],
           "updated_at": "2025-09-26T07:12:24Z",
           "created_at": "2025-09-24T11:42:27Z",
@@ -246,6 +396,24 @@
       "issues": [
         {
           "repo": "Nitsur10/invoice-dashboard-deploy",
+          "number": 18,
+          "title": "Fix invoice summary cards to show database totals not page counts",
+          "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/18",
+          "labels": [
+            "bug",
+            "enhancement"
+          ],
+          "assignees": [],
+          "classification": "bug",
+          "classification_confidence": 0.9,
+          "is_stale": false,
+          "days_since_update": 3,
+          "updated_at": "2025-09-30T11:36:41Z",
+          "created_at": "2025-09-30T11:36:41Z",
+          "author": "Nitsur10"
+        },
+        {
+          "repo": "Nitsur10/invoice-dashboard-deploy",
           "number": 8,
           "title": "Replace supplier column with description in invoice list",
           "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/8",
@@ -254,7 +422,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 4,
+          "days_since_update": 10,
           "updated_at": "2025-09-24T10:03:46Z",
           "created_at": "2025-09-24T10:03:46Z",
           "author": "Nitsur10"
@@ -269,7 +437,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 4,
+          "days_since_update": 10,
           "updated_at": "2025-09-24T10:02:09Z",
           "created_at": "2025-09-24T10:02:09Z",
           "author": "Nitsur10"
@@ -284,7 +452,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 4,
+          "days_since_update": 10,
           "updated_at": "2025-09-24T09:47:48Z",
           "created_at": "2025-09-24T09:47:48Z",
           "author": "Nitsur10"
@@ -299,7 +467,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 4,
+          "days_since_update": 10,
           "updated_at": "2025-09-24T09:45:58Z",
           "created_at": "2025-09-24T09:45:58Z",
           "author": "Nitsur10"
@@ -314,16 +482,16 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": false,
-          "days_since_update": 4,
+          "days_since_update": 10,
           "updated_at": "2025-09-24T09:38:50Z",
           "created_at": "2025-09-24T09:38:50Z",
           "author": "Nitsur10"
         }
       ],
       "metadata": {
-        "processed_at": "2025-09-27T22:23:41.767Z",
-        "pr_count": 3,
-        "issue_count": 5
+        "processed_at": "2025-10-03T23:21:28.787Z",
+        "pr_count": 6,
+        "issue_count": 6
       }
     }
   ]
