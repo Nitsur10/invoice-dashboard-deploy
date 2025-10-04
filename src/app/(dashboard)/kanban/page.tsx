@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useMemo } from 'react';
+import { cn } from '@/lib/utils';
 import { useQuery, useQueryClient, useQueries } from '@tanstack/react-query';
 import { KanbanBoard, BoardStatus } from '@/components/kanban/kanban-board';
 import { PerfectJiraKanban } from '@/components/kanban/perfect-jira-kanban';
@@ -26,9 +27,31 @@ export default function KanbanPage() {
 }
 
 function KanbanView() {
-  const { filters } = useInvoiceFilters();
+  const { filters, toggleStatus } = useInvoiceFilters();
   const [isFilterDrawerOpen, setFilterDrawerOpen] = React.useState(false);
   const queryClient = useQueryClient();
+
+  // Click handler for status cards
+  const handleStatusCardClick = React.useCallback((status: BoardStatus) => {
+    toggleStatus(status as any);
+  }, [toggleStatus]);
+
+  // Keyboard handler for accessibility
+  const handleStatusCardKeyDown = React.useCallback(
+    (event: React.KeyboardEvent, status: BoardStatus) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        handleStatusCardClick(status);
+      }
+    },
+    [handleStatusCardClick]
+  );
+
+  // Check if status is currently filtered
+  const isStatusActive = React.useCallback(
+    (status: string) => filters.statuses.includes(status),
+    [filters.statuses]
+  );
 
   const apiParams = useMemo(() => ({
     page: 0,
@@ -227,7 +250,20 @@ function KanbanView() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200/50 dark:border-blue-800/30">
+        <Card
+          className={cn(
+            "cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2",
+            "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20",
+            "border-blue-200/50 dark:border-blue-800/30",
+            isStatusActive('pending') && "ring-2 ring-blue-500 bg-blue-100 dark:bg-blue-900/30"
+          )}
+          role="button"
+          tabIndex={0}
+          aria-pressed={isStatusActive('pending')}
+          aria-label={`Filter by pending invoices - currently ${isStatusActive('pending') ? 'filtered' : 'not filtered'}`}
+          onClick={() => handleStatusCardClick('pending')}
+          onKeyDown={(e) => handleStatusCardKeyDown(e, 'pending')}
+        >
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.pending}</p>
@@ -236,7 +272,20 @@ function KanbanView() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200/50 dark:border-amber-800/30">
+        <Card
+          className={cn(
+            "cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-amber-500 focus-within:ring-offset-2",
+            "bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20",
+            "border-amber-200/50 dark:border-amber-800/30",
+            isStatusActive('in_review') && "ring-2 ring-amber-500 bg-amber-100 dark:bg-amber-900/30"
+          )}
+          role="button"
+          tabIndex={0}
+          aria-pressed={isStatusActive('in_review')}
+          aria-label={`Filter by in review invoices - currently ${isStatusActive('in_review') ? 'filtered' : 'not filtered'}`}
+          onClick={() => handleStatusCardClick('in_review')}
+          onKeyDown={(e) => handleStatusCardKeyDown(e, 'in_review')}
+        >
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">{stats.in_review}</p>
@@ -245,7 +294,20 @@ function KanbanView() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200/50 dark:border-purple-800/30">
+        <Card
+          className={cn(
+            "cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-purple-500 focus-within:ring-offset-2",
+            "bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20",
+            "border-purple-200/50 dark:border-purple-800/30",
+            isStatusActive('approved') && "ring-2 ring-purple-500 bg-purple-100 dark:bg-purple-900/30"
+          )}
+          role="button"
+          tabIndex={0}
+          aria-pressed={isStatusActive('approved')}
+          aria-label={`Filter by approved invoices - currently ${isStatusActive('approved') ? 'filtered' : 'not filtered'}`}
+          onClick={() => handleStatusCardClick('approved')}
+          onKeyDown={(e) => handleStatusCardKeyDown(e, 'approved')}
+        >
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.approved}</p>
@@ -254,7 +316,20 @@ function KanbanView() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20 border-emerald-200/50 dark:border-emerald-800/30">
+        <Card
+          className={cn(
+            "cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2",
+            "bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20",
+            "border-emerald-200/50 dark:border-emerald-800/30",
+            isStatusActive('paid') && "ring-2 ring-emerald-500 bg-emerald-100 dark:bg-emerald-900/30"
+          )}
+          role="button"
+          tabIndex={0}
+          aria-pressed={isStatusActive('paid')}
+          aria-label={`Filter by paid invoices - currently ${isStatusActive('paid') ? 'filtered' : 'not filtered'}`}
+          onClick={() => handleStatusCardClick('paid')}
+          onKeyDown={(e) => handleStatusCardKeyDown(e, 'paid')}
+        >
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{stats.paid}</p>
@@ -263,7 +338,20 @@ function KanbanView() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20 border-red-200/50 dark:border-red-800/30">
+        <Card
+          className={cn(
+            "cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-red-500 focus-within:ring-offset-2",
+            "bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20",
+            "border-red-200/50 dark:border-red-800/30",
+            isStatusActive('overdue') && "ring-2 ring-red-500 bg-red-100 dark:bg-red-900/30"
+          )}
+          role="button"
+          tabIndex={0}
+          aria-pressed={isStatusActive('overdue')}
+          aria-label={`Filter by overdue invoices - currently ${isStatusActive('overdue') ? 'filtered' : 'not filtered'}`}
+          onClick={() => handleStatusCardClick('overdue')}
+          onKeyDown={(e) => handleStatusCardKeyDown(e, 'overdue')}
+        >
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-red-900 dark:text-red-100">{stats.overdue}</p>
