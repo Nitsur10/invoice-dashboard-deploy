@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-10-04T13:56:03.666Z",
+  "generated_at": "2025-10-04T14:10:37.778Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -10,7 +10,8 @@
     "failed_repos": 0,
     "total_prs": 4,
     "prs_by_status": {
-      "ci_failed": 2,
+      "ci_pending": 1,
+      "ci_failed": 1,
       "needs_review": 2
     },
     "total_issues": 6,
@@ -28,9 +29,9 @@
       "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/22",
       "head_ref": "11-kanban-ux-improvements",
       "draft": false,
-      "status_bucket": "ci_failed",
-      "classification_confidence": 1,
-      "classification_details": "Checks failed: 2 failures",
+      "status_bucket": "ci_pending",
+      "classification_confidence": 0.9,
+      "classification_details": "Checks are running: 3 pending",
       "linked_issues": [
         {
           "repo": "Nitsur10/invoice-dashboard-deploy",
@@ -38,13 +39,13 @@
           "type": "closes"
         }
       ],
-      "updated_at": "2025-10-04T13:46:16Z",
+      "updated_at": "2025-10-04T14:09:51Z",
       "created_at": "2025-10-04T13:42:18Z",
       "author": "Nitsur10",
       "labels": [],
-      "readiness_score": 35,
+      "readiness_score": 60,
       "readiness_reasons": [
-        "❌ Checks failing (-20)",
+        "⏳ Checks running (+5)",
         "📝 Partial approvals: 0/1 (+0)",
         "📊 Small changeset: 0 files (+5)"
       ],
@@ -65,7 +66,7 @@
         ]
       },
       "enhanced_classification": {
-        "category": "blocked",
+        "category": "review",
         "priority": "p0",
         "suggested_labels": [],
         "missing_links": []
@@ -307,10 +308,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 2514,
+    "execution_time_ms": 1603,
     "api_calls_made": 18,
     "api_calls_failed": 4,
-    "rate_limit_remaining": "4931",
+    "rate_limit_remaining": "4913",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -321,7 +322,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T13:56:02.287Z"
+        "timestamp": "2025-10-04T14:10:36.751Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -332,7 +333,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T13:56:02.789Z"
+        "timestamp": "2025-10-04T14:10:37.119Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -343,7 +344,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T13:56:03.128Z"
+        "timestamp": "2025-10-04T14:10:37.337Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -354,7 +355,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-04T13:56:03.564Z"
+        "timestamp": "2025-10-04T14:10:37.676Z"
       }
     ]
   },
@@ -369,9 +370,9 @@
           "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/22",
           "head_ref": "11-kanban-ux-improvements",
           "draft": false,
-          "status_bucket": "ci_failed",
-          "classification_confidence": 1,
-          "classification_details": "Checks failed: 2 failures",
+          "status_bucket": "ci_pending",
+          "classification_confidence": 0.9,
+          "classification_details": "Checks are running: 3 pending",
           "linked_issues": [
             {
               "repo": "Nitsur10/invoice-dashboard-deploy",
@@ -379,13 +380,13 @@
               "type": "closes"
             }
           ],
-          "updated_at": "2025-10-04T13:46:16Z",
+          "updated_at": "2025-10-04T14:09:51Z",
           "created_at": "2025-10-04T13:42:18Z",
           "author": "Nitsur10",
           "labels": [],
-          "readiness_score": 35,
+          "readiness_score": 60,
           "readiness_reasons": [
-            "❌ Checks failing (-20)",
+            "⏳ Checks running (+5)",
             "📝 Partial approvals: 0/1 (+0)",
             "📊 Small changeset: 0 files (+5)"
           ],
@@ -406,7 +407,7 @@
             ]
           },
           "enhanced_classification": {
-            "category": "blocked",
+            "category": "review",
             "priority": "p0",
             "suggested_labels": [],
             "missing_links": []
@@ -648,7 +649,7 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-10-04T13:56:03.565Z",
+        "processed_at": "2025-10-04T14:10:37.677Z",
         "pr_count": 4,
         "issue_count": 6
       }
