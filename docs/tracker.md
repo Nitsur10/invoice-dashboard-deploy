@@ -1,14 +1,14 @@
 <!-- tracker:summary:start -->
 # Issues & PRs Control Board
 
-_Last updated: 10/5/2025, 2:18:53 AM (execution: 2s)_
+_Last updated: 10/5/2025, 2:24:31 AM (execution: 2s)_
 
 **At a glance**
 - **Repos**: 1 (1 success, 0 failed)
-- **Open PRs**: 4 | Ready: 0 | Needs review: 2 | Failing: 1 | Blocked: 0 | Draft: 0 | Stale: 0
+- **Open PRs**: 4 | Ready: 0 | Needs review: 2 | Failing: 2 | Blocked: 0 | Draft: 0 | Stale: 0
 - **Open Issues**: 6 | Features: 0 | Bugs: 1 | Stale: 0
 
-**Health Status**: 🟡 4 API failures | Rate limit: 4890 remaining
+**Health Status**: 🟡 4 API failures | Rate limit: 4834 remaining
 <!-- tracker:summary:end -->
 
 <!-- tracker:charts:start -->
@@ -19,7 +19,7 @@ _Last updated: 10/5/2025, 2:18:53 AM (execution: 2s)_
 pie title Open PRs by Status
     
     "Needs Review (2)" : 2
-    "Failing (1)" : 1
+    "Failing (2)" : 2
     
     
     
@@ -41,9 +41,9 @@ pie title Open Issues by Type
 graph LR
     A[Total PRs: 4] --> B{Readiness Score}
     B --> C[🟢 Ready 80+<br/>0 PRs]
-    B --> D[🟡 Review 60-79<br/>3 PRs]
+    B --> D[🟡 Review 60-79<br/>2 PRs]
     B --> E[🟠 Work Needed 40-59<br/>0 PRs]
-    B --> F[🔴 Blocked <40<br/>1 PRs]
+    B --> F[🔴 Blocked <40<br/>2 PRs]
 ```
 
 ### SLA Compliance Timeline
@@ -82,10 +82,11 @@ _No items found_
 <!-- tracker:needsreview:end -->
 
 <!-- tracker:failing:start -->
-## ❌ Failing checks (1)
+## ❌ Failing checks (2)
 
 | PR | Repo | Title | Details | Updated |
 |:-:|:---:|:----:|:------:|:------:|
+| [#23](https://github.com/Nitsur10/invoice-dashboard-deploy/pull/23) | invoice-dashboard-deploy | Sync Status Card Filters Across All Pages (ISSUE-1... | Checks failed: 2 failures | 10/5/2025 |
 | [#15](https://github.com/Nitsur10/invoice-dashboard-deploy/pull/15) | invoice-dashboard-deploy | feat: Replace duplicate supplier column with invoi... | Checks failed: 1 failures | 9/27/2025 |
 
 <!-- tracker:failing:end -->
