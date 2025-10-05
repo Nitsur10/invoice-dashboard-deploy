@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Synchronized Status Filter Cards (ISSUE-12)**: Consistent clickable status filters across all pages
+  - Added In Review and Approved cards to Invoices page (now shows all 5 statuses)
+  - Standardized Pending card color to blue across all pages (was amber on Invoices)
+  - Made Dashboard Pending and Overdue cards clickable with navigation to filtered Invoices view
+  - Updated Invoices grid layout from 4 to 7 columns (lg:grid-cols-5 xl:grid-cols-7)
+  - Full keyboard navigation support (Tab + Enter/Space) on all clickable cards
+  - ARIA attributes for accessibility (role="link", aria-label)
+  - E2E test coverage for cross-page filter synchronization
+  - Consistent color mapping: Pending=Blue, In Review=Amber, Approved=Purple, Paid=Green, Overdue=Red
+
 - **Kanban Board UX Improvements (ISSUE-11)**: Enhanced kanban card readability and interactive status filters
   - Card description text now truncates to 2 lines with ellipsis (line-clamp-2)
   - Full description visible on hover via native HTML tooltip

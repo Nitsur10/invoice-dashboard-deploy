@@ -177,6 +177,8 @@ export function InvoicesView() {
       total: totalCount,
       totalAmount: pageAmount,  // Remains page-specific
       pending: data?.statusCounts?.pending ?? 0,   // From API (database total)
+      review: data?.statusCounts?.in_review ?? 0,  // From API (database total)
+      approved: data?.statusCounts?.approved ?? 0, // From API (database total)
       paid: data?.statusCounts?.paid ?? 0,         // From API (database total)
       overdue: data?.statusCounts?.overdue ?? 0,   // From API (database total)
     }
@@ -426,7 +428,7 @@ export function InvoicesView() {
       <div className="space-y-4">
         <InvoiceFilterChips savedViews={savedViews} />
 
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-7">
           <Card className="rpd-card" data-testid="summary-card-total">
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
@@ -459,8 +461,8 @@ export function InvoicesView() {
 
           <Card
             className={cn(
-              "rpd-card cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-amber-500 focus-within:ring-offset-2",
-              isStatusActive('pending') && "ring-2 ring-amber-500 bg-amber-50"
+              "rpd-card cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2",
+              isStatusActive('pending') && "ring-2 ring-blue-500 bg-blue-50"
             )}
             role="button"
             tabIndex={0}
@@ -472,10 +474,58 @@ export function InvoicesView() {
           >
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4 text-amber-600" />
+                <FileText className="h-4 w-4 text-blue-600" />
                 <div>
                   <p className="text-sm font-medium text-slate-600">Pending</p>
-                  <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
+                  <p className="text-2xl font-bold text-blue-600">{stats.pending}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className={cn(
+              "rpd-card cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-amber-500 focus-within:ring-offset-2",
+              isStatusActive('in_review') && "ring-2 ring-amber-500 bg-amber-50"
+            )}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isStatusActive('in_review')}
+            aria-label={`Filter by in review invoices - currently ${isStatusActive('in_review') ? 'filtered' : 'not filtered'}`}
+            data-testid="status-card-review"
+            onClick={() => handleStatusCardClick('in_review')}
+            onKeyDown={(e) => handleStatusCardKeyDown(e, 'in_review')}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Clock className="h-4 w-4 text-amber-600" />
+                <div>
+                  <p className="text-sm font-medium text-slate-600">In Review</p>
+                  <p className="text-2xl font-bold text-amber-600">{stats.review}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className={cn(
+              "rpd-card cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-purple-500 focus-within:ring-offset-2",
+              isStatusActive('approved') && "ring-2 ring-purple-500 bg-purple-50"
+            )}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isStatusActive('approved')}
+            aria-label={`Filter by approved invoices - currently ${isStatusActive('approved') ? 'filtered' : 'not filtered'}`}
+            data-testid="status-card-approved"
+            onClick={() => handleStatusCardClick('approved')}
+            onKeyDown={(e) => handleStatusCardKeyDown(e, 'approved')}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <CheckCircle2 className="h-4 w-4 text-purple-600" />
+                <div>
+                  <p className="text-sm font-medium text-slate-600">Approved</p>
+                  <p className="text-2xl font-bold text-purple-600">{stats.approved}</p>
                 </div>
               </div>
             </CardContent>
