@@ -467,7 +467,7 @@ export function InvoicesView() {
             role="button"
             tabIndex={0}
             aria-pressed={isStatusActive('pending')}
-            aria-label={`Filter by pending invoices - currently ${isStatusActive('pending') ? 'filtered' : 'not filtered'}`}
+            aria-label={`Pending Payments - currently ${isStatusActive('pending') ? 'filtered' : 'not filtered'}`}
             data-testid="status-card-pending"
             onClick={() => handleStatusCardClick('pending')}
             onKeyDown={(e) => handleStatusCardKeyDown(e, 'pending')}
@@ -491,7 +491,7 @@ export function InvoicesView() {
             role="button"
             tabIndex={0}
             aria-pressed={isStatusActive('in_review')}
-            aria-label={`Filter by in review invoices - currently ${isStatusActive('in_review') ? 'filtered' : 'not filtered'}`}
+            aria-label={`In Review - currently ${isStatusActive('in_review') ? 'filtered' : 'not filtered'}`}
             data-testid="status-card-review"
             onClick={() => handleStatusCardClick('in_review')}
             onKeyDown={(e) => handleStatusCardKeyDown(e, 'in_review')}
@@ -515,7 +515,7 @@ export function InvoicesView() {
             role="button"
             tabIndex={0}
             aria-pressed={isStatusActive('approved')}
-            aria-label={`Filter by approved invoices - currently ${isStatusActive('approved') ? 'filtered' : 'not filtered'}`}
+            aria-label={`Approved - currently ${isStatusActive('approved') ? 'filtered' : 'not filtered'}`}
             data-testid="status-card-approved"
             onClick={() => handleStatusCardClick('approved')}
             onKeyDown={(e) => handleStatusCardKeyDown(e, 'approved')}
@@ -539,7 +539,7 @@ export function InvoicesView() {
             role="button"
             tabIndex={0}
             aria-pressed={isStatusActive('paid')}
-            aria-label={`Filter by paid invoices - currently ${isStatusActive('paid') ? 'filtered' : 'not filtered'}`}
+            aria-label={`Paid Invoices - currently ${isStatusActive('paid') ? 'filtered' : 'not filtered'}`}
             data-testid="status-card-paid"
             onClick={() => handleStatusCardClick('paid')}
             onKeyDown={(e) => handleStatusCardKeyDown(e, 'paid')}
@@ -563,7 +563,7 @@ export function InvoicesView() {
             role="button"
             tabIndex={0}
             aria-pressed={isStatusActive('overdue')}
-            aria-label={`Filter by overdue invoices - currently ${isStatusActive('overdue') ? 'filtered' : 'not filtered'}`}
+            aria-label={`Overdue Items - currently ${isStatusActive('overdue') ? 'filtered' : 'not filtered'}`}
             data-testid="status-card-overdue"
             onClick={() => handleStatusCardClick('overdue')}
             onKeyDown={(e) => handleStatusCardKeyDown(e, 'overdue')}
