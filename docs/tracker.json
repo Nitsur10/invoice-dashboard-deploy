@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-10-06T03:21:36.830Z",
+  "generated_at": "2025-10-06T04:37:37.803Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -8,8 +8,9 @@
     "total_repos": 1,
     "successful_repos": 1,
     "failed_repos": 0,
-    "total_prs": 4,
+    "total_prs": 5,
     "prs_by_status": {
+      "ci_pending": 1,
       "ci_failed": 2,
       "needs_review": 2
     },
@@ -21,6 +22,56 @@
     "stale_issues": 0
   },
   "prs": [
+    {
+      "repo": "Nitsur10/invoice-dashboard-deploy",
+      "number": 24,
+      "title": "feat: Sync Filter Drawer UI Across All Pages (ISSUE-13)",
+      "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/24",
+      "head_ref": "13-sync-filter-drawer-ui",
+      "draft": false,
+      "status_bucket": "ci_pending",
+      "classification_confidence": 0.9,
+      "classification_details": "Checks are running: 2 pending",
+      "linked_issues": [
+        {
+          "repo": "Nitsur10/invoice-dashboard-deploy",
+          "number": 13,
+          "type": "closes"
+        }
+      ],
+      "updated_at": "2025-10-06T04:36:49Z",
+      "created_at": "2025-10-06T03:22:00Z",
+      "author": "Nitsur10",
+      "labels": [],
+      "readiness_score": 60,
+      "readiness_reasons": [
+        "⏳ Checks running (+5)",
+        "📝 Partial approvals: 0/1 (+0)",
+        "📊 Small changeset: 0 files (+5)"
+      ],
+      "sla_status": {
+        "status": "on_track",
+        "due_date": "2025-10-11T03:22:00.000Z",
+        "hours_remaining": 119,
+        "priority": "p2",
+        "sla_hours": 120
+      },
+      "content_analysis": {
+        "type": "feature",
+        "priority": null,
+        "labels": [],
+        "confidence": 0.7,
+        "reasons": [
+          "Feature keywords: feat, acceptance criteria"
+        ]
+      },
+      "enhanced_classification": {
+        "category": "review",
+        "priority": "p2",
+        "suggested_labels": [],
+        "missing_links": []
+      }
+    },
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
       "number": 23,
@@ -51,7 +102,7 @@
       "sla_status": {
         "status": "on_track",
         "due_date": "2025-10-10T01:55:03.000Z",
-        "hours_remaining": 95,
+        "hours_remaining": 93,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -96,7 +147,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T03:14:27.000Z",
-        "hours_remaining": -96,
+        "hours_remaining": -97,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -145,7 +196,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T02:25:09.000Z",
-        "hours_remaining": -97,
+        "hours_remaining": -98,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -188,7 +239,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-09-29T11:42:27.000Z",
-        "hours_remaining": -160,
+        "hours_remaining": -161,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -307,10 +358,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1561,
-    "api_calls_made": 18,
-    "api_calls_failed": 4,
-    "rate_limit_remaining": "4983",
+    "execution_time_ms": 2189,
+    "api_calls_made": 22,
+    "api_calls_failed": 5,
+    "rate_limit_remaining": "4979",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -321,7 +372,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-06T03:21:35.853Z"
+        "timestamp": "2025-10-06T04:37:36.309Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -332,7 +383,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-06T03:21:36.178Z"
+        "timestamp": "2025-10-06T04:37:36.659Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -343,7 +394,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-06T03:21:36.404Z"
+        "timestamp": "2025-10-06T04:37:37.074Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -354,7 +405,18 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-06T03:21:36.728Z"
+        "timestamp": "2025-10-06T04:37:37.323Z"
+      },
+      {
+        "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+        "context": {
+          "operation": "newApi",
+          "params": "{\"owner\":\"Nitsur10\",\"repo\":\"invoice-dashboard-deploy\",\"branch\":\"main\"}",
+          "status": 403,
+          "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+          "retries": 0
+        },
+        "timestamp": "2025-10-06T04:37:37.701Z"
       }
     ]
   },
@@ -362,6 +424,56 @@
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
       "prs": [
+        {
+          "repo": "Nitsur10/invoice-dashboard-deploy",
+          "number": 24,
+          "title": "feat: Sync Filter Drawer UI Across All Pages (ISSUE-13)",
+          "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/24",
+          "head_ref": "13-sync-filter-drawer-ui",
+          "draft": false,
+          "status_bucket": "ci_pending",
+          "classification_confidence": 0.9,
+          "classification_details": "Checks are running: 2 pending",
+          "linked_issues": [
+            {
+              "repo": "Nitsur10/invoice-dashboard-deploy",
+              "number": 13,
+              "type": "closes"
+            }
+          ],
+          "updated_at": "2025-10-06T04:36:49Z",
+          "created_at": "2025-10-06T03:22:00Z",
+          "author": "Nitsur10",
+          "labels": [],
+          "readiness_score": 60,
+          "readiness_reasons": [
+            "⏳ Checks running (+5)",
+            "📝 Partial approvals: 0/1 (+0)",
+            "📊 Small changeset: 0 files (+5)"
+          ],
+          "sla_status": {
+            "status": "on_track",
+            "due_date": "2025-10-11T03:22:00.000Z",
+            "hours_remaining": 119,
+            "priority": "p2",
+            "sla_hours": 120
+          },
+          "content_analysis": {
+            "type": "feature",
+            "priority": null,
+            "labels": [],
+            "confidence": 0.7,
+            "reasons": [
+              "Feature keywords: feat, acceptance criteria"
+            ]
+          },
+          "enhanced_classification": {
+            "category": "review",
+            "priority": "p2",
+            "suggested_labels": [],
+            "missing_links": []
+          }
+        },
         {
           "repo": "Nitsur10/invoice-dashboard-deploy",
           "number": 23,
@@ -392,7 +504,7 @@
           "sla_status": {
             "status": "on_track",
             "due_date": "2025-10-10T01:55:03.000Z",
-            "hours_remaining": 95,
+            "hours_remaining": 93,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -437,7 +549,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T03:14:27.000Z",
-            "hours_remaining": -96,
+            "hours_remaining": -97,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -486,7 +598,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T02:25:09.000Z",
-            "hours_remaining": -97,
+            "hours_remaining": -98,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -529,7 +641,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-09-29T11:42:27.000Z",
-            "hours_remaining": -160,
+            "hours_remaining": -161,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -648,8 +760,8 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-10-06T03:21:36.730Z",
-        "pr_count": 4,
+        "processed_at": "2025-10-06T04:37:37.702Z",
+        "pr_count": 5,
         "issue_count": 6
       }
     }
