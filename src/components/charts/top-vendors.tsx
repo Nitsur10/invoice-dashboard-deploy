@@ -1,14 +1,17 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
 export function TopVendors({
   data,
   isLoading,
+  isFiltered,
 }: {
   data: Array<{ vendor: string; count: number; amount: number }>
   isLoading?: boolean
+  isFiltered?: boolean
 }) {
   const vendors = (data || []).slice(0, 8).map(v => ({
     name: v.vendor,
@@ -18,12 +21,19 @@ export function TopVendors({
   return (
     <Card className="glass-card glass-card-hover border-2 shadow-lg hover:shadow-xl transition-all duration-300">
       <CardHeader className="pb-4">
-        <CardTitle className="text-xl font-bold text-gray-900 flex items-center space-x-3">
-          <div className="w-4 h-4 bg-amber-600 rounded-full"></div>
-          <span className="text-gray-900">Top Vendors</span>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl font-bold text-gray-900 flex items-center space-x-3">
+            <div className="w-4 h-4 bg-amber-600 rounded-full"></div>
+            <span className="text-gray-900">Top Vendors</span>
+          </CardTitle>
+          {isFiltered && (
+            <Badge variant="secondary" className="text-xs">
+              Filtered
+            </Badge>
+          )}
+        </div>
         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-          Hover over vendor names to see full details
+          {isFiltered ? 'Showing filtered subset of data' : 'Hover over vendor names to see full details'}
         </p>
       </CardHeader>
       <CardContent style={{ height: 350 }}>

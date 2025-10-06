@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Synchronized Filter Drawer UI (ISSUE-13)**: Unified filter experience across Dashboard, Kanban, and Invoices pages
+  - Dashboard now uses shared `InvoiceFilterDrawer` component (replaces custom date-only popover)
+  - All 5 filter types available on Dashboard: Status, Category, Vendor, Date Range, Amount
+  - Filter chips component shows active filters with remove capability
+  - Charts display "Filtered" badge when filters are active
+  - Dashboard Stats API extended to support status, category, vendor, and amount filters
+  - `DashboardStatsProvider` integrates with `InvoiceFiltersProvider` for automatic filter synchronization
+  - Backward compatible with existing date-only filtering
+  - E2E test coverage for cross-page filter consistency
+
 - **Synchronized Status Filter Cards (ISSUE-12)**: Consistent clickable status filters across all pages
   - Added In Review and Approved cards to Invoices page (now shows all 5 statuses)
   - Standardized Pending card color to blue across all pages (was amber on Invoices)
