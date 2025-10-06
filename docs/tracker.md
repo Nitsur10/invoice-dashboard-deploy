@@ -1,14 +1,14 @@
 <!-- tracker:summary:start -->
 # Issues & PRs Control Board
 
-_Last updated: 10/6/2025, 4:57:59 AM (execution: 2s)_
+_Last updated: 10/6/2025, 4:59:27 AM (execution: 2s)_
 
 **At a glance**
 - **Repos**: 1 (1 success, 0 failed)
 - **Open PRs**: 4 | Ready: 0 | Needs review: 2 | Failing: 2 | Blocked: 0 | Draft: 0 | Stale: 0
-- **Open Issues**: 5 | Features: 0 | Bugs: 1 | Stale: 0
+- **Open Issues**: 4 | Features: 0 | Bugs: 1 | Stale: 0
 
-**Health Status**: 🟡 4 API failures | Rate limit: 4943 remaining
+**Health Status**: 🟡 4 API failures | Rate limit: 4925 remaining
 <!-- tracker:summary:end -->
 
 <!-- tracker:charts:start -->
@@ -32,7 +32,7 @@ pie title Open Issues by Type
     
     "Bugs (1)" : 1
     
-    "Other (4)" : 4
+    "Other (3)" : 3
     
 ```
 

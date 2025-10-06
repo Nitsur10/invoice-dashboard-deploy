@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-10-06T04:57:59.090Z",
+  "generated_at": "2025-10-06T04:59:27.137Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -13,7 +13,7 @@
       "ci_failed": 2,
       "needs_review": 2
     },
-    "total_issues": 5,
+    "total_issues": 4,
     "issues_by_classification": {
       "bug": 1
     },
@@ -232,21 +232,6 @@
     },
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
-      "number": 7,
-      "title": "Move invoice filters to top-right popover",
-      "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/7",
-      "labels": [],
-      "assignees": [],
-      "classification": "other",
-      "classification_confidence": 0.5,
-      "is_stale": false,
-      "days_since_update": 12,
-      "updated_at": "2025-09-24T10:02:09Z",
-      "created_at": "2025-09-24T10:02:09Z",
-      "author": "Nitsur10"
-    },
-    {
-      "repo": "Nitsur10/invoice-dashboard-deploy",
       "number": 5,
       "title": "Implement month-over-month trend metrics pipeline",
       "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/5",
@@ -292,10 +277,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1718,
+    "execution_time_ms": 2309,
     "api_calls_made": 18,
     "api_calls_failed": 4,
-    "rate_limit_remaining": "4943",
+    "rate_limit_remaining": "4925",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -306,7 +291,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-06T04:57:58.086Z"
+        "timestamp": "2025-10-06T04:59:25.885Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -317,7 +302,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-06T04:57:58.461Z"
+        "timestamp": "2025-10-06T04:59:26.267Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -328,7 +313,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-06T04:57:58.671Z"
+        "timestamp": "2025-10-06T04:59:26.625Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -339,7 +324,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-06T04:57:58.988Z"
+        "timestamp": "2025-10-06T04:59:27.035Z"
       }
     ]
   },
@@ -558,21 +543,6 @@
         },
         {
           "repo": "Nitsur10/invoice-dashboard-deploy",
-          "number": 7,
-          "title": "Move invoice filters to top-right popover",
-          "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/7",
-          "labels": [],
-          "assignees": [],
-          "classification": "other",
-          "classification_confidence": 0.5,
-          "is_stale": false,
-          "days_since_update": 12,
-          "updated_at": "2025-09-24T10:02:09Z",
-          "created_at": "2025-09-24T10:02:09Z",
-          "author": "Nitsur10"
-        },
-        {
-          "repo": "Nitsur10/invoice-dashboard-deploy",
           "number": 5,
           "title": "Implement month-over-month trend metrics pipeline",
           "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/5",
@@ -618,9 +588,9 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-10-06T04:57:58.989Z",
+        "processed_at": "2025-10-06T04:59:27.036Z",
         "pr_count": 4,
-        "issue_count": 5
+        "issue_count": 4
       }
     }
   ]
