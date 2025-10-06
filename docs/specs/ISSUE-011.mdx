@@ -1,0 +1,409 @@
+# ISSUE-011: Kanban Board UX Improvements
+
+**Issue**: TBD (to be created in GitHub)
+**Priority**: P2
+**Risk**: Low
+**Estimated Effort**: 30 minutes
+
+## Problem Statement
+
+The Kanban board has two UX issues affecting user experience:
+
+### Problem 1: Description Text Overflow
+
+**Current Behavior:**
+```tsx
+// src/components/kanban/perfect-jira-kanban.tsx:110-112
+<p className="text-xs text-slate-600 dark:text-slate-400 mt-1 truncate">
+  {invoice.description || invoice.subject}
+</p>
+```
+
+**Issue**: Long invoice descriptions like "Supply and install 28.8m concrete retaining wall along the western boundary of John Powell Dr and O'Leary Rd development as per quote" get truncated with `...` cutting off mid-sentence or mid-word, making cards difficult to read.
+
+**Impact**:
+- Cards look messy and unprofessional
+- Users can't see important invoice context
+- Inconsistent card heights when some descriptions are short vs. long
+
+### Problem 2: Non-Clickable Status Cards
+
+**Current Behavior:**
+Status summary cards at the top of the kanban page (Pending: 2, In Review: 0, Approved: 0, Paid: 0, Overdue: 40) are static display-only cards.
+
+**Issue**: Users must open the filter drawer to filter by status, even though these cards visually suggest they should be interactive (similar to Invoice page where status cards ARE clickable).
+
+**Impact**:
+- Inconsistent UX between Invoices page and Kanban page
+- Extra clicks required for common filtering action
+- Missed opportunity for quick status filtering
+
+## Technical Solution
+
+### Solution 1: Fix Description Overflow with line-clamp-2
+
+**Implementation:**
+```tsx
+// src/components/kanban/perfect-jira-kanban.tsx:110-112
+<p
+  className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2"
+  title={invoice.description || invoice.subject}
+>
+  {invoice.description || invoice.subject}
+</p>
+```
+
+**Why line-clamp-2:**
+- Tailwind v3.3+ includes built-in `line-clamp-{n}` utilities (no plugin needed)
+- Shows exactly 2 lines of text with ellipsis at the end
+- Maintains consistent card height across all cards
+- Modern, clean kanban card appearance
+- `title` attribute provides tooltip with full text on hover
+
+**CSS Output:**
+```css
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+```
+
+### Solution 2: Make Status Cards Clickable Filters
+
+**Pattern Source**: Copy proven implementation from `src/app/(dashboard)/invoices/page.tsx`
+
+#### Step 1: Add Utility Import
+
+```tsx
+// src/app/(dashboard)/kanban/page.tsx:1
+import { cn } from '@/lib/utils'
+```
+
+#### Step 2: Add Handler Functions
+
+Add after line 129 in `kanban/page.tsx`:
+
+```tsx
+// Extract toggleStatus from already-imported useInvoiceFilters hook
+const { toggleStatus } = useInvoiceFilters();
+
+// Click handler for status cards
+const handleStatusCardClick = React.useCallback((status: BoardStatus) => {
+  toggleStatus(status as any);
+}, [toggleStatus]);
+
+// Keyboard handler for accessibility
+const handleStatusCardKeyDown = React.useCallback(
+  (event: React.KeyboardEvent, status: BoardStatus) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleStatusCardClick(status);
+    }
+  },
+  [handleStatusCardClick]
+);
+
+// Check if status is currently filtered
+const isStatusActive = React.useCallback(
+  (status: string) => filters.statuses.includes(status),
+  [filters.statuses]
+);
+```
+
+#### Step 3: Update Status Cards
+
+**Pending Card** (lines 230-237):
+```tsx
+<Card
+  className={cn(
+    "cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2",
+    "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20",
+    "border-blue-200/50 dark:border-blue-800/30",
+    isStatusActive('pending') && "ring-2 ring-blue-500 bg-blue-100 dark:bg-blue-900/30"
+  )}
+  role="button"
+  tabIndex={0}
+  aria-pressed={isStatusActive('pending')}
+  aria-label={`Filter by pending invoices - currently ${isStatusActive('pending') ? 'filtered' : 'not filtered'}`}
+  onClick={() => handleStatusCardClick('pending')}
+  onKeyDown={(e) => handleStatusCardKeyDown(e, 'pending')}
+>
+  <CardContent className="p-4">
+    <div className="text-center">
+      <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.pending}</p>
+      <p className="text-sm text-blue-700 dark:text-blue-300">Pending</p>
+    </div>
+  </CardContent>
+</Card>
+```
+
+**In Review Card** (lines 239-246):
+```tsx
+<Card
+  className={cn(
+    "cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-amber-500 focus-within:ring-offset-2",
+    "bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20",
+    "border-amber-200/50 dark:border-amber-800/30",
+    isStatusActive('in_review') && "ring-2 ring-amber-500 bg-amber-100 dark:bg-amber-900/30"
+  )}
+  role="button"
+  tabIndex={0}
+  aria-pressed={isStatusActive('in_review')}
+  aria-label={`Filter by in review invoices - currently ${isStatusActive('in_review') ? 'filtered' : 'not filtered'}`}
+  onClick={() => handleStatusCardClick('in_review')}
+  onKeyDown={(e) => handleStatusCardKeyDown(e, 'in_review')}
+>
+  <CardContent className="p-4">
+    <div className="text-center">
+      <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">{stats.in_review}</p>
+      <p className="text-sm text-amber-700 dark:text-amber-300">In Review</p>
+    </div>
+  </CardContent>
+</Card>
+```
+
+**Approved Card** (lines 248-255):
+```tsx
+<Card
+  className={cn(
+    "cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-purple-500 focus-within:ring-offset-2",
+    "bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20",
+    "border-purple-200/50 dark:border-purple-800/30",
+    isStatusActive('approved') && "ring-2 ring-purple-500 bg-purple-100 dark:bg-purple-900/30"
+  )}
+  role="button"
+  tabIndex={0}
+  aria-pressed={isStatusActive('approved')}
+  aria-label={`Filter by approved invoices - currently ${isStatusActive('approved') ? 'filtered' : 'not filtered'}`}
+  onClick={() => handleStatusCardClick('approved')}
+  onKeyDown={(e) => handleStatusCardKeyDown(e, 'approved')}
+>
+  <CardContent className="p-4">
+    <div className="text-center">
+      <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.approved}</p>
+      <p className="text-sm text-purple-700 dark:text-purple-300">Approved</p>
+    </div>
+  </CardContent>
+</Card>
+```
+
+**Paid Card** (lines 257-264):
+```tsx
+<Card
+  className={cn(
+    "cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2",
+    "bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20",
+    "border-emerald-200/50 dark:border-emerald-800/30",
+    isStatusActive('paid') && "ring-2 ring-emerald-500 bg-emerald-100 dark:bg-emerald-900/30"
+  )}
+  role="button"
+  tabIndex={0}
+  aria-pressed={isStatusActive('paid')}
+  aria-label={`Filter by paid invoices - currently ${isStatusActive('paid') ? 'filtered' : 'not filtered'}`}
+  onClick={() => handleStatusCardClick('paid')}
+  onKeyDown={(e) => handleStatusCardKeyDown(e, 'paid')}
+>
+  <CardContent className="p-4">
+    <div className="text-center">
+      <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{stats.paid}</p>
+      <p className="text-sm text-emerald-700 dark:text-emerald-300">Paid</p>
+    </div>
+  </CardContent>
+</Card>
+```
+
+**Overdue Card** (lines 266-273):
+```tsx
+<Card
+  className={cn(
+    "cursor-pointer transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-red-500 focus-within:ring-offset-2",
+    "bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20",
+    "border-red-200/50 dark:border-red-800/30",
+    isStatusActive('overdue') && "ring-2 ring-red-500 bg-red-100 dark:bg-red-900/30"
+  )}
+  role="button"
+  tabIndex={0}
+  aria-pressed={isStatusActive('overdue')}
+  aria-label={`Filter by overdue invoices - currently ${isStatusActive('overdue') ? 'filtered' : 'not filtered'}`}
+  onClick={() => handleStatusCardClick('overdue')}
+  onKeyDown={(e) => handleStatusCardKeyDown(e, 'overdue')}
+>
+  <CardContent className="p-4">
+    <div className="text-center">
+      <p className="text-2xl font-bold text-red-900 dark:text-red-100">{stats.overdue}</p>
+      <p className="text-sm text-red-700 dark:text-red-300">Overdue</p>
+    </div>
+  </CardContent>
+</Card>
+```
+
+**Note**: Total and Total Amount cards remain unchanged (non-clickable).
+
+## UX Behavior
+
+### Description Overflow
+- **Before**: "Supply and install 28.8m concrete retaining wall along th..."
+- **After**:
+  ```
+  Supply and install 28.8m concrete retaining wall along
+  the western boundary of John Powell Dr and O'Leary...
+  ```
+- **On Hover**: Tooltip shows full description
+
+### Clickable Status Cards
+
+**Interaction Flow:**
+1. User clicks "Pending: 2" card
+2. Card shows blue ring indicator (`ring-2 ring-blue-500`)
+3. Background changes to light blue (`bg-blue-100`)
+4. Kanban board filters to show only pending invoices
+5. Filter chips update to show "Pending" chip
+6. Clicking again removes filter (toggles off)
+
+**Visual States:**
+- **Default**: Gradient background, no ring
+- **Hover**: Shadow increases (`hover:shadow-md`), cursor changes to pointer
+- **Active/Filtered**: Ring indicator + background tint
+- **Focus**: Ring indicator visible for keyboard navigation
+
+**Accessibility:**
+- **Screen Reader**: "Filter by pending invoices - currently not filtered"
+- **After Click**: "Filter by pending invoices - currently filtered"
+- **Keyboard**: Tab to focus, Enter or Space to activate
+- **ARIA**: `role="button"`, `aria-pressed="true/false"`, `aria-label` descriptive
+
+## Performance Requirements
+
+No performance impact expected:
+- Description fix is pure CSS (no JS)
+- Click handlers are memoized with `useCallback`
+- No additional API calls (uses existing `useInvoiceFilters` hook)
+- Filter logic already exists and is optimized
+
+## Error Handling
+
+No error handling needed:
+- `line-clamp-2` gracefully falls back to normal text if unsupported (extremely unlikely)
+- `toggleStatus` is a simple array toggle operation (no async/errors)
+- Click handlers are defensive with keyboard event checks
+
+## Testing Strategy
+
+### Manual Testing
+
+**Description Overflow:**
+- [ ] View cards with long descriptions (> 100 chars)
+- [ ] Verify 2 lines shown with ellipsis
+- [ ] Hover to see full description tooltip
+- [ ] Check in light and dark mode
+- [ ] Verify consistent card heights
+
+**Clickable Status Cards:**
+- [ ] Click each status card (pending, in_review, approved, paid, overdue)
+- [ ] Verify board filters correctly
+- [ ] Verify ring indicator appears
+- [ ] Verify filter chips update
+- [ ] Click again to toggle off filter
+- [ ] Test keyboard navigation (Tab + Enter)
+- [ ] Test with screen reader (VoiceOver/NVDA)
+
+**Regression Testing:**
+- [ ] Drag-and-drop still works
+- [ ] Card status updates on drop
+- [ ] Filter drawer still works
+- [ ] Export button works
+- [ ] Refresh button works
+- [ ] Multiple filters can be combined
+
+### Automated Testing (Future)
+
+E2E test scenarios for Playwright:
+
+```typescript
+test('Kanban status cards are clickable filters', async ({ page }) => {
+  await page.goto('/kanban');
+
+  // Click Pending card
+  await page.click('[data-testid="status-card-pending"]');
+
+  // Verify filter applied
+  await expect(page.locator('.filter-chip')).toContainText('Pending');
+
+  // Verify visual indicator
+  await expect(page.locator('[data-testid="status-card-pending"]'))
+    .toHaveClass(/ring-2 ring-blue-500/);
+
+  // Click again to toggle off
+  await page.click('[data-testid="status-card-pending"]');
+  await expect(page.locator('.filter-chip')).not.toBeVisible();
+});
+
+test('Description text truncates after 2 lines', async ({ page }) => {
+  await page.goto('/kanban');
+
+  const card = page.locator('.kanban-card').first();
+  const description = card.locator('.line-clamp-2');
+
+  // Verify line-clamp-2 class applied
+  await expect(description).toHaveClass(/line-clamp-2/);
+
+  // Verify tooltip attribute exists
+  await expect(description).toHaveAttribute('title');
+});
+```
+
+## Acceptance Criteria
+
+- [x] Description text shows maximum 2 lines with ellipsis
+- [x] Full description visible on hover via tooltip
+- [x] Cards maintain consistent height
+- [x] Clicking status card filters kanban board
+- [x] Active filter shows visual ring indicator
+- [x] Filter chips update when clicking cards
+- [x] Keyboard navigation works (Tab + Enter/Space)
+- [x] Screen reader announces filter state correctly
+- [x] All 5 status cards work (pending, in_review, approved, paid, overdue)
+- [x] Total and Total Amount cards remain non-interactive
+- [x] Existing drag-and-drop functionality preserved
+- [x] No TypeScript errors
+- [x] No accessibility regressions
+
+## Implementation Checklist
+
+### Phase 1: Description Overflow Fix (5 mins)
+- [ ] Update `src/components/kanban/perfect-jira-kanban.tsx`
+- [ ] Change `truncate` to `line-clamp-2` on line 110
+- [ ] Add `title` attribute with full description
+- [ ] Test visually in browser
+
+### Phase 2: Clickable Status Cards (25 mins)
+- [ ] Add `import { cn } from '@/lib/utils'` to `kanban/page.tsx`
+- [ ] Extract `toggleStatus` from `useInvoiceFilters` hook
+- [ ] Add `handleStatusCardClick` function
+- [ ] Add `handleStatusCardKeyDown` function
+- [ ] Add `isStatusActive` function
+- [ ] Update Pending card (line 230-237)
+- [ ] Update In Review card (line 239-246)
+- [ ] Update Approved card (line 248-255)
+- [ ] Update Paid card (line 257-264)
+- [ ] Update Overdue card (line 266-273)
+- [ ] Test all cards click correctly
+- [ ] Test keyboard navigation
+- [ ] Test screen reader announcements
+
+### Phase 3: Verification
+- [ ] Run `npm run build` (verify no TypeScript errors)
+- [ ] Test in browser (all functionality works)
+- [ ] Test accessibility (keyboard + screen reader)
+- [ ] Create PR with screenshots
+
+## References
+
+- **Issue Document**: `docs/issues/issue-011-kanban-ux-improvements.md`
+- **Screenshot**: `Screenshots/Screenshot 2025-10-04 at 10.52.03 pm.png`
+- **Pattern Source**: `src/app/(dashboard)/invoices/page.tsx:298-528`
+- **Kanban Page**: `src/app/(dashboard)/kanban/page.tsx`
+- **Kanban Card**: `src/components/kanban/perfect-jira-kanban.tsx`
+- **Tailwind Docs**: https://tailwindcss.com/docs/line-clamp
