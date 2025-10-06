@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { DollarSign, FileText, Clock, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useDashboardStats } from '@/components/dashboard/dashboard-stats-provider';
 
 export function StatsCards() {
+  const router = useRouter();
   const { data: stats, isLoading, error } = useDashboardStats();
 
   if (isLoading) {
@@ -47,6 +49,22 @@ export function StatsCards() {
   }
 
   if (!stats) return null;
+
+  const handleCardClick = (cardId: string) => {
+    if (cardId === 'pending-payments') {
+      router.push('/invoices?status=pending');
+    } else if (cardId === 'overdue-items') {
+      router.push('/invoices?status=overdue');
+    }
+  };
+
+  const handleCardKeyDown = (event: React.KeyboardEvent, cardId: string) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleCardClick(cardId);
+    }
+  };
+
   const cards = [
     {
       id: 'total-invoices',
@@ -58,6 +76,7 @@ export function StatsCards() {
         : 'N/A',
       trendUp: typeof stats.overview.trends.invoices === 'number' ? stats.overview.trends.invoices > 0 : false,
       type: 'primary' as const,
+      clickable: false,
     },
     {
       id: 'total-amount',
@@ -69,6 +88,7 @@ export function StatsCards() {
         : 'N/A',
       trendUp: typeof stats.overview.trends.amount === 'number' ? stats.overview.trends.amount > 0 : false,
       type: 'success' as const,
+      clickable: false,
     },
     {
       id: 'pending-payments',
@@ -78,6 +98,7 @@ export function StatsCards() {
       trend: `$${stats.overview.pendingAmount.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
       trendUp: false,
       type: 'warning' as const,
+      clickable: true,
     },
     {
       id: 'overdue-items',
@@ -87,6 +108,7 @@ export function StatsCards() {
       trend: `$${stats.overview.overdueAmount.toLocaleString('en-AU', { minimumFractionDigits: 0 })}`,
       trendUp: stats.overview.overduePayments > 0,
       type: 'danger' as const,
+      clickable: true,
     },
   ];
 
@@ -131,22 +153,22 @@ export function StatsCards() {
           }
         };
 
-        return (
-          <Card 
-            key={card.id}
-            className="rpd-card-elevated group cursor-pointer relative overflow-hidden border hover:shadow-premium-lg transition-all duration-300 ease-out hover:scale-105 hover:-translate-y-1 animate-fade-in"
-            style={{
-              background: cardStyle[card.type].background,
-              borderColor: cardStyle[card.type].borderColor,
-              animationDelay: `${index * 0.1}s`
-            }}
-          >
+        const clickableProps = card.clickable ? {
+          onClick: () => handleCardClick(card.id),
+          onKeyDown: (e: React.KeyboardEvent) => handleCardKeyDown(e, card.id),
+          role: 'link',
+          tabIndex: 0,
+          'aria-label': `View ${card.title.toLowerCase()} in invoices page`
+        } : {};
+
+        const cardContent = (
+          <>
             {/* Animated background gradient */}
             <div className="absolute inset-0 animated-gradient opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out" />
-            
+
             {/* Ripple effect */}
             <div className="absolute inset-0 scale-0 bg-white/10 dark:bg-black/10 rounded-lg group-active:scale-100 transition-transform duration-200 ease-out" />
-            
+
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
               <CardTitle
                 className="text-sm font-semibold"
@@ -169,13 +191,13 @@ export function StatsCards() {
                 >
                   {card.value}
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
-                  <Badge 
-                    variant="outline" 
+                  <Badge
+                    variant="outline"
                     className={`flex items-center space-x-1 px-2 py-1 group-hover:pulse-glow transition-all duration-300 ${
-                      card.trendUp 
-                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/30 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30' 
+                      card.trendUp
+                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/30 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30'
                         : 'text-red-700 bg-red-50 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-800/30 group-hover:bg-red-100 dark:group-hover:bg-red-900/30'
                     }`}
                   >
@@ -196,6 +218,37 @@ export function StatsCards() {
                 </div>
               </div>
             </CardContent>
+          </>
+        );
+
+        return card.clickable ? (
+          <button
+            key={card.id}
+            className="text-left w-full"
+            {...clickableProps}
+          >
+            <Card
+              className="rpd-card-elevated group cursor-pointer relative overflow-hidden border hover:shadow-premium-lg transition-all duration-300 ease-out hover:scale-105 hover:-translate-y-1 animate-fade-in"
+              style={{
+                background: cardStyle[card.type].background,
+                borderColor: cardStyle[card.type].borderColor,
+                animationDelay: `${index * 0.1}s`
+              }}
+            >
+              {cardContent}
+            </Card>
+          </button>
+        ) : (
+          <Card
+            key={card.id}
+            className="rpd-card-elevated group cursor-pointer relative overflow-hidden border hover:shadow-premium-lg transition-all duration-300 ease-out hover:scale-105 hover:-translate-y-1 animate-fade-in"
+            style={{
+              background: cardStyle[card.type].background,
+              borderColor: cardStyle[card.type].borderColor,
+              animationDelay: `${index * 0.1}s`
+            }}
+          >
+            {cardContent}
           </Card>
         );
       })}
