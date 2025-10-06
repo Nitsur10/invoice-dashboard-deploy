@@ -177,11 +177,13 @@ export async function GET(request: NextRequest) {
       (acc, inv) => {
         const status = inv.status
         if (status === 'pending') acc.pending++
+        else if (status === 'in_review') acc.in_review++
+        else if (status === 'approved') acc.approved++
         else if (status === 'paid') acc.paid++
         else if (status === 'overdue') acc.overdue++
         return acc
       },
-      { pending: 0, paid: 0, overdue: 0 }
+      { pending: 0, in_review: 0, approved: 0, paid: 0, overdue: 0 }
     )
 
     return NextResponse.json({
@@ -395,11 +397,13 @@ function buildLocalInvoiceResponse(
     (acc, inv) => {
       const status = deriveInvoiceStatus(inv.amountDue ?? inv.amount ?? 0, inv.dueDate, inv.issueDate ?? inv.receivedDate, now)
       if (status === 'pending') acc.pending++
+      else if (status === 'in_review') acc.in_review++
+      else if (status === 'approved') acc.approved++
       else if (status === 'paid') acc.paid++
       else if (status === 'overdue') acc.overdue++
       return acc
     },
-    { pending: 0, paid: 0, overdue: 0 }
+    { pending: 0, in_review: 0, approved: 0, paid: 0, overdue: 0 }
   )
 
   return {

@@ -1,18 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { Calendar, Filter, Activity } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 import { StatsCards } from '@/components/dashboard/stats-cards';
 import { DashboardStatsProvider, useDashboardStats } from '@/components/dashboard/dashboard-stats-provider';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Label } from '@/components/ui/label';
-import { DateRangePicker } from '@/components/ui/date-picker';
-import { Input } from '@/components/ui/input';
 import { formatDateForSydney } from '@/lib/data';
+import { InvoiceFiltersProvider, useInvoiceFilters } from '@/hooks/use-invoices-filters';
+import { InvoiceFilterDrawer } from '@/components/invoices/filter-drawer';
+import { InvoiceFilterChips } from '@/components/invoices/filter-chips';
+import { fetchInvoiceFacets } from '@/lib/api/invoices';
 
 const StatusBreakdown = dynamic(() => import('@/components/charts/supplier-breakdown').then((m) => m.StatusBreakdown), {
   ssr: false,
@@ -60,9 +61,11 @@ function Clock() {
 
 export default function Dashboard() {
   return (
-    <DashboardStatsProvider>
-      <DashboardView />
-    </DashboardStatsProvider>
+    <InvoiceFiltersProvider>
+      <DashboardStatsProvider>
+        <DashboardView />
+      </DashboardStatsProvider>
+    </InvoiceFiltersProvider>
   );
 }
 
@@ -77,78 +80,26 @@ function toIsoEnd(date: string): string {
 }
 
 function DashboardView() {
+  const { filters } = useInvoiceFilters();
   const { data: stats, isLoading, isError, params, setParams } = useDashboardStats();
-  const [draftFrom, setDraftFrom] = useState(() => (params.dateFrom ? params.dateFrom.slice(0, 10) : MIN_DATE));
-  const [draftTo, setDraftTo] = useState(() => (params.dateTo ? params.dateTo.slice(0, 10) : ''));
+  const [isFilterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
-  useEffect(() => {
-    setDraftFrom(params.dateFrom ? params.dateFrom.slice(0, 10) : MIN_DATE);
-    setDraftTo(params.dateTo ? params.dateTo.slice(0, 10) : '');
-  }, [params.dateFrom, params.dateTo]);
+  // Fetch facets for filter options
+  const facetsQuery = useQuery({
+    queryKey: ['invoice-facets'],
+    queryFn: fetchInvoiceFacets,
+    staleTime: 10 * 60 * 1000,
+  });
 
-  const applyFilters = () => {
-    const normalizedFrom = draftFrom ? (draftFrom < MIN_DATE ? MIN_DATE : draftFrom) : MIN_DATE;
-    const normalizedTo = draftTo && draftTo >= normalizedFrom ? draftTo : '';
-
-    setDraftFrom(normalizedFrom);
-    setDraftTo(normalizedTo);
-
-    setParams((prev) => ({
-      ...prev,
-      dateFrom: toIsoStart(normalizedFrom),
-      dateTo: normalizedTo ? toIsoEnd(normalizedTo) : undefined,
-    }));
-  };
-
-  const setQuickDateRange = (range: 'thisMonth' | 'lastMonth' | 'last2Months' | 'sinceStart') => {
-    const now = new Date();
-    let fromDate: string;
-    let toDate: string;
-
-    switch (range) {
-      case 'thisMonth':
-        fromDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-        toDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
-        break;
-      case 'lastMonth':
-        fromDate = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 10);
-        toDate = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().slice(0, 10);
-        break;
-      case 'last2Months':
-        fromDate = new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString().slice(0, 10);
-        toDate = now.toISOString().slice(0, 10);
-        break;
-      case 'sinceStart':
-        fromDate = MIN_DATE;
-        toDate = '';
-        break;
-      default:
-        return;
-    }
-
-    // Normalize dates
-    const normalizedFrom = fromDate ? (fromDate < MIN_DATE ? MIN_DATE : fromDate) : MIN_DATE;
-    const normalizedTo = toDate && toDate >= normalizedFrom ? toDate : '';
-
-    // Update draft state
-    setDraftFrom(normalizedFrom);
-    setDraftTo(normalizedTo);
-
-    // Immediately apply the filters
-    setParams((prev) => ({
-      ...prev,
-      dateFrom: toIsoStart(normalizedFrom),
-      dateTo: normalizedTo ? toIsoEnd(normalizedTo) : undefined,
-    }));
-  };
-
-  const clearFilters = () => {
-    setDraftFrom(MIN_DATE);
-    setDraftTo('');
-    setParams({
-      dateFrom: toIsoStart(MIN_DATE),
-    });
-  };
+  // Check if filters are active
+  const hasActiveFilters = useMemo(() => {
+    return (
+      filters.statuses.length > 0 ||
+      filters.categories.length > 0 ||
+      filters.vendors.length > 0 ||
+      filters.amountRange !== undefined
+    );
+  }, [filters]);
 
   const dateRangeLabel = (() => {
     const fromLabel = params.dateFrom ? params.dateFrom.slice(0, 10) : MIN_DATE;
@@ -176,86 +127,21 @@ function DashboardView() {
           </div>
 
           <div className="flex space-x-3">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="rpd-btn-secondary space-x-2 border hover:border-primary">
-                  <Filter className="h-4 w-4" />
-                  <span>Filter</span>
-                </Button>
-              </PopoverTrigger>
-            <PopoverContent className="w-96" align="end">
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">Quick Date Ranges</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setQuickDateRange('thisMonth')}
-                      className="text-xs"
-                    >
-                      This Month
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setQuickDateRange('lastMonth')}
-                      className="text-xs"
-                    >
-                      Last Month
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setQuickDateRange('last2Months')}
-                      className="text-xs"
-                    >
-                      Last 2 Months
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setQuickDateRange('sinceStart')}
-                      className="text-xs"
-                    >
-                      Since May 1st
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Custom Date Range</Label>
-                  <div className="space-y-2">
-                    <Input
-                      type="date"
-                      value={draftFrom}
-                      min={MIN_DATE}
-                      onChange={(event) => setDraftFrom(event.target.value)}
-                      className="w-full"
-                    />
-                    <Input
-                      type="date"
-                      value={draftTo}
-                      min={draftFrom || MIN_DATE}
-                      onChange={(event) => setDraftTo(event.target.value)}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex space-x-2">
-                  <Button size="sm" className="rpd-btn-primary flex-1" onClick={applyFilters}>
-                    Apply Filter
-                  </Button>
-                  <Button variant="outline" size="sm" className="rpd-btn-secondary flex-1" onClick={clearFilters}>
-                    Clear
-                  </Button>
-                </div>
-              </div>
-            </PopoverContent>
-            </Popover>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rpd-btn-secondary space-x-2 border hover:border-primary"
+              onClick={() => setFilterDrawerOpen(true)}
+            >
+              <Filter className="h-4 w-4" />
+              <span>Filters</span>
+            </Button>
           </div>
         </div>
+
+        {/* Filter Chips */}
+        <InvoiceFilterChips className="mt-4" />
+
         {/* Stats Cards */}
         {isLoading && (
           <div className="rpd-grid-responsive">
@@ -280,15 +166,25 @@ function DashboardView() {
             <StatusBreakdown
               data={stats?.breakdowns.processingStatus ?? []}
               isLoading={isLoading}
+              isFiltered={hasActiveFilters}
             />
           </div>
           <div className="animate-fade-in" style={{animationDelay: '0.1s'}}>
             <TopVendors
               data={stats?.breakdowns.topVendors ?? []}
               isLoading={isLoading}
+              isFiltered={hasActiveFilters}
             />
           </div>
         </div>
+
+        {/* Filter Drawer */}
+        <InvoiceFilterDrawer
+          open={isFilterDrawerOpen}
+          onOpenChange={setFilterDrawerOpen}
+          facets={facetsQuery.data?.facets}
+          isLoading={facetsQuery.isLoading}
+        />
       </div>
     </div>
   );

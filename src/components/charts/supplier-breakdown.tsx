@@ -1,14 +1,17 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
 export function StatusBreakdown({
   data,
   isLoading,
+  isFiltered,
 }: {
   data: Array<{ status: string; count: number; amount: number }>
   isLoading?: boolean
+  isFiltered?: boolean
 }) {
   const statuses = (data || []).map(s => ({
     name: s.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
@@ -30,12 +33,19 @@ export function StatusBreakdown({
   return (
     <Card className="glass-card glass-card-hover border-2 shadow-lg hover:shadow-xl transition-all duration-300">
       <CardHeader className="pb-4">
-        <CardTitle className="text-xl font-bold text-gray-900 flex items-center space-x-3">
-          <div className="w-4 h-4 bg-amber-600 rounded-full"></div>
-          <span className="text-gray-900">Status Breakdown</span>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl font-bold text-gray-900 flex items-center space-x-3">
+            <div className="w-4 h-4 bg-amber-600 rounded-full"></div>
+            <span className="text-gray-900">Status Breakdown</span>
+          </CardTitle>
+          {isFiltered && (
+            <Badge variant="secondary" className="text-xs">
+              Filtered
+            </Badge>
+          )}
+        </div>
         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-          Distribution of invoices by processing status
+          {isFiltered ? 'Showing filtered subset of data' : 'Distribution of invoices by processing status'}
         </p>
       </CardHeader>
       <CardContent style={{ height: 350 }}>

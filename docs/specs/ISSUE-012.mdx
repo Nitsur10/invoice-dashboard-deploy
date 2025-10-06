@@ -1,0 +1,380 @@
+# ISSUE-012: Sync Status Card Filters Across All Pages
+
+**Status:** 🟢 Approved
+**Priority:** P1 (High)
+**Risk:** Low (Presentation layer only)
+**Estimated Time:** 90 minutes
+
+---
+
+## Problem Statement
+
+**UX Inconsistency Across Pages:**
+
+| Page | Status Cards | Clickable? | Color Consistency |
+|------|--------------|------------|-------------------|
+| **Kanban** | ✅ All 5 statuses | ✅ Yes | ✅ Correct |
+| **Invoices** | ⚠️ Only 3 statuses | ✅ Yes | ⚠️ Pending is amber (should be blue) |
+| **Dashboard** | ✅ All 5 statuses | ❌ No | ✅ Correct |
+
+**User Impact:**
+- Users expect consistent filtering UX across all pages
+- Missing "In Review" and "Approved" filters on Invoices page creates confusion
+- Dashboard cards look clickable but aren't functional
+- Color inconsistency (Pending = blue vs amber) reduces pattern recognition
+
+---
+
+## Solution Design
+
+### 1. Invoices Page Enhancements
+
+**Add Missing Status Cards:**
+
+```tsx
+// In Review Card
+<button
+  onClick={() => handleStatusFilter('in_review')}
+  className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500/10 to-amber-600/10 border border-amber-500/20 hover:border-amber-500/40 p-6 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-amber-500/20 cursor-pointer"
+>
+  <div className="flex items-start justify-between mb-3">
+    <div className="p-3 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg">
+      <Clock className="h-6 w-6 text-white" />
+    </div>
+    <TrendingUp className="h-5 w-5 text-amber-600/40" />
+  </div>
+  <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">In Review</h3>
+  <div className="flex items-baseline gap-2">
+    <p className="text-2xl font-bold text-slate-900 dark:text-white">
+      {stats.reviewCount || 0}
+    </p>
+    <span className="text-xs font-medium text-amber-600 dark:text-amber-500">
+      {formatCurrency(stats.reviewAmount || 0)}
+    </span>
+  </div>
+</button>
+
+// Approved Card
+<button
+  onClick={() => handleStatusFilter('approved')}
+  className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/20 hover:border-purple-500/40 p-6 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/20 cursor-pointer"
+>
+  <div className="flex items-start justify-between mb-3">
+    <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
+      <CheckCircle2 className="h-6 w-6 text-white" />
+    </div>
+    <TrendingUp className="h-5 w-5 text-purple-600/40" />
+  </div>
+  <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Approved</h3>
+  <div className="flex items-baseline gap-2">
+    <p className="text-2xl font-bold text-slate-900 dark:text-white">
+      {stats.approvedCount || 0}
+    </p>
+    <span className="text-xs font-medium text-purple-600 dark:text-purple-500">
+      {formatCurrency(stats.approvedAmount || 0)}
+    </span>
+  </div>
+</button>
+```
+
+**Fix Pending Card Color:**
+- Change `from-amber-500` → `from-blue-500`
+- Change `to-amber-600` → `to-blue-600`
+- Change `border-amber-500` → `border-blue-500`
+- Change `text-amber-600` → `text-blue-600`
+
+**Update Grid Layout:**
+```tsx
+// Old: lg:grid-cols-3 xl:grid-cols-5
+// New: lg:grid-cols-5 xl:grid-cols-7
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 xl:grid-cols-7 gap-4 mb-6">
+```
+
+**Card Order:**
+1. Pending Payments (blue)
+2. In Review (amber)
+3. Approved (purple)
+4. Paid Invoices (green)
+5. Overdue Items (red)
+
+---
+
+### 2. Dashboard Page Click Handlers
+
+**Update `StatsCards` Component:**
+
+```tsx
+'use client'
+
+import { useRouter } from 'next/navigation'
+
+export function StatsCards({ stats }: StatsCardsProps) {
+  const router = useRouter()
+
+  const handlePendingClick = () => {
+    router.push('/invoices?status=pending')
+  }
+
+  const handleOverdueClick = () => {
+    router.push('/invoices?status=overdue')
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+      {/* Pending Payments */}
+      <button
+        onClick={handlePendingClick}
+        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 hover:border-blue-500/40 p-6 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20 cursor-pointer"
+        role="link"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            handlePendingClick()
+          }
+        }}
+      >
+        {/* Card content... */}
+      </button>
+
+      {/* Other non-clickable cards remain as <div> */}
+
+      {/* Overdue Items */}
+      <button
+        onClick={handleOverdueClick}
+        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500/10 to-red-600/10 border border-red-500/20 hover:border-red-500/40 p-6 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-red-500/20 cursor-pointer"
+        role="link"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            handleOverdueClick()
+          }
+        }}
+      >
+        {/* Card content... */}
+      </button>
+    </div>
+  )
+}
+```
+
+---
+
+### 3. Color Standardization
+
+**Status → Color Mapping:**
+
+| Status | Primary Color | Gradient | Border | Text | Icon |
+|--------|---------------|----------|--------|------|------|
+| **Pending** | Blue | `from-blue-500/10 to-blue-600/10` | `border-blue-500/20` | `text-blue-600` | `FileText` |
+| **In Review** | Amber | `from-amber-500/10 to-amber-600/10` | `border-amber-500/20` | `text-amber-600` | `Clock` |
+| **Approved** | Purple | `from-purple-500/10 to-purple-600/10` | `border-purple-500/20` | `text-purple-600` | `CheckCircle2` |
+| **Paid** | Green | `from-green-500/10 to-green-600/10` | `border-green-500/20` | `text-green-600` | `DollarSign` |
+| **Overdue** | Red | `from-red-500/10 to-red-600/10` | `border-red-500/20` | `text-red-600` | `AlertCircle` |
+
+---
+
+## Implementation Plan
+
+### Phase 1: Spec Agent ✅
+- [x] Create technical specification (this document)
+
+### Phase 2: Test Agent
+- [ ] Write E2E test: `tests-e2e/status-filters-sync.spec.ts`
+  - Verify 5 status cards on Invoices page
+  - Click each card → verify filter applied
+  - Click Dashboard Pending → verify navigation to `/invoices?status=pending`
+  - Click Dashboard Overdue → verify navigation to `/invoices?status=overdue`
+  - Verify color consistency (check class names)
+  - Test keyboard navigation (Tab, Enter, Space)
+
+### Phase 3: Implementation Agent
+- [ ] Update `src/app/(dashboard)/invoices/page.tsx`
+  - Add In Review card
+  - Add Approved card
+  - Fix Pending card color (amber → blue)
+  - Update grid layout to `lg:grid-cols-5 xl:grid-cols-7`
+  - Add `handleStatusFilter` for new cards
+- [ ] Update `src/components/dashboard/stats-cards.tsx`
+  - Add `'use client'` directive
+  - Import `useRouter` from `next/navigation`
+  - Convert Pending card to `<button>` with onClick
+  - Convert Overdue card to `<button>` with onClick
+  - Add keyboard event handlers (Enter, Space)
+  - Add ARIA attributes (role="link", tabIndex)
+
+### Phase 4: QA Agent
+- [ ] Manual testing
+  - Click all 5 status cards on Invoices page
+  - Verify filter state updates in URL params
+  - Click Dashboard cards → verify navigation
+  - Test keyboard navigation (Tab + Enter/Space)
+- [ ] Accessibility audit
+  - Run axe DevTools
+  - Verify focus indicators
+  - Test screen reader announcements
+- [ ] Visual regression
+  - Compare before/after screenshots
+  - Verify color consistency across pages
+  - Check responsive layouts (mobile, tablet, desktop)
+
+### Phase 5: Security Agent
+- [ ] Run `npm run lint`
+- [ ] Run `npm run type-check`
+- [ ] Run `npm audit`
+- [ ] Check bundle size impact (should be minimal)
+- [ ] Verify no secrets committed
+
+### Phase 6: Docs Agent
+- [ ] Update `CHANGELOG.md`
+- [ ] Create PR body with screenshots
+- [ ] Update issue tracker
+
+### Phase 7: Release Agent
+- [ ] Create branch `12-sync-status-filters`
+- [ ] Commit changes
+- [ ] Create PR
+- [ ] Merge to main
+
+---
+
+## Testing Strategy
+
+### E2E Tests
+
+```typescript
+test('Invoices page has all 5 status filter cards', async ({ page }) => {
+  await page.goto('/invoices')
+
+  // Verify all 5 cards exist
+  await expect(page.getByRole('button', { name: /pending payments/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /in review/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /approved/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /paid invoices/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /overdue items/i })).toBeVisible()
+})
+
+test('Dashboard cards navigate to Invoices with filter', async ({ page }) => {
+  await page.goto('/dashboard')
+
+  // Click Pending Payments card
+  await page.getByRole('link', { name: /pending payments/i }).click()
+  await expect(page).toHaveURL('/invoices?status=pending')
+
+  // Navigate back
+  await page.goto('/dashboard')
+
+  // Click Overdue Items card
+  await page.getByRole('link', { name: /overdue items/i }).click()
+  await expect(page).toHaveURL('/invoices?status=overdue')
+})
+
+test('Status cards have consistent colors across pages', async ({ page }) => {
+  // Verify Pending card is blue on Invoices page
+  await page.goto('/invoices')
+  const invoicesPendingCard = page.getByRole('button', { name: /pending payments/i })
+  await expect(invoicesPendingCard).toHaveClass(/from-blue-500/)
+
+  // Verify Pending card is blue on Dashboard page
+  await page.goto('/dashboard')
+  const dashboardPendingCard = page.getByRole('link', { name: /pending payments/i })
+  await expect(dashboardPendingCard).toHaveClass(/from-blue-500/)
+})
+```
+
+### Manual QA Checklist
+
+- [ ] All 5 status cards visible on Invoices page
+- [ ] Clicking each card applies correct filter
+- [ ] Pending card is blue (not amber) on all pages
+- [ ] Dashboard Pending card navigates to `/invoices?status=pending`
+- [ ] Dashboard Overdue card navigates to `/invoices?status=overdue`
+- [ ] Hover states work correctly
+- [ ] Focus indicators visible
+- [ ] Keyboard navigation works (Tab, Enter, Space)
+- [ ] Screen reader announces cards as links
+- [ ] Mobile responsive layout works
+- [ ] Dark mode colors correct
+
+---
+
+## Files Modified
+
+1. **`docs/specs/ISSUE-012.mdx`** (NEW)
+   - This technical specification
+
+2. **`tests-e2e/status-filters-sync.spec.ts`** (NEW)
+   - E2E tests for status filter synchronization
+
+3. **`src/app/(dashboard)/invoices/page.tsx`** (~70 lines added)
+   - Add In Review card
+   - Add Approved card
+   - Fix Pending card color
+   - Update grid layout
+
+4. **`src/components/dashboard/stats-cards.tsx`** (~15 lines modified)
+   - Add 'use client' directive
+   - Add click handlers with navigation
+   - Add keyboard event handlers
+   - Update Pending/Overdue cards to buttons
+
+---
+
+## Success Criteria
+
+✅ **Functional:**
+- All 5 status cards present on Invoices page
+- Dashboard cards navigate to Invoices with correct filter
+- Filters apply correctly when cards clicked
+
+✅ **Visual:**
+- Consistent colors across all pages (Pending = blue)
+- Hover states work correctly
+- Focus indicators visible
+
+✅ **Accessibility:**
+- Keyboard navigation works (Tab + Enter/Space)
+- Screen reader announces cards as clickable
+- ARIA attributes correct (role, tabIndex)
+
+✅ **Quality:**
+- All E2E tests pass
+- No TypeScript errors
+- No ESLint warnings
+- Bundle size impact < 1KB
+
+---
+
+## Risk Assessment
+
+**Low Risk:**
+- Presentation layer changes only
+- No API or data model changes
+- No authentication/authorization changes
+- Easily reversible
+
+**Potential Issues:**
+- Grid layout may need responsive adjustments
+- Color contrast may need verification (WCAG AA)
+- Navigation state may need URL param handling
+
+**Mitigation:**
+- Test on multiple screen sizes
+- Run accessibility audit (axe DevTools)
+- Test URL param handling edge cases
+
+---
+
+## Rollback Plan
+
+If issues arise:
+1. Revert commits on branch `12-sync-status-filters`
+2. Close PR without merging
+3. Previous behavior unaffected (no breaking changes)
+
+---
+
+**Spec Created:** 2025-10-05
+**Estimated Completion:** 2025-10-05 (90 minutes)
+**Dependencies:** None

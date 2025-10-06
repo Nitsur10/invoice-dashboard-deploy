@@ -70,6 +70,14 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url)
     const dateFrom = parseDateParam(url.searchParams.get('dateFrom'))
     const dateTo = parseDateParam(url.searchParams.get('dateTo'))
+
+    // Parse filter params
+    const statusFilters = url.searchParams.getAll('status')
+    const categoryFilters = url.searchParams.getAll('category')
+    const vendorFilters = url.searchParams.getAll('vendor')
+    const amountMinParam = parseFloat(url.searchParams.get('amountMin') || '')
+    const amountMaxParam = parseFloat(url.searchParams.get('amountMax') || '')
+
     const now = new Date()
 
     const minClamp = '2025-05-01T00:00:00.000Z'
@@ -234,16 +242,48 @@ export async function GET(request: NextRequest) {
         continue
       }
 
-      processedCount++
-      totalInvoices += 1
+      // Get invoice fields for filtering
       const amount = Number(pick(r, ['total', 'amount', 'total_amount', 'grand_total'], 0)) || 0
       const amountDueRaw = pick(r, ['amount_due', 'due_amount', 'outstanding', 'balance_due'], null)
       const amountDue = amountDueRaw == null ? null : Number(amountDueRaw)
-      totalAmount += amount
-
       const dueDateValue = pick(r, ['due_date', 'dueDate', 'payment_due', 'payment_due_date'], null)
       const issueDateValue = pick(r, ['issue_date', 'issueDate', 'invoice_date', 'invoiceDate', 'created_at', 'createdAt'], null)
       const status = deriveInvoiceStatus(amountDue, dueDateValue, issueDateValue, now)
+      const cat = (pick(r, ['category', 'category_name', 'type'], 'Uncategorized')) as string
+      const vendor = (pick(r, ['supplier_name', 'vendor', 'vendor_name', 'supplier'], 'Unknown Vendor')) as string
+
+      // Apply additional filters
+      // Status filter
+      if (statusFilters.length && !statusFilters.includes(status)) {
+        filteredCount++
+        continue
+      }
+
+      // Category filter
+      if (categoryFilters.length && !categoryFilters.includes(cat)) {
+        filteredCount++
+        continue
+      }
+
+      // Vendor filter
+      if (vendorFilters.length && !vendorFilters.includes(vendor)) {
+        filteredCount++
+        continue
+      }
+
+      // Amount filter
+      if (!isNaN(amountMinParam) && amount < amountMinParam) {
+        filteredCount++
+        continue
+      }
+      if (!isNaN(amountMaxParam) && amount > amountMaxParam) {
+        filteredCount++
+        continue
+      }
+
+      processedCount++
+      totalInvoices += 1
+      totalAmount += amount
 
       // Track by status for breakdown
       const statusEntry = byStatus.get(status) || { count: 0, amount: 0 }
@@ -261,13 +301,11 @@ export async function GET(request: NextRequest) {
         pendingAmount += amountDue ?? amount
       }
 
-      const cat = (pick(r, ['category', 'category_name', 'type'], 'Uncategorized')) as string
       const catEntry = byCategory.get(cat) || { count: 0, amount: 0 }
       catEntry.count += 1
       catEntry.amount += amount
       byCategory.set(cat, catEntry)
 
-      const vendor = (pick(r, ['supplier_name', 'vendor', 'vendor_name', 'supplier'], 'Unknown Vendor')) as string
       const venEntry = byVendor.get(vendor) || { count: 0, amount: 0 }
       venEntry.count += 1
       venEntry.amount += amount

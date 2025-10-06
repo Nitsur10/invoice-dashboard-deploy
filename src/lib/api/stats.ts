@@ -55,19 +55,30 @@ export interface StatsParams {
   dateFrom?: string
   dateTo?: string
   triggerError?: boolean
+  // Filter params
+  status?: string[]
+  category?: string[]
+  vendor?: string[]
+  amountMin?: number
+  amountMax?: number
 }
 
 export async function fetchDashboardStats(params: StatsParams = {}): Promise<DashboardStats> {
   const startTime = Date.now()
-  
+
   try {
-    const url = new URL(`/api/stats`, 
+    const url = new URL(`/api/stats`,
       typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
-    
+
     // Add query parameters
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {
-        url.searchParams.set(key, String(value))
+        // Handle array parameters (status, category, vendor)
+        if (Array.isArray(value)) {
+          value.forEach(item => url.searchParams.append(key, String(item)))
+        } else {
+          url.searchParams.set(key, String(value))
+        }
       }
     })
 

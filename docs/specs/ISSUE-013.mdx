@@ -1,0 +1,78 @@
+# ISSUE-013: Sync Filter Drawer UI Across All Pages
+
+## Overview
+Synchronize filter drawer UI across Dashboard, Kanban, and Invoices pages to provide consistent filtering capabilities.
+
+## Problem
+- Dashboard page has limited date-only filter UI
+- Kanban and Invoices pages have full filter drawer (Status, Category, Vendor, Date, Amount)
+- Creates inconsistent UX where users expect same filtering capabilities across all pages
+
+## Solution
+Replace Dashboard's custom date-only popover with the shared `InvoiceFilterDrawer` component used by Kanban/Invoices pages.
+
+## Implementation Plan
+
+### 1. Dashboard Page Updates
+- Wrap Dashboard in `InvoiceFiltersProvider`
+- Replace custom popover (lines 179-254) with `InvoiceFilterDrawer`
+- Add `InvoiceFilterChips` component
+- Add facets query for filter options
+
+### 2. Dashboard Stats API Integration
+- Extend `StatsParams` interface with filter fields (status, category, vendor, amountMin, amountMax)
+- Update API route to parse and apply filter params
+- Filter data before aggregation while maintaining backward compatibility
+
+### 3. Dashboard Stats Provider Update
+- Access filter state from `useInvoiceFilters` hook
+- Merge filters into query params
+- Update query key to trigger refetch on filter changes
+
+### 4. Chart Components Enhancement
+- Add `isFiltered` prop to StatusBreakdown, TopVendors, CategoryBreakdown
+- Show "Filtered" badge when filters are active
+- Add descriptive text for filtered views
+
+### 5. Testing
+- E2E tests for filter drawer functionality
+- Cross-page consistency verification
+- Filter application and clearing tests
+
+## Files to Modify
+
+1. `src/app/(dashboard)/dashboard/page.tsx` - Add InvoiceFiltersProvider wrapper + drawer
+2. `src/lib/api/stats.ts` - Extend StatsParams interface
+3. `src/app/api/stats/route.ts` - Add filter logic to aggregation
+4. `src/components/dashboard/dashboard-stats-provider.tsx` - Integrate filter state
+5. `src/components/charts/supplier-breakdown.tsx` - Add isFiltered prop
+6. `src/components/charts/top-vendors.tsx` - Add isFiltered prop
+
+## Acceptance Criteria
+
+- [ ] Dashboard filter button opens InvoiceFilterDrawer (not custom popover)
+- [ ] All 5 filter types available: Status, Category, Vendor, Date Range, Amount
+- [ ] Filter chips appear below header showing active filters
+- [ ] Charts update when filters applied
+- [ ] "Filtered" badge shows on charts when filters active
+- [ ] Clear All button resets all filters
+- [ ] Filter UI identical across Dashboard, Kanban, Invoices pages
+- [ ] Backward compatible with existing date-only filtering
+- [ ] All E2E tests pass
+
+## Risk Assessment
+**Low-Medium Risk** - Reuses proven components, isolated changes, backward compatible
+
+## Estimated Effort
+2.5-3 hours
+
+## Dependencies
+- InvoiceFilterDrawer component (existing)
+- InvoiceFiltersProvider hook (existing)
+- Facets API (existing)
+
+## Success Metrics
+- Identical filter UI across all 3 pages
+- Charts respond to all filter types
+- No performance degradation
+- All tests passing
