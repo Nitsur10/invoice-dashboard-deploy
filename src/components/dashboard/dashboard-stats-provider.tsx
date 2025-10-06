@@ -35,6 +35,7 @@ export function DashboardStatsProvider({ children }: { children: React.ReactNode
       categories: [],
       vendors: [],
       amountRange: undefined,
+      dateRange: undefined,
     };
   }
 
@@ -43,14 +44,25 @@ export function DashboardStatsProvider({ children }: { children: React.ReactNode
   });
 
   // Merge params with filters for query key
-  const queryParams = useMemo(() => ({
-    ...params,
-    status: filters.statuses.length > 0 ? filters.statuses : undefined,
-    category: filters.categories.length > 0 ? filters.categories : undefined,
-    vendor: filters.vendors.length > 0 ? filters.vendors : undefined,
-    amountMin: filters.amountRange?.min,
-    amountMax: filters.amountRange?.max,
-  }), [params, filters]);
+  const queryParams = useMemo(() => {
+    // Use dateRange from filters if available, otherwise use params
+    const dateFrom = filters.dateRange?.start
+      ? `${filters.dateRange.start}T00:00:00.000Z`
+      : params.dateFrom;
+    const dateTo = filters.dateRange?.end
+      ? `${filters.dateRange.end}T23:59:59.999Z`
+      : params.dateTo;
+
+    return {
+      dateFrom,
+      dateTo,
+      status: filters.statuses.length > 0 ? filters.statuses : undefined,
+      category: filters.categories.length > 0 ? filters.categories : undefined,
+      vendor: filters.vendors.length > 0 ? filters.vendors : undefined,
+      amountMin: filters.amountRange?.min,
+      amountMax: filters.amountRange?.max,
+    };
+  }, [params, filters]);
 
   const statsQuery = useQuery({
     queryKey: ['dashboard-stats', queryParams],
