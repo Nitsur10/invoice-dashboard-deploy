@@ -1,11 +1,11 @@
 <!-- tracker:summary:start -->
 # Issues & PRs Control Board
 
-_Last updated: 10/6/2025, 11:23:23 PM (execution: 1s)_
+_Last updated: 10/7/2025, 10:23:25 PM (execution: 1s)_
 
 **At a glance**
 - **Repos**: 1 (1 success, 0 failed)
-- **Open PRs**: 2 | Ready: 0 | Needs review: 1 | Failing: 1 | Blocked: 0 | Draft: 0 | Stale: 0
+- **Open PRs**: 2 | Ready: 0 | Needs review: 0 | Failing: 1 | Blocked: 0 | Draft: 0 | Stale: 1
 - **Open Issues**: 4 | Features: 0 | Bugs: 1 | Stale: 0
 
 **Health Status**: 🟡 2 API failures | Rate limit: 4991 remaining
@@ -18,11 +18,11 @@ _Last updated: 10/6/2025, 11:23:23 PM (execution: 1s)_
 ```mermaid
 pie title Open PRs by Status
     
-    "Needs Review (1)" : 1
+    
     "Failing (1)" : 1
     
     
-    
+    "Stale (1)" : 1
     
 ```
 
@@ -72,11 +72,9 @@ _No items found_
 <!-- tracker:ready:end -->
 
 <!-- tracker:needsreview:start -->
-## 👀 Needs review (1)
+## 👀 Needs review (0)
 
-| PR | Repo | Title | Author | Updated |
-|:-:|:---:|:----:|:-----:|:------:|
-| [#14](https://github.com/Nitsur10/invoice-dashboard-deploy/pull/14) | invoice-dashboard-deploy | Move landing page analytics initialization into us... | Nitsur10 | 9/27/2025 |
+_No items found_
 
 <!-- tracker:needsreview:end -->
 
@@ -104,9 +102,11 @@ _No items found_
 <!-- tracker:draft:end -->
 
 <!-- tracker:staleprs:start -->
-## 🕐 Stale PRs (0)
+## 🕐 Stale PRs (1)
 
-_No items found_
+| PR | Repo | Title | Last Updated |
+|:-:|:---:|:----:|:-----------:|
+| [#14](https://github.com/Nitsur10/invoice-dashboard-deploy/pull/14) | invoice-dashboard-deploy | Move landing page analytics initialization into useEffect | 9/27/2025 |
 
 <!-- tracker:staleprs:end -->
 
