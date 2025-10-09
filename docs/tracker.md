@@ -1,14 +1,14 @@
 <!-- tracker:summary:start -->
 # Issues & PRs Control Board
 
-_Last updated: 10/8/2025, 11:22:51 PM (execution: 1s)_
+_Last updated: 10/9/2025, 10:23:18 PM (execution: 1s)_
 
 **At a glance**
 - **Repos**: 1 (1 success, 0 failed)
 - **Open PRs**: 2 | Ready: 0 | Needs review: 0 | Failing: 1 | Blocked: 0 | Draft: 0 | Stale: 1
 - **Open Issues**: 4 | Features: 0 | Bugs: 1 | Stale: 3
 
-**Health Status**: 🟡 2 API failures | Rate limit: 4981 remaining
+**Health Status**: 🟡 2 API failures | Rate limit: 4991 remaining
 <!-- tracker:summary:end -->
 
 <!-- tracker:charts:start -->
@@ -83,7 +83,7 @@ _No items found_
 
 | PR | Repo | Title | Details | Updated |
 |:-:|:---:|:----:|:------:|:------:|
-| [#23](https://github.com/Nitsur10/invoice-dashboard-deploy/pull/23) | invoice-dashboard-deploy | Sync Status Card Filters Across All Pages (ISSUE-1... | Checks failed: 2 failures | 10/5/2025 |
+| [#23](https://github.com/Nitsur10/invoice-dashboard-deploy/pull/23) | invoice-dashboard-deploy | Sync Status Card Filters Across All Pages (ISSUE-1... | Checks failed: 2 failures | 10/9/2025 |
 
 <!-- tracker:failing:end -->
 
@@ -131,9 +131,9 @@ _No items found_
 
 | Issue | Repo | Title | Days Stale |
 |:----:|:---:|:----:|:---------:|
-| [#5](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/5) | invoice-dashboard-deploy | Implement month-over-month trend metrics pipeline | 15 |
-| [#3](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/3) | invoice-dashboard-deploy | Surface stats API failures with user feedback | 15 |
-| [#2](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/2) | invoice-dashboard-deploy | Refine invoice status derivation across APIs | 15 |
+| [#5](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/5) | invoice-dashboard-deploy | Implement month-over-month trend metrics pipeline | 16 |
+| [#3](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/3) | invoice-dashboard-deploy | Surface stats API failures with user feedback | 16 |
+| [#2](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/2) | invoice-dashboard-deploy | Refine invoice status derivation across APIs | 16 |
 
 <!-- tracker:staleissues:end -->
 
