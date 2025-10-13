@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-10-13T11:10:07.920Z",
+  "generated_at": "2025-10-13T11:26:53.141Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -8,9 +8,8 @@
     "total_repos": 1,
     "successful_repos": 1,
     "failed_repos": 0,
-    "total_prs": 3,
+    "total_prs": 2,
     "prs_by_status": {
-      "ci_pending": 1,
       "ci_failed": 1,
       "stale": 1
     },
@@ -23,51 +22,6 @@
     "stale_issues": 3
   },
   "prs": [
-    {
-      "repo": "Nitsur10/invoice-dashboard-deploy",
-      "number": 26,
-      "title": "fix: UI cleanup and invoice status update persistence (Issue #14)",
-      "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/26",
-      "head_ref": "014-ui-cleanup-status-update-fix",
-      "draft": false,
-      "status_bucket": "ci_pending",
-      "classification_confidence": 0.9,
-      "classification_details": "Checks are running: 2 pending",
-      "linked_issues": [],
-      "updated_at": "2025-10-13T11:09:14Z",
-      "created_at": "2025-10-13T10:51:34Z",
-      "author": "Nitsur10",
-      "labels": [],
-      "readiness_score": 60,
-      "readiness_reasons": [
-        "⏳ Checks running (+5)",
-        "📝 Partial approvals: 0/1 (+0)",
-        "📊 Small changeset: 0 files (+5)"
-      ],
-      "sla_status": {
-        "status": "on_track",
-        "due_date": "2025-10-18T10:51:34.000Z",
-        "hours_remaining": 120,
-        "priority": "p2",
-        "sla_hours": 120
-      },
-      "content_analysis": {
-        "type": "bug",
-        "priority": "p0",
-        "labels": [],
-        "confidence": 1,
-        "reasons": [
-          "Bug keywords: fix, error message",
-          "Urgent language detected"
-        ]
-      },
-      "enhanced_classification": {
-        "category": "review",
-        "priority": "p0",
-        "suggested_labels": [],
-        "missing_links": []
-      }
-    },
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
       "number": 23,
@@ -99,7 +53,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-10T01:55:03.000Z",
-        "hours_remaining": -81,
+        "hours_remaining": -82,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -247,10 +201,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1902,
-    "api_calls_made": 14,
-    "api_calls_failed": 3,
-    "rate_limit_remaining": "4987",
+    "execution_time_ms": 1332,
+    "api_calls_made": 10,
+    "api_calls_failed": 2,
+    "rate_limit_remaining": "4977",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -261,7 +215,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-13T11:10:06.874Z"
+        "timestamp": "2025-10-13T11:26:52.705Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -272,18 +226,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-13T11:10:07.462Z"
-      },
-      {
-        "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
-        "context": {
-          "operation": "newApi",
-          "params": "{\"owner\":\"Nitsur10\",\"repo\":\"invoice-dashboard-deploy\",\"branch\":\"main\"}",
-          "status": 403,
-          "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
-          "retries": 0
-        },
-        "timestamp": "2025-10-13T11:10:07.818Z"
+        "timestamp": "2025-10-13T11:26:53.039Z"
       }
     ]
   },
@@ -291,51 +234,6 @@
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
       "prs": [
-        {
-          "repo": "Nitsur10/invoice-dashboard-deploy",
-          "number": 26,
-          "title": "fix: UI cleanup and invoice status update persistence (Issue #14)",
-          "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/pull/26",
-          "head_ref": "014-ui-cleanup-status-update-fix",
-          "draft": false,
-          "status_bucket": "ci_pending",
-          "classification_confidence": 0.9,
-          "classification_details": "Checks are running: 2 pending",
-          "linked_issues": [],
-          "updated_at": "2025-10-13T11:09:14Z",
-          "created_at": "2025-10-13T10:51:34Z",
-          "author": "Nitsur10",
-          "labels": [],
-          "readiness_score": 60,
-          "readiness_reasons": [
-            "⏳ Checks running (+5)",
-            "📝 Partial approvals: 0/1 (+0)",
-            "📊 Small changeset: 0 files (+5)"
-          ],
-          "sla_status": {
-            "status": "on_track",
-            "due_date": "2025-10-18T10:51:34.000Z",
-            "hours_remaining": 120,
-            "priority": "p2",
-            "sla_hours": 120
-          },
-          "content_analysis": {
-            "type": "bug",
-            "priority": "p0",
-            "labels": [],
-            "confidence": 1,
-            "reasons": [
-              "Bug keywords: fix, error message",
-              "Urgent language detected"
-            ]
-          },
-          "enhanced_classification": {
-            "category": "review",
-            "priority": "p0",
-            "suggested_labels": [],
-            "missing_links": []
-          }
-        },
         {
           "repo": "Nitsur10/invoice-dashboard-deploy",
           "number": 23,
@@ -367,7 +265,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-10T01:55:03.000Z",
-            "hours_remaining": -81,
+            "hours_remaining": -82,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -515,8 +413,8 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-10-13T11:10:07.819Z",
-        "pr_count": 3,
+        "processed_at": "2025-10-13T11:26:53.040Z",
+        "pr_count": 2,
         "issue_count": 5
       }
     }
