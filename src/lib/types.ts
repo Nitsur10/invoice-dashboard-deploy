@@ -21,7 +21,8 @@ export type InvoiceCategory = 'standard_pdf' | 'xero_with_pdf' | 'xero_links_onl
 
 export type ProcessingStatus = 'Processed' | 'Needs Manual Download' | 'Pending' | 'Failed';
 
-export type PaymentStatus = 'PENDING' | 'PAID' | 'OVERDUE';
+// Database stores lowercase status values
+export type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'in_review' | 'approved';
 
 export interface DashboardStats {
   totalInvoices: number;

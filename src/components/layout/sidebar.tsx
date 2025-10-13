@@ -8,10 +8,6 @@ import { useInvoiceCount } from '@/hooks/useInvoiceCount';
 import {
   LayoutDashboard,
   FileText,
-  Kanban,
-  BarChart3,
-  Settings,
-  TrendingUp,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -31,24 +27,6 @@ const getNavigation = (invoiceCount?: number) => [
     href: '/invoices',
     icon: FileText,
     badge: invoiceCount && invoiceCount > 0 ? invoiceCount.toString() : null,
-  },
-  {
-    name: 'Kanban Board',
-    href: '/kanban',
-    icon: Kanban,
-    badge: null,
-  },
-  {
-    name: 'Analytics',
-    href: '/analytics',
-    icon: BarChart3,
-    badge: null,
-  },
-  {
-    name: 'Settings',
-    href: '/settings',
-    icon: Settings,
-    badge: null,
   },
 ];
 
@@ -79,7 +57,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
-              
+
               return (
                 <Link
                   key={item.name}
@@ -98,14 +76,14 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
                     <Icon className={cn(
                       "mr-3 h-5 w-5 transition-all duration-300 ease-out relative z-10",
                       "group-hover:scale-110 group-hover:rotate-3",
-                      isActive 
-                        ? "text-primary-foreground" 
+                      isActive
+                        ? "text-primary-foreground"
                         : "text-muted-foreground group-hover:text-primary"
                     )} />
-                  
+
                     <span className="truncate relative z-10 group-hover:font-semibold transition-all duration-300 ease-out">{item.name}</span>
                   </div>
-                  
+
                   {item.badge && (
                     <div className={cn(
                       "ml-auto rounded-full px-2.5 py-1 text-xs font-medium relative z-10",
@@ -123,6 +101,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
           </nav>
         </div>
         
+        {/* Monthly Growth widget - temporarily disabled
         <div className="px-6">
           <div className="rounded-xl p-4 border bg-accent/20 border/50 hover:bg-accent/30 transition-colors duration-200">
             <div className="flex items-center space-x-3">
@@ -140,6 +119,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
             </div>
           </div>
         </div>
+        */}
       </div>
     </div>
   );

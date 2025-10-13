@@ -17,6 +17,7 @@ import { formatCurrency } from "@/lib/utils"
 import { updateInvoiceStatus } from "@/lib/api/invoices"
 import { useQueryClient, useMutation } from "@tanstack/react-query"
 import { useState } from "react"
+import { toast } from "sonner"
 
 export const invoiceColumns: ColumnDef<Invoice>[] = [
   {
@@ -292,13 +293,9 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
                   onClick={async () => {
                     const result = await updateInvoiceStatus(invoice.id, 'pending')
                     if (result.success) {
-                      window.dispatchEvent(new CustomEvent('status-update-toast', {
-                        detail: { type: 'success', message: `Invoice ${invoice.invoiceNumber} status updated to Pending` }
-                      }))
+                      toast.success(`Invoice ${invoice.invoiceNumber} status updated to Pending`)
                     } else {
-                      window.dispatchEvent(new CustomEvent('status-update-toast', {
-                        detail: { type: 'error', message: result.error || 'Failed to update status' }
-                      }))
+                      toast.error(result.error || 'Failed to update status')
                     }
                   }}
                   className="cursor-pointer"
@@ -312,13 +309,9 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
                   onClick={async () => {
                     const result = await updateInvoiceStatus(invoice.id, 'in_review')
                     if (result.success) {
-                      window.dispatchEvent(new CustomEvent('status-update-toast', {
-                        detail: { type: 'success', message: `Invoice ${invoice.invoiceNumber} status updated to In Review` }
-                      }))
+                      toast.success(`Invoice ${invoice.invoiceNumber} status updated to In Review`)
                     } else {
-                      window.dispatchEvent(new CustomEvent('status-update-toast', {
-                        detail: { type: 'error', message: result.error || 'Failed to update status' }
-                      }))
+                      toast.error(result.error || 'Failed to update status')
                     }
                   }}
                   className="cursor-pointer"
@@ -332,13 +325,9 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
                   onClick={async () => {
                     const result = await updateInvoiceStatus(invoice.id, 'approved')
                     if (result.success) {
-                      window.dispatchEvent(new CustomEvent('status-update-toast', {
-                        detail: { type: 'success', message: `Invoice ${invoice.invoiceNumber} status updated to Approved` }
-                      }))
+                      toast.success(`Invoice ${invoice.invoiceNumber} status updated to Approved`)
                     } else {
-                      window.dispatchEvent(new CustomEvent('status-update-toast', {
-                        detail: { type: 'error', message: result.error || 'Failed to update status' }
-                      }))
+                      toast.error(result.error || 'Failed to update status')
                     }
                   }}
                   className="cursor-pointer"
@@ -352,13 +341,9 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
                   onClick={async () => {
                     const result = await updateInvoiceStatus(invoice.id, 'paid')
                     if (result.success) {
-                      window.dispatchEvent(new CustomEvent('status-update-toast', {
-                        detail: { type: 'success', message: `Invoice ${invoice.invoiceNumber} status updated to Paid` }
-                      }))
+                      toast.success(`Invoice ${invoice.invoiceNumber} status updated to Paid`)
                     } else {
-                      window.dispatchEvent(new CustomEvent('status-update-toast', {
-                        detail: { type: 'error', message: result.error || 'Failed to update status' }
-                      }))
+                      toast.error(result.error || 'Failed to update status')
                     }
                   }}
                   className="cursor-pointer"
@@ -372,13 +357,9 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
                   onClick={async () => {
                     const result = await updateInvoiceStatus(invoice.id, 'overdue')
                     if (result.success) {
-                      window.dispatchEvent(new CustomEvent('status-update-toast', {
-                        detail: { type: 'success', message: `Invoice ${invoice.invoiceNumber} status updated to Overdue` }
-                      }))
+                      toast.success(`Invoice ${invoice.invoiceNumber} status updated to Overdue`)
                     } else {
-                      window.dispatchEvent(new CustomEvent('status-update-toast', {
-                        detail: { type: 'error', message: result.error || 'Failed to update status' }
-                      }))
+                      toast.error(result.error || 'Failed to update status')
                     }
                   }}
                   className="cursor-pointer"
@@ -471,7 +452,11 @@ function StatusUpdateDropdown({ invoice }: StatusUpdateDropdownProps) {
 
   const statusUpdateMutation = useMutation({
     mutationFn: async (newStatus: string) => {
-      const response = await fetch(`/api/invoices/${invoice.id}/status`, {
+      // Use invoiceNumber instead of id for the API call
+      const invoiceIdentifier = invoice.invoiceNumber || invoice.id
+      console.log('Calling API with identifier:', invoiceIdentifier, 'status:', newStatus)
+
+      const response = await fetch(`/api/invoices/${invoiceIdentifier}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -479,34 +464,42 @@ function StatusUpdateDropdown({ invoice }: StatusUpdateDropdownProps) {
         body: JSON.stringify({ status: newStatus }),
       })
 
+      console.log('API response status:', response.status)
+      const data = await response.json()
+      console.log('API response data:', data)
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to update status')
+        throw new Error(data.message || data.error || 'Failed to update status')
       }
 
-      return response.json()
+      return data
     },
     onSuccess: (data) => {
+      // Invalidate all invoice-related queries (with any parameters)
       queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      queryClient.invalidateQueries({ queryKey: ['kanban-invoices'] })
+      queryClient.invalidateQueries({ queryKey: ['kanban-all-invoices'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['invoice-facets'] })
+
+      toast.success(`Invoice ${invoice.invoiceNumber} status updated to paid`)
       setIsOpen(false)
     },
     onError: (error) => {
       console.error('Failed to update invoice status:', error)
+      toast.error(`Failed to update status: ${error.message}`)
     },
   })
 
   const statusOptions = [
-    { value: 'pending', label: 'Pending', color: 'blue' },
-    { value: 'in_review', label: 'In Review', color: 'amber' },
-    { value: 'approved', label: 'Approved', color: 'purple' },
-    { value: 'paid', label: 'Paid', color: 'emerald' },
-    { value: 'overdue', label: 'Overdue', color: 'red' },
+    { value: 'paid', label: 'Mark as Paid', color: 'emerald' },
   ]
 
   const currentStatus = invoice.status || 'pending'
 
   const handleStatusChange = (newStatus: string) => {
     if (newStatus !== currentStatus) {
+      console.log('Updating invoice:', invoice.id, 'to status:', newStatus)
       statusUpdateMutation.mutate(newStatus)
     }
   }
@@ -534,23 +527,12 @@ function StatusUpdateDropdown({ invoice }: StatusUpdateDropdownProps) {
           <DropdownMenuItem
             key={option.value}
             onClick={() => handleStatusChange(option.value)}
-            className={`cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-slate-100 dark:focus:bg-slate-800 ${
-              currentStatus === option.value ? 'bg-slate-100 dark:bg-slate-800' : ''
-            }`}
+            className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-slate-100 dark:focus:bg-slate-800"
             disabled={statusUpdateMutation.isPending}
           >
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${
-                option.color === 'blue' ? 'bg-blue-500' :
-                option.color === 'amber' ? 'bg-amber-500' :
-                option.color === 'purple' ? 'bg-purple-500' :
-                option.color === 'emerald' ? 'bg-emerald-500' :
-                option.color === 'red' ? 'bg-red-500' : 'bg-blue-500'
-              }`} />
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
               {option.label}
-              {currentStatus === option.value && (
-                <span className="ml-auto text-xs text-slate-600 dark:text-slate-400">✓</span>
-              )}
             </div>
           </DropdownMenuItem>
         ))}
