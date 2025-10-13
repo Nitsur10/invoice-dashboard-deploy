@@ -203,31 +203,32 @@ export async function PATCH(
 
     // 2. Create audit log entry
     const auditLogData = {
-      invoice_id: id,
-      old_status: currentStatus,
-      new_status: newStatus,
-      user_id: user.id,
-      user_email: user.email,
-      action_type: 'status_change',
-      metadata: {
-        timestamp: new Date().toISOString(),
-        user_agent: request.headers.get('user-agent'),
-        ip_address: request.headers.get('x-forwarded-for') ||
-                   request.headers.get('x-real-ip') ||
-                   'unknown'
-      }
+      entityType: 'invoice',
+      entityId: updatedInvoice.invoice_number || id,
+      action: 'STATUS_CHANGE',
+      userId: user.id,
+      changes: {
+        old_status: currentStatus,
+        new_status: newStatus,
+        user_email: user.email,
+        timestamp: new Date().toISOString()
+      },
+      ipAddress: request.headers.get('x-forwarded-for') ||
+                 request.headers.get('x-real-ip') ||
+                 'unknown',
+      userAgent: request.headers.get('user-agent') || 'unknown'
     }
 
     console.log('Creating audit log:', auditLogData)
     const { error: auditError } = await supabaseAdmin
-      .from('audit_logs')
+      .from('AuditLog')
       .insert(auditLogData)
 
     if (auditError) {
       console.error('Failed to create audit log:', {
         auditError,
         auditLogData,
-        table: 'audit_logs'
+        table: 'AuditLog'
       })
       // Don't fail the request if audit log fails, but log the error
     }
