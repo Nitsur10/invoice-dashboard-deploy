@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-10-13T10:51:42.704Z",
+  "generated_at": "2025-10-13T11:10:07.920Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -32,9 +32,9 @@
       "draft": false,
       "status_bucket": "ci_pending",
       "classification_confidence": 0.9,
-      "classification_details": "Checks are running: 1 pending",
+      "classification_details": "Checks are running: 2 pending",
       "linked_issues": [],
-      "updated_at": "2025-10-13T10:51:39Z",
+      "updated_at": "2025-10-13T11:09:14Z",
       "created_at": "2025-10-13T10:51:34Z",
       "author": "Nitsur10",
       "labels": [],
@@ -146,7 +146,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T02:25:09.000Z",
-        "hours_remaining": -272,
+        "hours_remaining": -273,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -247,10 +247,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1365,
+    "execution_time_ms": 1902,
     "api_calls_made": 14,
     "api_calls_failed": 3,
-    "rate_limit_remaining": "4977",
+    "rate_limit_remaining": "4987",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -261,7 +261,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-13T10:51:41.929Z"
+        "timestamp": "2025-10-13T11:10:06.874Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -272,7 +272,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-13T10:51:42.323Z"
+        "timestamp": "2025-10-13T11:10:07.462Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -283,7 +283,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-10-13T10:51:42.602Z"
+        "timestamp": "2025-10-13T11:10:07.818Z"
       }
     ]
   },
@@ -300,9 +300,9 @@
           "draft": false,
           "status_bucket": "ci_pending",
           "classification_confidence": 0.9,
-          "classification_details": "Checks are running: 1 pending",
+          "classification_details": "Checks are running: 2 pending",
           "linked_issues": [],
-          "updated_at": "2025-10-13T10:51:39Z",
+          "updated_at": "2025-10-13T11:09:14Z",
           "created_at": "2025-10-13T10:51:34Z",
           "author": "Nitsur10",
           "labels": [],
@@ -414,7 +414,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T02:25:09.000Z",
-            "hours_remaining": -272,
+            "hours_remaining": -273,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -515,7 +515,7 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-10-13T10:51:42.603Z",
+        "processed_at": "2025-10-13T11:10:07.819Z",
         "pr_count": 3,
         "issue_count": 5
       }
