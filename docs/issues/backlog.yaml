@@ -161,3 +161,43 @@ issues:
     labels: ["frontend", "ux", "mobile", "responsive", "accessibility", "enhancement"]
     priority: "P1"
 
+  - title: "Kanban board UX improvements: description overflow and clickable status cards"
+    body: |
+      Problem: (1) Invoice descriptions overflow kanban cards and get cut off mid-sentence, making cards difficult to read. (2) Status summary cards (Pending, In Review, Approved, Paid, Overdue) are not clickable filters like they are on the Invoices page, forcing users to use the filter drawer for basic status filtering.
+      Impact: Poor card readability reduces usability. Inconsistent UX between pages creates confusion and requires extra clicks for common filtering actions.
+      Recommendation:
+        - Fix description overflow using Tailwind's line-clamp-2 utility for clean truncation with ellipsis.
+        - Add tooltip (title attribute) to show full description on hover.
+        - Make all 5 status cards clickable filters using proven pattern from Invoices page.
+        - Add visual feedback (hover states, active ring indicators) and accessibility support (keyboard nav, screen reader).
+        - Preserve existing drag-and-drop functionality.
+      Acceptance:
+        - Long descriptions truncate after 2 lines with ellipsis; full text visible on hover.
+        - Cards maintain consistent height across all statuses.
+        - Clicking status card filters kanban board; active filter shows ring indicator.
+        - Filter chips update when clicking status cards; clicking again toggles filter off.
+        - Keyboard navigation works (Tab + Enter/Space); screen reader announces filter state.
+        - All 5 status cards work; Total cards remain non-interactive.
+        - Drag-and-drop functionality preserved; no TypeScript errors.
+      Notes: See `docs/issues/issue-011-kanban-ux-improvements.md` and `docs/specs/ISSUE-011.mdx`. Screenshot: `Screenshots/Screenshot 2025-10-04 at 10.52.03 pm.png`. Estimated effort: 30 minutes.
+    labels: ["frontend", "ux", "kanban", "enhancement", "accessibility"]
+    priority: "P2"
+
+  - title: "UI Cleanup & Invoice Status Update Bug Fix"
+    body: |
+      Problem: Two-part issue: (1) Sidebar shows all navigation links and dashboard displays Monthly Growth card for incomplete features. (2) Invoice status update dropdown does not persist changes to Supabase backend, causing critical data integrity issues.
+      Impact: Users access incomplete features causing confusion. More critically, users believe invoice status updates are saved but changes are lost on page refresh, undermining trust and causing finance teams to make decisions on stale data.
+      Recommendation:
+        - Part 1: Disable Kanban, Analytics, Settings sidebar links with visual feedback (50% opacity, "Soon" badge, cursor-not-allowed). Remove Monthly Growth card from dashboard and adjust grid to 3 columns.
+        - Part 2: Create/fix PATCH `/api/invoices/[id]` endpoint with Supabase integration. Add React Query mutation with error handling. Restrict status dropdown to "Paid" option only. Add loading states and toast notifications. Verify/create Supabase RLS policies for updates. Add comprehensive E2E testing.
+      Acceptance:
+        - Kanban/Analytics/Settings links disabled with "Soon" badge; Dashboard/Invoices remain active.
+        - Monthly Growth card removed; dashboard shows 3 stats cards in adjusted grid.
+        - Status dropdown restricted to "Paid" option (others disabled/hidden).
+        - Selecting "Paid" persists to Supabase with success toast; page refresh maintains status.
+        - Error scenarios show error toast and revert UI; no console errors.
+        - RLS policies enforce invoice owner-only updates; E2E tests pass.
+      Notes: See `docs/issues/issue-014-ui-cleanup-status-update.md`. Status update bug is CRITICAL - blocks production deployment. Estimated effort: 3.5-4 hours (30min UI cleanup + 2-3hrs status fix).
+    labels: ["critical", "bug", "frontend", "backend", "data-integrity", "ui-cleanup", "supabase", "invoices"]
+    priority: "P0"
+
