@@ -1,14 +1,14 @@
 <!-- tracker:summary:start -->
 # Issues & PRs Control Board
 
-_Last updated: 10/25/2025, 10:22:47 PM (execution: 1s)_
+_Last updated: 10/25/2025, 11:22:06 PM (execution: 1s)_
 
 **At a glance**
 - **Repos**: 1 (1 success, 0 failed)
 - **Open PRs**: 2 | Ready: 0 | Needs review: 0 | Failing: 1 | Blocked: 0 | Draft: 0 | Stale: 1
 - **Open Issues**: 5 | Features: 0 | Bugs: 1 | Stale: 4
 
-**Health Status**: 🟡 2 API failures | Rate limit: 4991 remaining
+**Health Status**: 🟡 2 API failures | Rate limit: 4981 remaining
 <!-- tracker:summary:end -->
 
 <!-- tracker:charts:start -->
@@ -131,7 +131,7 @@ _No items found_
 
 | Issue | Repo | Title | Days Stale |
 |:----:|:---:|:----:|:---------:|
-| [#21](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/21) | invoice-dashboard-deploy | 🚨 Portfolio Tracker Update Failed - 2025-10-04 | 21 |
+| [#21](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/21) | invoice-dashboard-deploy | 🚨 Portfolio Tracker Update Failed - 2025-10-04 | 22 |
 | [#5](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/5) | invoice-dashboard-deploy | Implement month-over-month trend metrics pipeline | 32 |
 | [#3](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/3) | invoice-dashboard-deploy | Surface stats API failures with user feedback | 32 |
 | [#2](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/2) | invoice-dashboard-deploy | Refine invoice status derivation across APIs | 32 |
