@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-05T22:25:36.598Z",
+  "generated_at": "2025-11-05T23:25:26.940Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -53,7 +53,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-10T01:55:03.000Z",
-        "hours_remaining": -645,
+        "hours_remaining": -646,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -100,7 +100,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T02:25:09.000Z",
-        "hours_remaining": -836,
+        "hours_remaining": -837,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -149,7 +149,7 @@
       "classification": "bug",
       "classification_confidence": 0.9,
       "is_stale": true,
-      "days_since_update": 32,
+      "days_since_update": 33,
       "updated_at": "2025-10-04T10:29:45Z",
       "created_at": "2025-10-04T10:29:45Z",
       "author": "github-actions[bot]"
@@ -201,10 +201,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1660,
+    "execution_time_ms": 1269,
     "api_calls_made": 10,
     "api_calls_failed": 2,
-    "rate_limit_remaining": "4991",
+    "rate_limit_remaining": "4981",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -215,7 +215,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-05T22:25:35.968Z"
+        "timestamp": "2025-11-05T23:25:26.546Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -226,7 +226,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-05T22:25:36.497Z"
+        "timestamp": "2025-11-05T23:25:26.838Z"
       }
     ]
   },
@@ -265,7 +265,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-10T01:55:03.000Z",
-            "hours_remaining": -645,
+            "hours_remaining": -646,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -312,7 +312,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T02:25:09.000Z",
-            "hours_remaining": -836,
+            "hours_remaining": -837,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -361,7 +361,7 @@
           "classification": "bug",
           "classification_confidence": 0.9,
           "is_stale": true,
-          "days_since_update": 32,
+          "days_since_update": 33,
           "updated_at": "2025-10-04T10:29:45Z",
           "created_at": "2025-10-04T10:29:45Z",
           "author": "github-actions[bot]"
@@ -413,7 +413,7 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-11-05T22:25:36.498Z",
+        "processed_at": "2025-11-05T23:25:26.839Z",
         "pr_count": 2,
         "issue_count": 5
       }
