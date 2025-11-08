@@ -1,14 +1,14 @@
 <!-- tracker:summary:start -->
 # Issues & PRs Control Board
 
-_Last updated: 11/7/2025, 11:23:21 PM (execution: 1s)_
+_Last updated: 11/8/2025, 10:22:48 PM (execution: 1s)_
 
 **At a glance**
 - **Repos**: 1 (1 success, 0 failed)
 - **Open PRs**: 2 | Ready: 0 | Needs review: 0 | Failing: 1 | Blocked: 0 | Draft: 0 | Stale: 1
 - **Open Issues**: 5 | Features: 0 | Bugs: 1 | Stale: 5
 
-**Health Status**: 🟡 2 API failures | Rate limit: 4981 remaining
+**Health Status**: 🟡 2 API failures | Rate limit: 4991 remaining
 <!-- tracker:summary:end -->
 
 <!-- tracker:charts:start -->
@@ -131,11 +131,11 @@ _No items found_
 
 | Issue | Repo | Title | Days Stale |
 |:----:|:---:|:----:|:---------:|
-| [#25](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/25) | invoice-dashboard-deploy | UI Cleanup & Invoice Status Update Bug Fix | 26 |
+| [#25](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/25) | invoice-dashboard-deploy | UI Cleanup & Invoice Status Update Bug Fix | 27 |
 | [#21](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/21) | invoice-dashboard-deploy | 🚨 Portfolio Tracker Update Failed - 2025-10-04 | 35 |
-| [#5](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/5) | invoice-dashboard-deploy | Implement month-over-month trend metrics pipeline | 45 |
-| [#3](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/3) | invoice-dashboard-deploy | Surface stats API failures with user feedback | 45 |
-| [#2](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/2) | invoice-dashboard-deploy | Refine invoice status derivation across APIs | 45 |
+| [#5](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/5) | invoice-dashboard-deploy | Implement month-over-month trend metrics pipeline | 46 |
+| [#3](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/3) | invoice-dashboard-deploy | Surface stats API failures with user feedback | 46 |
+| [#2](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/2) | invoice-dashboard-deploy | Refine invoice status derivation across APIs | 46 |
 
 <!-- tracker:staleissues:end -->
 

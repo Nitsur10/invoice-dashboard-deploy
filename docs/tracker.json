@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-07T23:23:21.640Z",
+  "generated_at": "2025-11-08T22:22:48.855Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -48,12 +48,12 @@
         "❌ Checks failing (-20)",
         "📝 Partial approvals: 0/1 (+0)",
         "📊 Small changeset: 0 files (+5)",
-        "⏰ Stale PR: 33 days old (-10)"
+        "⏰ Stale PR: 34 days old (-10)"
       ],
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-10T01:55:03.000Z",
-        "hours_remaining": -693,
+        "hours_remaining": -716,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -82,7 +82,7 @@
       "draft": false,
       "status_bucket": "stale",
       "classification_confidence": 1,
-      "classification_details": "No updates for 42 days",
+      "classification_details": "No updates for 43 days",
       "linked_issues": [],
       "updated_at": "2025-09-27T02:26:46Z",
       "created_at": "2025-09-27T02:25:09Z",
@@ -95,12 +95,12 @@
         "✅ All checks passing (+20)",
         "📝 Partial approvals: 0/1 (+0)",
         "📊 Small changeset: 0 files (+5)",
-        "⏰ Stale PR: 41 days old (-10)"
+        "⏰ Stale PR: 42 days old (-10)"
       ],
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T02:25:09.000Z",
-        "hours_remaining": -885,
+        "hours_remaining": -908,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -130,7 +130,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": true,
-      "days_since_update": 26,
+      "days_since_update": 27,
       "updated_at": "2025-10-13T10:00:17Z",
       "created_at": "2025-10-13T10:00:17Z",
       "author": "Nitsur10"
@@ -164,7 +164,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": true,
-      "days_since_update": 45,
+      "days_since_update": 46,
       "updated_at": "2025-09-24T09:47:48Z",
       "created_at": "2025-09-24T09:47:48Z",
       "author": "Nitsur10"
@@ -179,7 +179,7 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": true,
-      "days_since_update": 45,
+      "days_since_update": 46,
       "updated_at": "2025-09-24T09:45:58Z",
       "created_at": "2025-09-24T09:45:58Z",
       "author": "Nitsur10"
@@ -194,17 +194,17 @@
       "classification": "other",
       "classification_confidence": 0.5,
       "is_stale": true,
-      "days_since_update": 45,
+      "days_since_update": 46,
       "updated_at": "2025-09-24T09:38:50Z",
       "created_at": "2025-09-24T09:38:50Z",
       "author": "Nitsur10"
     }
   ],
   "metadata": {
-    "execution_time_ms": 1122,
+    "execution_time_ms": 1099,
     "api_calls_made": 10,
     "api_calls_failed": 2,
-    "rate_limit_remaining": "4981",
+    "rate_limit_remaining": "4991",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -215,7 +215,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-07T23:23:21.289Z"
+        "timestamp": "2025-11-08T22:22:48.525Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -226,7 +226,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-07T23:23:21.538Z"
+        "timestamp": "2025-11-08T22:22:48.754Z"
       }
     ]
   },
@@ -260,12 +260,12 @@
             "❌ Checks failing (-20)",
             "📝 Partial approvals: 0/1 (+0)",
             "📊 Small changeset: 0 files (+5)",
-            "⏰ Stale PR: 33 days old (-10)"
+            "⏰ Stale PR: 34 days old (-10)"
           ],
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-10T01:55:03.000Z",
-            "hours_remaining": -693,
+            "hours_remaining": -716,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -294,7 +294,7 @@
           "draft": false,
           "status_bucket": "stale",
           "classification_confidence": 1,
-          "classification_details": "No updates for 42 days",
+          "classification_details": "No updates for 43 days",
           "linked_issues": [],
           "updated_at": "2025-09-27T02:26:46Z",
           "created_at": "2025-09-27T02:25:09Z",
@@ -307,12 +307,12 @@
             "✅ All checks passing (+20)",
             "📝 Partial approvals: 0/1 (+0)",
             "📊 Small changeset: 0 files (+5)",
-            "⏰ Stale PR: 41 days old (-10)"
+            "⏰ Stale PR: 42 days old (-10)"
           ],
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T02:25:09.000Z",
-            "hours_remaining": -885,
+            "hours_remaining": -908,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -342,7 +342,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": true,
-          "days_since_update": 26,
+          "days_since_update": 27,
           "updated_at": "2025-10-13T10:00:17Z",
           "created_at": "2025-10-13T10:00:17Z",
           "author": "Nitsur10"
@@ -376,7 +376,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": true,
-          "days_since_update": 45,
+          "days_since_update": 46,
           "updated_at": "2025-09-24T09:47:48Z",
           "created_at": "2025-09-24T09:47:48Z",
           "author": "Nitsur10"
@@ -391,7 +391,7 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": true,
-          "days_since_update": 45,
+          "days_since_update": 46,
           "updated_at": "2025-09-24T09:45:58Z",
           "created_at": "2025-09-24T09:45:58Z",
           "author": "Nitsur10"
@@ -406,14 +406,14 @@
           "classification": "other",
           "classification_confidence": 0.5,
           "is_stale": true,
-          "days_since_update": 45,
+          "days_since_update": 46,
           "updated_at": "2025-09-24T09:38:50Z",
           "created_at": "2025-09-24T09:38:50Z",
           "author": "Nitsur10"
         }
       ],
       "metadata": {
-        "processed_at": "2025-11-07T23:23:21.539Z",
+        "processed_at": "2025-11-08T22:22:48.755Z",
         "pr_count": 2,
         "issue_count": 5
       }
