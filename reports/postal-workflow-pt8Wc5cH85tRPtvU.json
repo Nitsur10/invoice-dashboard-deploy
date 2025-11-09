@@ -1,0 +1,937 @@
+[
+  {
+    "createdAt": "2025-11-05T09:46:12.802Z",
+    "updatedAt": "2025-11-07T10:34:01.000Z",
+    "id": "pt8Wc5cH85tRPtvU",
+    "name": "Postal Invoice V2.0",
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "d392d413-ced2-4dbc-ac5c-94c3fde81c2b",
+        "name": "Read PDF (attach)",
+        "type": "n8n-nodes-base.readPDF",
+        "typeVersion": 1,
+        "position": [
+          -1248,
+          352
+        ]
+      },
+      {
+        "parameters": {
+          "fileName": "={{$json.file_name || 'invoice.pdf'}}",
+          "parentId": "=015B23OEWATWVPW3ZR3ZDYQVBEYCUAYKUS",
+          "binaryData": true
+        },
+        "type": "n8n-nodes-base.microsoftOneDrive",
+        "typeVersion": 1,
+        "position": [
+          -208,
+          160
+        ],
+        "id": "293efc65-f901-4362-bde1-2f6da8abe374",
+        "name": "Upload a file PDF attachments",
+        "credentials": {
+          "microsoftOneDriveOAuth2Api": {
+            "id": "qDwJ0G7UXuah04zQ",
+            "name": "Microsoft Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "modelId": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "GPT-4O-MINI"
+          },
+          "messages": {
+            "values": [
+              {
+                "content": "={{$json.openai_messages[1].content}}"
+              },
+              {
+                "content": "={{$json.openai_messages[0].content}}",
+                "role": "system"
+              }
+            ]
+          },
+          "options": {
+            "maxTokens": 1000,
+            "temperature": 0
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 1.8,
+        "position": [
+          -576,
+          352
+        ],
+        "id": "2b097763-e582-4101-ab45-e71c8230402d",
+        "name": "OpenAI Chat Model",
+        "retryOnFail": true,
+        "maxTries": 3,
+        "waitBetweenTries": 2000,
+        "credentials": {
+          "openAiApi": {
+            "id": "swAe9qP168vy2VBk",
+            "name": "OpenAi account"
+          }
+        },
+        "notes": "Auto-retry up to 3 times with 2s delay for rate limit handling"
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// IMPROVED AI PROMPT FOR REAL ESTATE UTILITY INVOICES\n// Specifically designed to capture property/service addresses\n\nconst text = ($json.clean_text ?? $json.text ?? '').toString().trim();\n\nconst system = `You are an expert invoice parser specializing in utility and service invoices for real estate properties.\n\nYour PRIMARY task is to identify WHICH PROPERTY this invoice is for.\n\nCRITICAL RULES:\n- Return ONLY valid JSON matching the schema\n- Never include commentary or explanations\n- The FIRST line item MUST be the property/service address\n- Use null for truly missing fields (not 0 or empty strings)\n- Dates must be ISO8601 UTC format: YYYY-MM-DDTHH:mm:ss.sssZ\n- Currency codes must be ISO 4217 (AUD, USD, EUR, etc.)\n- Provide a confidence score (0-1) reflecting extraction quality`;\n\nconst schema = {\n  type: \"object\",\n  additionalProperties: false,\n  properties: {\n    source: { type: \"string\", enum: [\"pdf\"] },\n    invoice_number: { type: \"string\", nullable: true },\n    invoice_date_iso: { type: \"string\", format: \"date-time\", nullable: true },\n    due_date_iso: { type: \"string\", format: \"date-time\", nullable: true },\n    supplier: {\n      type: \"object\",\n      additionalProperties: false,\n      properties: {\n        name: { type: \"string\", nullable: true },\n        abn: { type: \"string\", nullable: true },\n        email: { type: \"string\", nullable: true }\n      },\n      required: [\"name\", \"abn\", \"email\"]\n    },\n    customer: {\n      type: \"object\",\n      additionalProperties: false,\n      properties: {\n        name: { type: \"string\", nullable: true },\n        abn: { type: \"string\", nullable: true }\n      },\n      required: [\"name\", \"abn\"]\n    },\n    currency: { type: \"string\", minLength: 3, maxLength: 3, nullable: true },\n    subtotal: { type: \"number\", nullable: true },\n    gst_total: { type: \"number\", nullable: true },\n    total: { type: \"number\", nullable: true },\n    amount_due: { type: \"number\", nullable: true },\n    bank: {\n      type: \"object\",\n      additionalProperties: false,\n      properties: {\n        bsb: { type: \"string\", nullable: true },\n        account: { type: \"string\", nullable: true },\n        reference_hint: { type: \"string\", nullable: true }\n      },\n      required: [\"bsb\", \"account\", \"reference_hint\"]\n    },\n    line_items: {\n      type: \"array\",\n      items: {\n        type: \"object\",\n        additionalProperties: false,\n        properties: {\n          description: { type: \"string\" },\n          quantity: { type: \"number\", nullable: true },\n          unit_price: { type: \"number\", nullable: true },\n          tax_rate: { type: \"string\", nullable: true },\n          line_total: { type: \"number\", nullable: true }\n        },\n        required: [\"description\"]\n      }\n    },\n    confidence: { type: \"number\" },\n    notes: { type: \"string\" }\n  },\n  required: [\"source\", \"supplier\", \"customer\", \"bank\", \"line_items\", \"confidence\", \"notes\"]\n};\n\nconst extractionGuidelines = [\n  \"=== CRITICAL: PROPERTY ADDRESS EXTRACTION (REAL ESTATE FOCUS) ===\",\n  \"\",\n  \"FIRST LINE ITEM MUST BE PROPERTY/SERVICE ADDRESS:\",\n  \"\",\n  \"The property/service address is THE MOST IMPORTANT field for real estate management.\",\n  \"This appears AFTER the customer's billing address, often labeled:\",\n  \"- 'Supply Address:', 'Service Address:', 'Property:', 'Site:', 'Location:'\",\n  \"- 'Meter Location:', 'Installation Address:', 'Delivery Address:'\",\n  \"- Or just listed after the billing/customer address without a label\",\n  \"\",\n  \"SEARCH PATTERN for property address:\",\n  \"1. Look BELOW the customer/billing address section\",\n  \"2. Look for a SECOND complete address (different from billing address)\",\n  \"3. Common locations:\",\n  \"   - Between customer details and charges section\",\n  \"   - Above the meter/account number\",\n  \"   - In a box/section labeled 'Supply' or 'Service'\",\n  \"   - After text like 'Supply to:', 'Delivered to:', 'Site:'\",\n  \"\",\n  \"FIRST line_items entry MUST BE:\",\n  \"```json\",\n  \"{\",\n  \"  \\\"description\\\": \\\"Property: 10 Zara Court, Stone Rise, TAS 7320\\\",\",\n  \"  \\\"quantity\\\": null,\",\n  \"  \\\"unit_price\\\": null,\",\n  \"  \\\"tax_rate\\\": null,\",\n  \"  \\\"line_total\\\": null\",\n  \"}\",\n  \"```\",\n  \"\",\n  \"Format: 'Property: [FULL ADDRESS]' or 'Supply Address: [FULL ADDRESS]'\",\n  \"Include: Street number, street name, suburb, state, postcode\",\n  \"Example: 'Property: 25 River Road, Sandstone, QLD 4122'\",\n  \"\",\n  \"If NO property address found:\",\n  \"- Still include first line: { \\\"description\\\": \\\"Property: [Address not found in invoice]\\\", ... }\",\n  \"- Lower confidence score to 0.3-0.5\",\n  \"\",\n  \"=== OTHER FIELD EXTRACTION ===\",\n  \"\",\n  \"SUPPLIER (The utility/service company):\",\n  \"- Name: Company issuing the invoice (e.g., 'Aurora Energy Pty Ltd', 'AGL', 'Origin Energy')\",\n  \"- ABN: Australian Business Number (11 digits, remove spaces)\",\n  \"- Email: Contact email (often in footer or header)\",\n  \"\",\n  \"CUSTOMER (The property owner/manager - billing address):\",\n  \"- Name: Company/person being billed\",\n  \"- This is usually at the TOP of the invoice, labeled 'Bill To:', 'Customer:', 'Account Name:'\",\n  \"- ABN: If present (less common on utility bills)\",\n  \"\",\n  \"IMPORTANT - Customer vs Property Address:\",\n  \"- CUSTOMER address = Where the bill is sent (billing address)\",\n  \"- PROPERTY address = Where the service is supplied (goes in line_items[0])\",\n  \"- These are often DIFFERENT for real estate companies!\",\n  \"\",\n  \"Example:\",\n  \"Customer (billing): 'Rudra Projects, 123 Office St, Melbourne, VIC 3000'\",\n  \"Property (supply): '10 Zara Court, Stone Rise, TAS 7320' ← THIS goes in line_items[0]\",\n  \"\",\n  \"DATES:\",\n  \"- Invoice Date: Issue date of invoice\",\n  \"- Due Date: Payment due date\",\n  \"- Format as: YYYY-MM-DDTHH:mm:ss.000Z (use T00:00:00.000Z for time)\",\n  \"\",\n  \"AMOUNTS:\",\n  \"- Subtotal: Amount before GST/tax\",\n  \"- GST/Tax: Usually 10% in Australia, labeled 'GST' or 'Tax'\",\n  \"- Total: Final amount including tax\",\n  \"- Amount Due: Often same as total, or total minus payments\",\n  \"- Extract numbers only (remove $ or currency symbols)\",\n  \"\",\n  \"BANK/PAYMENT INFO:\",\n  \"- BSB: 6-digit bank code, or BPAY Biller Code\",\n  \"- Account: Bank account number or BPAY reference\",\n  \"- Reference: Payment reference, account number, or invoice number\",\n  \"- For utility bills, often use BPAY system\",\n  \"\",\n  \"LINE ITEMS (After the property address entry):\",\n  \"- line_items[0]: ALWAYS the property/service address (as described above)\",\n  \"- line_items[1+]: Actual charges\",\n  \"\",\n  \"For charges, extract:\",\n  \"- Description: Service name (e.g., 'Electricity Supply', 'Daily Supply Charge', 'Usage Charges')\",\n  \"- Quantity: Usage amount (e.g., kWh, days)\",\n  \"- Unit Price: Rate per unit (e.g., $0.25/kWh)\",\n  \"- Tax Rate: Usually '10%' or 'GST' in Australia\",\n  \"- Line Total: Total for this line item\",\n  \"\",\n  \"Do NOT include subtotal/total rows in line_items - only actual charges\",\n  \"\",\n  \"CONFIDENCE SCORE:\",\n  \"- 0.9-1.0: All fields clear, property address found\",\n  \"- 0.7-0.8: Most fields found, property address found\",\n  \"- 0.5-0.6: Several fields missing BUT property address found\",\n  \"- 0.3-0.4: Property address found BUT many other fields unclear\",\n  \"- 0.0-0.2: Property address NOT found or very unclear\",\n  \"\",\n  \"NOTES:\",\n  \"Include:\",\n  \"- Payment summary (e.g., 'Amount due: $X')\",\n  \"- Whether property address was found clearly or inferred\",\n  \"- Any unusual formatting or missing critical fields\",\n  \"\",\n  \"=== EXAMPLES ===\",\n  \"\",\n  \"Example 1 - Clear property address:\",\n  \"```\",\n  \"Customer: Rudra Projects Pty Ltd\",\n  \"123 Office Street\",\n  \"Melbourne VIC 3000\",\n  \"\",\n  \"Supply Address:\",\n  \"10 Zara Court\",\n  \"Stone Rise TAS 7320\",\n  \"\",\n  \"Charges:\",\n  \"Electricity Supply    150 kWh    $0.25    $37.50\",\n  \"```\",\n  \"\",\n  \"Extract as:\",\n  \"```json\",\n  \"{\",\n  \"  \\\"customer\\\": { \\\"name\\\": \\\"Rudra Projects Pty Ltd\\\", \\\"abn\\\": null },\",\n  \"  \\\"line_items\\\": [\",\n  \"    {\",\n  \"      \\\"description\\\": \\\"Property: 10 Zara Court, Stone Rise, TAS 7320\\\",\",\n  \"      \\\"quantity\\\": null,\",\n  \"      \\\"unit_price\\\": null,\",\n  \"      \\\"tax_rate\\\": null,\",\n  \"      \\\"line_total\\\": null\",\n  \"    },\",\n  \"    {\",\n  \"      \\\"description\\\": \\\"Electricity Supply\\\",\",\n  \"      \\\"quantity\\\": 150,\",\n  \"      \\\"unit_price\\\": 0.25,\",\n  \"      \\\"tax_rate\\\": \\\"10%\\\",\",\n  \"      \\\"line_total\\\": 37.50\",\n  \"    }\",\n  \"  ],\",\n  \"  \\\"confidence\\\": 0.9\",\n  \"}\",\n  \"```\",\n  \"\",\n  \"Example 2 - Property address without label:\",\n  \"```\",\n  \"Account: Rudra Projects\",\n  \"PO Box 123, Melbourne VIC\",\n  \"\",\n  \"15 River Road\",\n  \"Sandstone QLD 4122\",\n  \"\",\n  \"Account #: 123456789\",\n  \"```\",\n  \"\",\n  \"Extract as:\",\n  \"```json\",\n  \"{\",\n  \"  \\\"customer\\\": { \\\"name\\\": \\\"Rudra Projects\\\", \\\"abn\\\": null },\",\n  \"  \\\"line_items\\\": [\",\n  \"    {\",\n  \"      \\\"description\\\": \\\"Property: 15 River Road, Sandstone, QLD 4122\\\",\",\n  \"      \\\"quantity\\\": null,\",\n  \"      \\\"unit_price\\\": null,\",\n  \"      \\\"tax_rate\\\": null,\",\n  \"      \\\"line_total\\\": null\",\n  \"    }\",\n  \"  ],\",\n  \"  \\\"confidence\\\": 0.8,\",\n  \"  \\\"notes\\\": \\\"Property address inferred from secondary address\\\"\",\n  \"}\",\n  \"```\"\n].join(\"\\n\");\n\nconst user = [\n  \"Extract invoice data from this utility/service invoice for real estate property management.\",\n  \"\",\n  \"CRITICAL: The FIRST line item MUST contain the property/service address.\",\n  \"This is the most important field for tracking which property the invoice belongs to.\",\n  \"\",\n  \"Follow the extraction guidelines carefully.\",\n  \"Output ONLY valid JSON matching the schema.\",\n  \"\",\n  extractionGuidelines,\n  \"\",\n  \"=== JSON SCHEMA ===\",\n  JSON.stringify(schema),\n  \"\",\n  \"=== INVOICE TEXT ===\",\n  text.slice(0, 45000)\n].join(\"\\n\");\n\nreturn {\n  json: {\n    openai_messages: [\n      { role: \"system\", content: system },\n      { role: \"user\", content: user }\n    ],\n    json_schema: schema\n  }\n};\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -800,
+          352
+        ],
+        "id": "0b407e88-63b5-44d0-94eb-f61073581484",
+        "name": "AI Prompt Builder",
+        "notes": "Real estate focused prompt - FIRST line item captures property address"
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// Input shape examples:\n// { message: { role: 'assistant', content: '```json { ... } ```' } }\n// or { role: 'assistant', content: '```json { ... } ```' }\n\nconst msg = $json.message ?? $json;\nconst raw = (msg.content ?? msg.text ?? '').toString();\n\n// 1) Grab the JSON block\nlet block;\nconst fenced = raw.match(/```json\\s*([\\s\\S]*?)```/i);\nif (fenced) {\n  block = fenced[1];\n} else {\n  const brace = raw.match(/\\{[\\s\\S]*\\}$/);\n  if (brace) block = brace[0];\n}\nif (!block) throw new Error('No JSON found in AI response');\n\n// 2) Tidy common nuisances: thousand separators, non-breaking spaces\nblock = block\n  .replace(/(\\d),(?=\\d{3}\\b)/g, '$1')  // 6,248.00 -> 6248.00\n  .replace(/\\u00a0/g, ' ');\n\n// 3) Parse\nconst obj = JSON.parse(block);\n\n// 4) Normalize a few fields/types safely\nconst numKeys = ['subtotal','gst_total','total','amount_due','confidence'];\nfor (const k of numKeys) {\n  if (obj[k] !== null && obj[k] !== undefined && obj[k] !== '') {\n    obj[k] = Number(obj[k]);\n  }\n}\nif (obj?.supplier?.abn) obj.supplier.abn = obj.supplier.abn.replace(/\\s+/g, '');\nif (obj?.customer?.abn) obj.customer.abn = obj.customer.abn?.toString().replace(/\\s+/g, '');\nif (!obj.source) obj.source = 'pdf';\n\n// 5) Return a single clean object for this item\nreturn { json: obj };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -224,
+          352
+        ],
+        "id": "355b202b-5c2a-4ca0-bfe7-67978419da18",
+        "name": "Code"
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// Runs per item. Return a SINGLE object.\nconst j = $input.item.json || {};\nconst b = $input.item.binary;\n\nconst raw =\n  j.clean_text || j.text || j.content || j.data?.text || '';\n\nconst clean = String(raw)\n  .replace(/\\r/g, ' ')\n  .replace(/[ \\t]+/g, ' ')\n  .replace(/\\n{2,}/g, '\\n')\n  .replace(/\\u00A0/g, ' ')        // nbsp to space\n  .trim()\n  .slice(0, 7900);                 // keep under ~8k for the AI hop\n\nreturn {\n  json: { ...j, clean_text: clean },\n  binary: b,\n  pairedItem: $input.item.pairedItem\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1024,
+          352
+        ],
+        "id": "7f27a158-c945-4c35-bad2-558f73f72236",
+        "name": "Pre-clean PDF text"
+      },
+      {
+        "parameters": {
+          "resource": "table",
+          "workbook": {
+            "__rl": true,
+            "value": "015B23OEQ5YEAYVVQ3RFBYSPXSBCRUAV4U",
+            "mode": "list",
+            "cachedResultName": "Invoice Register.xlsx",
+            "cachedResultUrl": "https://rudraprojects-my.sharepoint.com/personal/satyagala_rudraprojects_onmicrosoft_com/_layouts/15/Doc.aspx?sourcedoc=%7B8A01C11D-1BD6-4389-893E-F208A3405794%7D&file=Invoice%20Register.xlsx.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
+          },
+          "worksheet": {
+            "__rl": true,
+            "value": "{BD56AA74-859E-41BA-B3C0-0F83FE5AD5D6}",
+            "mode": "list",
+            "cachedResultName": "Postal Invoices",
+            "cachedResultUrl": "https://rudraprojects-my.sharepoint.com/personal/satyagala_rudraprojects_onmicrosoft_com/_layouts/15/Doc.aspx?sourcedoc=%7B8A01C11D-1BD6-4389-893E-F208A3405794%7D&file=Invoice%20Register.xlsx.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=Postal%20Invoices!A1"
+          },
+          "table": {
+            "__rl": true,
+            "value": "{49FC7FCC-4B8A-4A33-A683-93C976DB2E09}",
+            "mode": "list",
+            "cachedResultName": "Table1",
+            "cachedResultUrl": "https://rudraprojects-my.sharepoint.com/personal/satyagala_rudraprojects_onmicrosoft_com/_layouts/15/Doc.aspx?sourcedoc=%7B8A01C11D-1BD6-4389-893E-F208A3405794%7D&file=Invoice%20Register.xlsx.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell='Postal%20Invoices'!A1:AE2"
+          },
+          "dataMode": "autoMap",
+          "options": {}
+        },
+        "id": "cb057f02-8c69-446d-b132-8800dfd58f3f",
+        "name": "Append to Excel (Graph)",
+        "type": "n8n-nodes-base.microsoftExcel",
+        "typeVersion": 2.1,
+        "position": [
+          672,
+          256
+        ],
+        "credentials": {
+          "microsoftExcelOAuth2Api": {
+            "id": "oU9W1BbZstgBmEGO",
+            "name": "Microsoft Excel account"
+          }
+        },
+        "continueOnFail": true,
+        "notes": "Manual mapping to Inv Mgt/Table3 using 20 snake_case fields. Continue on fail enabled."
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "91f87770-f091-4ea7-bb29-48d1da9d7c91",
+                "name": "file_name",
+                "value": "={{$json.name}}",
+                "type": "string"
+              },
+              {
+                "id": "668ef37d-f0e6-4421-bd6e-0672ef0827e6",
+                "name": "file_id",
+                "value": "={{$json.id}}",
+                "type": "string"
+              },
+              {
+                "id": "fec54a16-4c98-4c22-912e-e395d11e5c75",
+                "name": "file_url",
+                "value": "={{$json.webUrl}}",
+                "type": "string"
+              },
+              {
+                "id": "004ba4b4-db10-48ec-9be9-5502a0ed7a27",
+                "name": "folder_id",
+                "value": "={{$json.parentReference.id}}",
+                "type": "string"
+              },
+              {
+                "id": "6291f095-6d7b-4b31-9fea-0917e6d5f448",
+                "name": "folder_path",
+                "value": "={{$json.parentReference.path}}",
+                "type": "string"
+              },
+              {
+                "id": "04f8c5dc-ec16-443b-b002-37c78d132c8f",
+                "name": "drive_id",
+                "value": "={{$json.parentReference.driveId}}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -1472,
+          256
+        ],
+        "id": "971efae6-1692-4aa5-ae74-6ba49010d42f",
+        "name": "Capture File Metadata"
+      },
+      {
+        "parameters": {
+          "mode": "combine",
+          "combineBy": "combineByPosition",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          224,
+          256
+        ],
+        "id": "2d3c8c97-551f-4c32-88be-6d666cc5a88c",
+        "name": "Merge invoice data pdf"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a3526cb3-5169-47ad-957a-4da087bfe53c",
+                "name": "supplier_name",
+                "value": "={{$json.supplier.name}}",
+                "type": "string"
+              },
+              {
+                "id": "63c4db2a-c99e-4022-8660-5ac482b47de4",
+                "name": "supplier_abn",
+                "value": "={{$json.supplier.abn}}",
+                "type": "string"
+              },
+              {
+                "id": "e19080e4-eb0f-4677-aa4b-8be967203053",
+                "name": "customer_name",
+                "value": "={{$json.customer.name}}",
+                "type": "string"
+              },
+              {
+                "id": "607775a4-c083-4951-a0b9-232999331706",
+                "name": "customer_abn",
+                "value": "={{$json.customer.abn}}",
+                "type": "string"
+              },
+              {
+                "id": "a84e2c99-293f-4a89-b3f0-f4aa1a7c2a18",
+                "name": "bank_bsb",
+                "value": "={{$json.bank.bsb}}",
+                "type": "string"
+              },
+              {
+                "id": "c641e41f-2a5b-40f1-b141-49e3c7bb8084",
+                "name": "bank_account",
+                "value": "={{$json.bank.account}}",
+                "type": "string"
+              },
+              {
+                "id": "2eb51574-38ba-4e63-a0d5-30fd2d577a92",
+                "name": "invoice_date",
+                "value": "={{ ($json.invoice_date_iso || '').substring(0,10) }}",
+                "type": "string"
+              },
+              {
+                "id": "c1ac8476-9bbe-4b30-8bf8-bdda1b3c01ab",
+                "name": "due_date",
+                "value": "={{ ($json.due_date_iso || '').substring(0,10) }}",
+                "type": "string"
+              },
+              {
+                "id": "bbb2db78-2237-47c6-a304-dc4081a21c0e",
+                "name": "line_1_desc",
+                "value": "={{$json.line_items[0].description}}",
+                "type": "string"
+              },
+              {
+                "id": "36573217-99cb-4728-bd49-3160aa40ad77",
+                "name": "line_1_qty",
+                "value": "={{$json.line_items[0].quantity}}",
+                "type": "string"
+              },
+              {
+                "id": "18364b71-6ec2-4554-b8f6-c9394f871722",
+                "name": "line_1_unit_price",
+                "value": "={{$json.line_items[0].unit_price}}",
+                "type": "string"
+              },
+              {
+                "id": "85f3e8d7-745d-42ea-896a-7445ae5a5fca",
+                "name": "message_id",
+                "value": "=NA",
+                "type": "string"
+              },
+              {
+                "id": "f6776ef3-26ff-4f9c-9705-c62974df4f15",
+                "name": "email_subject",
+                "value": "=NA",
+                "type": "string"
+              },
+              {
+                "id": "3765fbc1-fd31-4c08-b4f4-f520c02e74c6",
+                "name": "email_from_name",
+                "value": "=NA",
+                "type": "string"
+              },
+              {
+                "id": "a8cea665-5bee-487c-98fb-d313536d2ae8",
+                "name": "email_from_address",
+                "value": "=NA",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          448,
+          256
+        ],
+        "id": "d749f247-2ad3-4397-a15d-b83bf708baa8",
+        "name": "flatten + tidy pdf"
+      },
+      {
+        "parameters": {
+          "resource": "folder",
+          "folderId": "015B23OEWTPI4NF2PWV5BLAAHOHNJB66FR"
+        },
+        "type": "n8n-nodes-base.microsoftOneDrive",
+        "typeVersion": 1,
+        "position": [
+          -2368,
+          232
+        ],
+        "id": "016b1d8b-97cb-4901-b61b-d3991cd1dc58",
+        "name": "Get items in a folder",
+        "credentials": {
+          "microsoftOneDriveOAuth2Api": {
+            "id": "qDwJ0G7UXuah04zQ",
+            "name": "Microsoft Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": "={{$json[\"id\"]}}"
+        },
+        "type": "n8n-nodes-base.microsoftOneDrive",
+        "typeVersion": 1,
+        "position": [
+          -1696,
+          256
+        ],
+        "id": "69329773-2634-4770-bd96-bbfeecebfca8",
+        "name": "Download a file",
+        "credentials": {
+          "microsoftOneDriveOAuth2Api": {
+            "id": "qDwJ0G7UXuah04zQ",
+            "name": "Microsoft Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "filter_pdf",
+                "leftValue": "={{ $json.name }}",
+                "rightValue": ".pdf",
+                "operator": {
+                  "type": "string",
+                  "operation": "endsWith",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "7e9ff7c1-4efd-4ee2-a953-9e804f06275c",
+        "name": "Filter: PDFs Only (No Folders)",
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2,
+        "position": [
+          -2144,
+          232
+        ],
+        "notes": "Filters to only process PDF files. Folders are automatically excluded because they don't have .pdf extension."
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          -1920,
+          328
+        ],
+        "id": "d86d6a57-a4ba-400a-ac83-151290ce9ac3",
+        "name": "Loop Over Items",
+        "notes": "Batch size=1 processes files one at a time. For 41 files, expect ~20-30 min runtime."
+      },
+      {
+        "parameters": {
+          "operation": "copy",
+          "fileId": "={{$json.file_id}}",
+          "additionalFields": {},
+          "parentReference": {
+            "id": "015B23OEQJKVDGV6ECGBGJQR3HZ443BW5W"
+          }
+        },
+        "type": "n8n-nodes-base.microsoftOneDrive",
+        "typeVersion": 1,
+        "position": [
+          896,
+          256
+        ],
+        "id": "267b9a1e-75e8-4dfa-a764-860d24b9793b",
+        "name": "Copy a file",
+        "credentials": {
+          "microsoftOneDriveOAuth2Api": {
+            "id": "qDwJ0G7UXuah04zQ",
+            "name": "Microsoft Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "delete",
+          "fileId": "={{$json.file_id}}"
+        },
+        "type": "n8n-nodes-base.microsoftOneDrive",
+        "typeVersion": 1,
+        "position": [
+          1120,
+          328
+        ],
+        "id": "92d66f8a-5a8a-4531-bbe9-29ffc13cc09d",
+        "name": "Delete a file",
+        "alwaysOutputData": true,
+        "credentials": {
+          "microsoftOneDriveOAuth2Api": {
+            "id": "qDwJ0G7UXuah04zQ",
+            "name": "Microsoft Drive account"
+          }
+        },
+        "continueOnFail": true,
+        "notes": "Continue on fail enabled - won't stop batch if delete fails"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "check_supplier",
+                "leftValue": "={{ $json.supplier.name }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "isNotEmpty"
+                }
+              },
+              {
+                "id": "53baad8b-af48-4383-bd59-3f8f60fad76a",
+                "leftValue": "={{ $json.confidence }}",
+                "rightValue": 0.3,
+                "operator": {
+                  "type": "number",
+                  "operation": "gt"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {}
+        },
+        "id": "3f0ecc59-bd64-40b5-95c5-d04217fe59ed",
+        "name": "Check Parsing Success",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          0,
+          352
+        ],
+        "notes": "Routes to normal flow if confidence >= 0.3 and supplier exists, otherwise to pending folder"
+      },
+      {
+        "parameters": {
+          "operation": "copy",
+          "fileId": "={{ $json.file_id || $item(0).$node['Capture File Metadata'].json.file_id || $item(0).$node['Pick Link Fields from PDF'].json.file_id }}",
+          "additionalFields": {},
+          "parentReference": {
+            "id": "015B23OEUKF54EKEDP4FAJ4K3RZZIHRT5I"
+          }
+        },
+        "type": "n8n-nodes-base.microsoftOneDrive",
+        "typeVersion": 1,
+        "position": [
+          -2592,
+          424
+        ],
+        "id": "3ff5ac4d-c210-4b57-8e59-6e1e4512ff75",
+        "name": "Copy to Pending Folder",
+        "credentials": {
+          "microsoftOneDriveOAuth2Api": {
+            "id": "qDwJ0G7UXuah04zQ",
+            "name": "Microsoft Drive account"
+          }
+        },
+        "notes": "Copies failed parsing invoices to Pending folder"
+      },
+      {
+        "parameters": {
+          "operation": "delete",
+          "fileId": "={{$json.file_id}}"
+        },
+        "type": "n8n-nodes-base.microsoftOneDrive",
+        "typeVersion": 1,
+        "position": [
+          -2368,
+          424
+        ],
+        "id": "3d1b2a73-2930-4b11-8a63-1d7b87dbf4d5",
+        "name": "Delete Failed File",
+        "alwaysOutputData": true,
+        "credentials": {
+          "microsoftOneDriveOAuth2Api": {
+            "id": "qDwJ0G7UXuah04zQ",
+            "name": "Microsoft Drive account"
+          }
+        },
+        "continueOnFail": true,
+        "notes": "Deletes failed file from source after copying to Pending"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          -2144,
+          424
+        ],
+        "id": "d63b20e1-c3d3-4764-bf4c-38b8b23b305a",
+        "name": "Pending File Handled",
+        "notes": "Continues loop after moving to pending"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -2592,
+          232
+        ],
+        "id": "12d7bdd0-4eab-496c-b8ad-4887b02db73e",
+        "name": "When clicking ‘Execute workflow’"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "91f87770-f091-4ea7-bb29-48d1da9d7c91",
+                "name": "file_name",
+                "value": "={{$json.name}}",
+                "type": "string"
+              },
+              {
+                "id": "668ef37d-f0e6-4421-bd6e-0672ef0827e6",
+                "name": "file_id",
+                "value": "={{$json.id}}",
+                "type": "string"
+              },
+              {
+                "id": "fec54a16-4c98-4c22-912e-e395d11e5c75",
+                "name": "file_url",
+                "value": "={{$json.webUrl}}",
+                "type": "string"
+              },
+              {
+                "id": "004ba4b4-db10-48ec-9be9-5502a0ed7a27",
+                "name": "folder_id",
+                "value": "={{$json.parentReference.id}}",
+                "type": "string"
+              },
+              {
+                "id": "6291f095-6d7b-4b31-9fea-0917e6d5f448",
+                "name": "folder_path",
+                "value": "={{$json.parentReference.path}}",
+                "type": "string"
+              },
+              {
+                "id": "04f8c5dc-ec16-443b-b002-37c78d132c8f",
+                "name": "drive_id",
+                "value": "={{$json.parentReference.driveId}}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          16,
+          144
+        ],
+        "id": "5a73be38-8d1a-42eb-aac7-f0795b22b9c9",
+        "name": "Pick Link Fields from PDF"
+      }
+    ],
+    "connections": {
+      "Read PDF (attach)": {
+        "main": [
+          [
+            {
+              "node": "Pre-clean PDF text",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload a file PDF attachments": {
+        "main": [
+          [
+            {
+              "node": "Pick Link Fields from PDF",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "main": [
+          [
+            {
+              "node": "Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Prompt Builder": {
+        "main": [
+          [
+            {
+              "node": "OpenAI Chat Model",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code": {
+        "main": [
+          [
+            {
+              "node": "Check Parsing Success",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pre-clean PDF text": {
+        "main": [
+          [
+            {
+              "node": "AI Prompt Builder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Append to Excel (Graph)": {
+        "main": [
+          [
+            {
+              "node": "Copy a file",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Capture File Metadata": {
+        "main": [
+          [
+            {
+              "node": "Read PDF (attach)",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Upload a file PDF attachments",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge invoice data pdf": {
+        "main": [
+          [
+            {
+              "node": "flatten + tidy pdf",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "flatten + tidy pdf": {
+        "main": [
+          [
+            {
+              "node": "Append to Excel (Graph)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get items in a folder": {
+        "main": [
+          [
+            {
+              "node": "Filter: PDFs Only (No Folders)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download a file": {
+        "main": [
+          [
+            {
+              "node": "Capture File Metadata",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Items": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Download a file",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Copy a file": {
+        "main": [
+          [
+            {
+              "node": "Delete a file",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete a file": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter: PDFs Only (No Folders)": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Parsing Success": {
+        "main": [
+          [
+            {
+              "node": "Merge invoice data pdf",
+              "type": "main",
+              "index": 1
+            }
+          ],
+          [
+            {
+              "node": "Copy to Pending Folder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pending File Handled": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Copy to Pending Folder": {
+        "main": [
+          [
+            {
+              "node": "Delete Failed File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete Failed File": {
+        "main": [
+          [
+            {
+              "node": "Pending File Handled",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When clicking ‘Execute workflow’": {
+        "main": [
+          [
+            {
+              "node": "Get items in a folder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pick Link Fields from PDF": {
+        "main": [
+          [
+            {
+              "node": "Merge invoice data pdf",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "staticData": null,
+    "meta": null,
+    "pinData": {},
+    "versionId": "1d5415e2-c401-4fe1-b964-aa8aa6a7ad0e",
+    "triggerCount": 0,
+    "tags": [],
+    "shared": [
+      {
+        "createdAt": "2025-11-05T09:46:12.806Z",
+        "updatedAt": "2025-11-05T09:46:12.806Z",
+        "role": "workflow:owner",
+        "workflowId": "pt8Wc5cH85tRPtvU",
+        "projectId": "OOfqf1PcdXc4mAMQ",
+        "project": {
+          "createdAt": "2025-08-02T11:30:32.205Z",
+          "updatedAt": "2025-08-02T11:32:05.229Z",
+          "id": "OOfqf1PcdXc4mAMQ",
+          "name": "SSS Sure <sureshotsolutions09@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null
+        }
+      }
+    ]
+  }
+]

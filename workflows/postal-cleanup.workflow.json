@@ -1,0 +1,291 @@
+{
+  "name": "Postal Cleanup – Remove Source/Pending Duplicates",
+  "nodes": [
+    {
+      "id": "node-manual-start",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -860,
+        200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "node-config",
+      "name": "Set Folder Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        200
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfg-source",
+              "name": "sourceId",
+              "value": "015B23OEWTPI4NF2PWV5BLAAHOHNJB66FR",
+              "type": "string"
+            },
+            {
+              "id": "cfg-pending",
+              "name": "pendingId",
+              "value": "015B23OEUKF54EKEDP4FAJ4K3RZZIHRT5I",
+              "type": "string"
+            },
+            {
+              "id": "cfg-archive",
+              "name": "archiveId",
+              "value": "015B23OEQJKVDGV6ECGBGJQR3HZ443BW5W",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-list-source",
+      "name": "List Source Files",
+      "type": "n8n-nodes-base.microsoftOneDrive",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        20
+      ],
+      "parameters": {
+        "resource": "folder",
+        "folderId": "={{$json.sourceId}}",
+        "options": {
+          "returnAll": true
+        }
+      },
+      "credentials": {
+        "microsoftOneDriveOAuth2Api": {
+          "id": "qDwJ0G7UXuah04zQ",
+          "name": "Microsoft Drive account"
+        }
+      }
+    },
+    {
+      "id": "node-list-pending",
+      "name": "List Pending Files",
+      "type": "n8n-nodes-base.microsoftOneDrive",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        200
+      ],
+      "parameters": {
+        "resource": "folder",
+        "folderId": "={{$json.pendingId}}",
+        "options": {
+          "returnAll": true
+        }
+      },
+      "credentials": {
+        "microsoftOneDriveOAuth2Api": {
+          "id": "qDwJ0G7UXuah04zQ",
+          "name": "Microsoft Drive account"
+        }
+      }
+    },
+    {
+      "id": "node-list-archive",
+      "name": "List Archive Files",
+      "type": "n8n-nodes-base.microsoftOneDrive",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        380
+      ],
+      "parameters": {
+        "resource": "folder",
+        "folderId": "={{$json.archiveId}}",
+        "options": {
+          "returnAll": true
+        }
+      },
+      "credentials": {
+        "microsoftOneDriveOAuth2Api": {
+          "id": "qDwJ0G7UXuah04zQ",
+          "name": "Microsoft Drive account"
+        }
+      }
+    },
+    {
+      "id": "node-identify",
+      "name": "Identify Duplicates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        200
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const sourceItems = $items('List Source Files', 0) || [];\nconst pendingItems = $items('List Pending Files', 0) || [];\nconst archiveItems = $items('List Archive Files', 0) || [];\n\nconst archiveLookup = new Map();\nfor (const item of archiveItems) {\n  const name = (item.json?.name || '').toLowerCase();\n  if (!name) continue;\n  const list = archiveLookup.get(name) || [];\n  list.push({ id: item.json.id, size: item.json.size });\n  archiveLookup.set(name, list);\n}\n\nfunction collect(items, folderLabel) {\n  const results = [];\n  for (const { json } of items) {\n    const name = (json?.name || '').toLowerCase();\n    if (!name || !json.id) continue;\n    if (archiveLookup.has(name)) {\n      results.push({\n        folder: folderLabel,\n        fileId: json.id,\n        fileName: json.name,\n        size: json.size || null,\n        webUrl: json.webUrl || null\n      });\n    }\n  }\n  return results;\n}\n\nconst duplicates = [\n  ...collect(sourceItems, 'source'),\n  ...collect(pendingItems, 'pending')\n];\n\nif (!duplicates.length) {\n  return [];\n}\n\nreturn duplicates.map(entry => ({ json: entry }));"
+      }
+    },
+    {
+      "id": "node-batches",
+      "name": "Split Deletions",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [
+        120,
+        200
+      ],
+      "parameters": {
+        "batchSize": 1
+      }
+    },
+    {
+      "id": "node-delete",
+      "name": "Delete Duplicate File",
+      "type": "n8n-nodes-base.microsoftOneDrive",
+      "typeVersion": 1,
+      "position": [
+        340,
+        200
+      ],
+      "parameters": {
+        "operation": "delete",
+        "fileId": "={{$json.fileId}}"
+      },
+      "credentials": {
+        "microsoftOneDriveOAuth2Api": {
+          "id": "qDwJ0G7UXuah04zQ",
+          "name": "Microsoft Drive account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "id": "node-summary",
+      "name": "Summarize Cleanup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        200
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const deleted = $items('Delete Duplicate File', 0) || [];\nconst attempted = $items('Split Deletions', 0) || [];\nreturn [{ json: { deleted: deleted.length, attempted: attempted.length } }];"
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Folder Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Folder Config": {
+      "main": [
+        [
+          {
+            "node": "List Source Files",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List Pending Files",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List Archive Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Source Files": {
+      "main": [
+        [
+          {
+            "node": "Identify Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Pending Files": {
+      "main": [
+        [
+          {
+            "node": "Identify Duplicates",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "List Archive Files": {
+      "main": [
+        [
+          {
+            "node": "Identify Duplicates",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Identify Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Split Deletions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Deletions": {
+      "main": [
+        [
+          {
+            "node": "Delete Duplicate File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Duplicate File": {
+      "main": [
+        [
+          {
+            "node": "Summarize Cleanup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "pinData": null
+}
