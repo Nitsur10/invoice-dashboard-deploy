@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-09T23:23:26.990Z",
+  "generated_at": "2025-11-10T11:01:05.512Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -48,12 +48,12 @@
         "❌ Checks failing (-20)",
         "📝 Partial approvals: 0/1 (+0)",
         "📊 Small changeset: 0 files (+5)",
-        "⏰ Stale PR: 35 days old (-10)"
+        "⏰ Stale PR: 36 days old (-10)"
       ],
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-10T01:55:03.000Z",
-        "hours_remaining": -741,
+        "hours_remaining": -753,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -95,12 +95,12 @@
         "✅ All checks passing (+20)",
         "📝 Partial approvals: 0/1 (+0)",
         "📊 Small changeset: 0 files (+5)",
-        "⏰ Stale PR: 43 days old (-10)"
+        "⏰ Stale PR: 44 days old (-10)"
       ],
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T02:25:09.000Z",
-        "hours_remaining": -933,
+        "hours_remaining": -945,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -201,10 +201,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1513,
+    "execution_time_ms": 1472,
     "api_calls_made": 10,
     "api_calls_failed": 2,
-    "rate_limit_remaining": "4981",
+    "rate_limit_remaining": "4991",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -215,7 +215,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-09T23:23:26.519Z"
+        "timestamp": "2025-11-10T11:01:05.075Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -226,7 +226,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-09T23:23:26.888Z"
+        "timestamp": "2025-11-10T11:01:05.410Z"
       }
     ]
   },
@@ -260,12 +260,12 @@
             "❌ Checks failing (-20)",
             "📝 Partial approvals: 0/1 (+0)",
             "📊 Small changeset: 0 files (+5)",
-            "⏰ Stale PR: 35 days old (-10)"
+            "⏰ Stale PR: 36 days old (-10)"
           ],
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-10T01:55:03.000Z",
-            "hours_remaining": -741,
+            "hours_remaining": -753,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -307,12 +307,12 @@
             "✅ All checks passing (+20)",
             "📝 Partial approvals: 0/1 (+0)",
             "📊 Small changeset: 0 files (+5)",
-            "⏰ Stale PR: 43 days old (-10)"
+            "⏰ Stale PR: 44 days old (-10)"
           ],
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T02:25:09.000Z",
-            "hours_remaining": -933,
+            "hours_remaining": -945,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -413,7 +413,7 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-11-09T23:23:26.889Z",
+        "processed_at": "2025-11-10T11:01:05.411Z",
         "pr_count": 2,
         "issue_count": 5
       }
