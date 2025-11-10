@@ -221,14 +221,14 @@ export async function PATCH(
 
     console.log('Creating audit log:', auditLogData)
     const { error: auditError } = await supabaseAdmin
-      .from('AuditLog')
+      .from('audit_logs')
       .insert(auditLogData)
 
     if (auditError) {
       console.error('Failed to create audit log:', {
         auditError,
         auditLogData,
-        table: 'AuditLog'
+        table: 'audit_logs'
       })
       // Don't fail the request if audit log fails, but log the error
     }
