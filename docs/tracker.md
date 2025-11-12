@@ -1,14 +1,14 @@
 <!-- tracker:summary:start -->
 # Issues & PRs Control Board
 
-_Last updated: 11/11/2025, 11:24:30 PM (execution: 2s)_
+_Last updated: 11/12/2025, 7:05:32 AM (execution: 2s)_
 
 **At a glance**
 - **Repos**: 1 (1 success, 0 failed)
 - **Open PRs**: 3 | Ready: 0 | Needs review: 0 | Failing: 2 | Blocked: 0 | Draft: 0 | Stale: 1
 - **Open Issues**: 5 | Features: 0 | Bugs: 1 | Stale: 5
 
-**Health Status**: 🟡 3 API failures | Rate limit: 4973 remaining
+**Health Status**: 🟡 3 API failures | Rate limit: 4987 remaining
 <!-- tracker:summary:end -->
 
 <!-- tracker:charts:start -->
@@ -83,7 +83,7 @@ _No items found_
 
 | PR | Repo | Title | Details | Updated |
 |:-:|:---:|:----:|:------:|:------:|
-| [#27](https://github.com/Nitsur10/invoice-dashboard-deploy/pull/27) | invoice-dashboard-deploy | feat: Add AI-Powered Chat Assistant with Voice Inp... | Checks failed: 3 failures | 11/10/2025 |
+| [#27](https://github.com/Nitsur10/invoice-dashboard-deploy/pull/27) | invoice-dashboard-deploy | feat: Add AI-Powered Chat Assistant with Voice Inp... | Checks failed: 1 failures | 11/12/2025 |
 | [#23](https://github.com/Nitsur10/invoice-dashboard-deploy/pull/23) | invoice-dashboard-deploy | Sync Status Card Filters Across All Pages (ISSUE-1... | Checks failed: 2 failures | 10/9/2025 |
 
 <!-- tracker:failing:end -->
