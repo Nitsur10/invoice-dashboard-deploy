@@ -1,14 +1,14 @@
 <!-- tracker:summary:start -->
 # Issues & PRs Control Board
 
-_Last updated: 11/12/2025, 8:28:57 AM (execution: 2s)_
+_Last updated: 11/12/2025, 10:25:52 PM (execution: 2s)_
 
 **At a glance**
 - **Repos**: 1 (1 success, 0 failed)
-- **Open PRs**: 3 | Ready: 0 | Needs review: 0 | Failing: 1 | Blocked: 0 | Draft: 0 | Stale: 1
+- **Open PRs**: 3 | Ready: 0 | Needs review: 0 | Failing: 2 | Blocked: 0 | Draft: 0 | Stale: 1
 - **Open Issues**: 5 | Features: 0 | Bugs: 1 | Stale: 5
 
-**Health Status**: 🟡 3 API failures | Rate limit: 4973 remaining
+**Health Status**: 🟡 3 API failures | Rate limit: 4987 remaining
 <!-- tracker:summary:end -->
 
 <!-- tracker:charts:start -->
@@ -19,7 +19,7 @@ _Last updated: 11/12/2025, 8:28:57 AM (execution: 2s)_
 pie title Open PRs by Status
     
     
-    "Failing (1)" : 1
+    "Failing (2)" : 2
     
     
     "Stale (1)" : 1
@@ -41,9 +41,9 @@ pie title Open Issues by Type
 graph LR
     A[Total PRs: 3] --> B{Readiness Score}
     B --> C[🟢 Ready 80+<br/>0 PRs]
-    B --> D[🟡 Review 60-79<br/>2 PRs]
+    B --> D[🟡 Review 60-79<br/>1 PRs]
     B --> E[🟠 Work Needed 40-59<br/>0 PRs]
-    B --> F[🔴 Blocked <40<br/>1 PRs]
+    B --> F[🔴 Blocked <40<br/>2 PRs]
 ```
 
 ### SLA Compliance Timeline
@@ -79,10 +79,11 @@ _No items found_
 <!-- tracker:needsreview:end -->
 
 <!-- tracker:failing:start -->
-## ❌ Failing checks (1)
+## ❌ Failing checks (2)
 
 | PR | Repo | Title | Details | Updated |
 |:-:|:---:|:----:|:------:|:------:|
+| [#27](https://github.com/Nitsur10/invoice-dashboard-deploy/pull/27) | invoice-dashboard-deploy | feat: Add AI-Powered Chat Assistant with Voice Inp... | Checks failed: 1 failures | 11/12/2025 |
 | [#23](https://github.com/Nitsur10/invoice-dashboard-deploy/pull/23) | invoice-dashboard-deploy | Sync Status Card Filters Across All Pages (ISSUE-1... | Checks failed: 2 failures | 10/9/2025 |
 
 <!-- tracker:failing:end -->
@@ -131,11 +132,11 @@ _No items found_
 
 | Issue | Repo | Title | Days Stale |
 |:----:|:---:|:----:|:---------:|
-| [#25](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/25) | invoice-dashboard-deploy | UI Cleanup & Invoice Status Update Bug Fix | 30 |
+| [#25](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/25) | invoice-dashboard-deploy | UI Cleanup & Invoice Status Update Bug Fix | 31 |
 | [#21](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/21) | invoice-dashboard-deploy | 🚨 Portfolio Tracker Update Failed - 2025-10-04 | 39 |
-| [#5](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/5) | invoice-dashboard-deploy | Implement month-over-month trend metrics pipeline | 49 |
-| [#3](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/3) | invoice-dashboard-deploy | Surface stats API failures with user feedback | 49 |
-| [#2](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/2) | invoice-dashboard-deploy | Refine invoice status derivation across APIs | 49 |
+| [#5](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/5) | invoice-dashboard-deploy | Implement month-over-month trend metrics pipeline | 50 |
+| [#3](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/3) | invoice-dashboard-deploy | Surface stats API failures with user feedback | 50 |
+| [#2](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/2) | invoice-dashboard-deploy | Refine invoice status derivation across APIs | 50 |
 
 <!-- tracker:staleissues:end -->
 
