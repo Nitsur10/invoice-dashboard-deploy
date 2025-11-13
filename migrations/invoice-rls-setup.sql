@@ -39,7 +39,7 @@ CREATE POLICY "Service role full access" ON "Invoice"
 -- ADJUST THIS for organization-level access control
 DROP POLICY IF EXISTS "Authenticated users can modify invoices" ON "Invoice";
 CREATE POLICY "Authenticated users can modify invoices" ON "Invoice"
-    FOR INSERT, UPDATE, DELETE
+    FOR ALL
     TO authenticated
     USING (true)
     WITH CHECK (true);
