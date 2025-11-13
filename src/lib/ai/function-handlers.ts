@@ -1,9 +1,12 @@
 /**
  * Function Handlers for Claude AI
  * These functions are called by Claude when it needs to interact with invoice data
+ *
+ * SECURITY: All functions use a user-scoped Supabase client to ensure RLS is enforced
  */
 
 import { supabaseAdmin } from '@/lib/server/supabase-admin';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface InvoiceSearchParams {
   status?: string[];
@@ -31,17 +34,21 @@ export interface InvoiceDetails {
 
 /**
  * Search invoices based on filters
+ * SECURITY: Uses user-scoped client to enforce RLS
  */
-export async function searchInvoices(params: InvoiceSearchParams): Promise<{
+export async function searchInvoices(
+  params: InvoiceSearchParams,
+  supabase: SupabaseClient
+): Promise<{
   invoices: InvoiceDetails[];
   total: number;
   summary: { totalAmount: number; count: number };
 }> {
   try {
     const limit = params.limit || 20;
-    
-    // Build query
-    let query = supabaseAdmin
+
+    // Build query - Uses user-scoped client (RLS enforced)
+    let query = supabase
       .from('Invoice')
       .select('*', { count: 'exact' });
 
@@ -122,10 +129,14 @@ export async function searchInvoices(params: InvoiceSearchParams): Promise<{
 
 /**
  * Get detailed information about a specific invoice
+ * SECURITY: Uses user-scoped client to enforce RLS
  */
-export async function getInvoiceDetails(invoiceId: string): Promise<InvoiceDetails | null> {
+export async function getInvoiceDetails(
+  invoiceId: string,
+  supabase: SupabaseClient
+): Promise<InvoiceDetails | null> {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error} = await supabase
       .from('Invoice')
       .select('*')
       .eq('id', invoiceId)
@@ -168,20 +179,24 @@ export async function getInvoiceDetails(invoiceId: string): Promise<InvoiceDetai
 
 /**
  * Get summary statistics for invoices
+ * SECURITY: Uses user-scoped client to enforce RLS
  */
-export async function getSummaryStats(params: {
-  status?: string[];
-  dateFrom?: string;
-  dateTo?: string;
-}): Promise<{
+export async function getSummaryStats(
+  params: {
+    status?: string[];
+    dateFrom?: string;
+    dateTo?: string;
+  },
+  supabase: SupabaseClient
+): Promise<{
   totalInvoices: number;
   totalAmount: number;
   byStatus: Record<string, { count: number; amount: number }>;
   averageAmount: number;
 }> {
   try {
-    // Build query
-    let query = supabaseAdmin
+    // Build query - Uses user-scoped client (RLS enforced)
+    let query = supabase
       .from('Invoice')
       .select('status, total');
 
@@ -237,16 +252,20 @@ export async function getSummaryStats(params: {
 
 /**
  * Get top vendors by invoice count or amount
+ * SECURITY: Uses user-scoped client to enforce RLS
  */
-export async function getTopVendors(params: {
-  limit?: number;
-  sortBy?: 'amount' | 'count';
-}): Promise<Array<{ vendor: string; count: number; amount: number }>> {
+export async function getTopVendors(
+  params: {
+    limit?: number;
+    sortBy?: 'amount' | 'count';
+  },
+  supabase: SupabaseClient
+): Promise<Array<{ vendor: string; count: number; amount: number }>> {
   try {
     const limit = params.limit || 10;
     const sortBy = params.sortBy || 'amount';
-    
-    const { data, error } = await supabaseAdmin
+
+    const { data, error } = await supabase
       .from('Invoice')
       .select('supplier_name, total');
     
@@ -292,12 +311,16 @@ export async function getTopVendors(params: {
 /**
  * Update invoice status (requires confirmation)
  * This returns the proposed change without executing it
+ * SECURITY: Uses user-scoped client to enforce RLS
  */
-export async function prepareStatusUpdate(params: {
-  invoiceId: string;
-  newStatus: string;
-  reason?: string;
-}): Promise<{
+export async function prepareStatusUpdate(
+  params: {
+    invoiceId: string;
+    newStatus: string;
+    reason?: string;
+  },
+  supabase: SupabaseClient
+): Promise<{
   invoice: InvoiceDetails;
   oldStatus: string;
   newStatus: string;
@@ -306,7 +329,7 @@ export async function prepareStatusUpdate(params: {
 }> {
   try {
     // Get current invoice
-    const invoice = await getInvoiceDetails(params.invoiceId);
+    const invoice = await getInvoiceDetails(params.invoiceId, supabase);
     
     if (!invoice) {
       return {
@@ -347,15 +370,19 @@ export async function prepareStatusUpdate(params: {
 
 /**
  * Execute status update (after user confirmation)
+ * SECURITY: Uses user-scoped client to enforce RLS - only allows updates to authorized invoices
  */
-export async function executeStatusUpdate(params: {
-  invoiceId: string;
-  newStatus: string;
-  userId: string;
-  reason?: string;
-}): Promise<{ success: boolean; message: string }> {
+export async function executeStatusUpdate(
+  params: {
+    invoiceId: string;
+    newStatus: string;
+    userId: string;
+    reason?: string;
+  },
+  supabase: SupabaseClient
+): Promise<{ success: boolean; message: string }> {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabase
       .from('Invoice')
       .update({
         status: params.newStatus,
@@ -388,18 +415,22 @@ export async function executeStatusUpdate(params: {
 
 /**
  * Add a note to an invoice (requires confirmation)
+ * SECURITY: Uses user-scoped client to enforce RLS
  */
-export async function prepareNoteAddition(params: {
-  invoiceId: string;
-  note: string;
-}): Promise<{
+export async function prepareNoteAddition(
+  params: {
+    invoiceId: string;
+    note: string;
+  },
+  supabase: SupabaseClient
+): Promise<{
   invoice: InvoiceDetails;
   note: string;
   valid: boolean;
   message: string;
 }> {
   try {
-    const invoice = await getInvoiceDetails(params.invoiceId);
+    const invoice = await getInvoiceDetails(params.invoiceId, supabase);
     
     if (!invoice) {
       return {
@@ -433,32 +464,36 @@ export async function prepareNoteAddition(params: {
 
 /**
  * Execute note addition (after user confirmation)
+ * SECURITY: Uses user-scoped client to enforce RLS - only allows updates to authorized invoices
  */
-export async function executeNoteAddition(params: {
-  invoiceId: string;
-  note: string;
-  userId: string;
-}): Promise<{ success: boolean; message: string }> {
+export async function executeNoteAddition(
+  params: {
+    invoiceId: string;
+    note: string;
+    userId: string;
+  },
+  supabase: SupabaseClient
+): Promise<{ success: boolean; message: string }> {
   try {
     // Get current invoice to append note
-    const invoice = await getInvoiceDetails(params.invoiceId);
-    
+    const invoice = await getInvoiceDetails(params.invoiceId, supabase);
+
     if (!invoice) {
       return {
         success: false,
         message: 'Invoice not found',
       };
     }
-    
+
     // Append new note to existing notes
     const currentNotes = invoice.notes || '';
     const timestamp = new Date().toISOString();
     const newNote = `[${timestamp}] ${params.note}`;
-    const updatedNotes = currentNotes 
-      ? `${currentNotes}\n${newNote}` 
+    const updatedNotes = currentNotes
+      ? `${currentNotes}\n${newNote}`
       : newNote;
-    
-    const { error } = await supabaseAdmin
+
+    const { error } = await supabase
       .from('Invoice')
       .update({
         notes: updatedNotes,
@@ -489,30 +524,32 @@ export async function executeNoteAddition(params: {
 
 /**
  * Route function calls from Claude to the appropriate handler
+ * SECURITY: All handlers receive user-scoped Supabase client to enforce RLS
  */
 export async function executeFunctionCall(
   functionName: string,
-  params: any
+  params: any,
+  supabase: SupabaseClient
 ): Promise<any> {
   switch (functionName) {
     case 'searchInvoices':
-      return searchInvoices(params);
-    
+      return searchInvoices(params, supabase);
+
     case 'getInvoiceDetails':
-      return getInvoiceDetails(params.invoiceId);
-    
+      return getInvoiceDetails(params.invoiceId, supabase);
+
     case 'getSummaryStats':
-      return getSummaryStats(params);
-    
+      return getSummaryStats(params, supabase);
+
     case 'getTopVendors':
-      return getTopVendors(params);
-    
+      return getTopVendors(params, supabase);
+
     case 'updateInvoiceStatus':
-      return prepareStatusUpdate(params);
-    
+      return prepareStatusUpdate(params, supabase);
+
     case 'addInvoiceNote':
-      return prepareNoteAddition(params);
-    
+      return prepareNoteAddition(params, supabase);
+
     default:
       throw new Error(`Unknown function: ${functionName}`);
   }
