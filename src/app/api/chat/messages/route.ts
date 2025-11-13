@@ -246,7 +246,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Prepare action details for confirmation dialog
-    const requiresConfirmation = functionCalls.some(c =>
+    let requiresConfirmation = functionCalls.some(c =>
       c.name === 'updateInvoiceStatus' || c.name === 'addInvoiceNote'
     );
 
@@ -255,16 +255,26 @@ export async function POST(request: NextRequest) {
       const actionCall = functionCalls.find(c =>
         c.name === 'updateInvoiceStatus' || c.name === 'addInvoiceNote'
       );
-      const actionResult = functionResults.find(r =>
-        r.name === actionCall?.name
-      );
 
-      if (actionCall && actionResult) {
-        actionDetails = {
-          type: actionCall.name === 'updateInvoiceStatus' ? 'status_update' : 'note_added',
-          params: actionCall.input,
-          result: actionResult.result,
-        };
+      if (!actionCall) {
+        console.error('No action call found despite requiresConfirmation=true');
+        requiresConfirmation = false;
+      } else {
+        const actionResult = functionResults.find(r => r.name === actionCall.name);
+
+        if (!actionResult) {
+          console.error(`No result found for action ${actionCall.name}`);
+          requiresConfirmation = false;
+        } else if (!actionResult.result || !actionResult.result.valid) {
+          console.error('Action result invalid or not valid:', actionResult);
+          requiresConfirmation = false;
+        } else {
+          actionDetails = {
+            type: actionCall.name === 'updateInvoiceStatus' ? 'status_update' : 'note_added',
+            params: actionCall.input,
+            result: actionResult.result,
+          };
+        }
       }
     }
 

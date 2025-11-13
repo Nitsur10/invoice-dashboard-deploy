@@ -57,11 +57,19 @@ export function ChatPanel({ conversationId, onClose, onExpand, className = '' }:
     if (pendingAction && pendingAction.actionDetails) {
       const { type, params, result } = pendingAction.actionDetails;
 
+      // CRITICAL: Validate that required invoice data exists
+      if (!result || !result.invoice || !result.invoice.invoiceNumber) {
+        console.error('Invalid action details - missing invoice data:', result);
+        toast.error('Cannot show confirmation - invalid action data');
+        // Clear the invalid pending action
+        return;
+      }
+
       // Transform action details for the confirmation dialog
       const transformedDetails = {
         type,
-        invoiceNumber: result.invoice?.invoiceNumber || params.invoiceId,
-        vendor: result.invoice?.vendor || 'Unknown',
+        invoiceNumber: result.invoice.invoiceNumber,
+        vendor: result.invoice.vendor || 'Unknown Vendor',
         oldValue: type === 'status_update' ? result.oldStatus : undefined,
         newValue: type === 'status_update' ? result.newStatus : params.note,
       };
