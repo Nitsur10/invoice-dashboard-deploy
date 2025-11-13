@@ -166,11 +166,12 @@ export function useSendMessage() {
       // Invalidate conversation to refresh messages
       queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
       
-      // If action requires confirmation, store it
-      if (result.requiresConfirmation) {
+      // If action requires confirmation, store it with details
+      if (result.requiresConfirmation && result.actionDetails) {
         setPendingAction({
           messageId: result.assistantMessage.id,
           conversationId,
+          actionDetails: result.actionDetails,
         });
       }
       

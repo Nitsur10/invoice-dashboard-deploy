@@ -132,6 +132,7 @@ export async function POST(request: NextRequest) {
     
     let assistantResponse = '';
     let functionCalls: any[] = [];
+    let functionResults: any[] = [];
     let invoiceContext: string[] = [];
     let metadata: any = {};
     
@@ -173,7 +174,7 @@ export async function POST(request: NextRequest) {
         
         // Execute function calls
         if (functionCalls.length > 0) {
-          const functionResults: any[] = [];
+          functionResults = [];
           
           for (const call of functionCalls) {
             try {
@@ -244,12 +245,34 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Prepare action details for confirmation dialog
+    const requiresConfirmation = functionCalls.some(c =>
+      c.name === 'updateInvoiceStatus' || c.name === 'addInvoiceNote'
+    );
+
+    let actionDetails = null;
+    if (requiresConfirmation && functionResults && functionResults.length > 0) {
+      const actionCall = functionCalls.find(c =>
+        c.name === 'updateInvoiceStatus' || c.name === 'addInvoiceNote'
+      );
+      const actionResult = functionResults.find(r =>
+        r.name === actionCall?.name
+      );
+
+      if (actionCall && actionResult) {
+        actionDetails = {
+          type: actionCall.name === 'updateInvoiceStatus' ? 'status_update' : 'note_added',
+          params: actionCall.input,
+          result: actionResult.result,
+        };
+      }
+    }
+
     return NextResponse.json({
       userMessage,
       assistantMessage,
-      requiresConfirmation: functionCalls.some(c => 
-        c.name === 'updateInvoiceStatus' || c.name === 'addInvoiceNote'
-      ),
+      requiresConfirmation,
+      actionDetails,
     });
   } catch (error) {
     console.error('POST /api/chat/messages error:', error);

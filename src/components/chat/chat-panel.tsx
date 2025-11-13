@@ -51,7 +51,26 @@ export function ChatPanel({ conversationId, onClose, onExpand, className = '' }:
       toast.error(recordingError);
     }
   }, [recordingError]);
-  
+
+  // Watch for pending actions and show confirmation dialog
+  useEffect(() => {
+    if (pendingAction && pendingAction.actionDetails) {
+      const { type, params, result } = pendingAction.actionDetails;
+
+      // Transform action details for the confirmation dialog
+      const transformedDetails = {
+        type,
+        invoiceNumber: result.invoice?.invoiceNumber || params.invoiceId,
+        vendor: result.invoice?.vendor || 'Unknown',
+        oldValue: type === 'status_update' ? result.oldStatus : undefined,
+        newValue: type === 'status_update' ? result.newStatus : params.note,
+      };
+
+      setPendingActionDetails(transformedDetails);
+      setShowConfirmation(true);
+    }
+  }, [pendingAction]);
+
   // Create conversation if none exists
   const ensureConversation = async () => {
     if (!localConversationId) {
@@ -97,16 +116,16 @@ export function ChatPanel({ conversationId, onClose, onExpand, className = '' }:
   };
   
   const handleConfirmAction = async () => {
-    if (!pendingAction || !pendingActionDetails) return;
-    
+    if (!pendingAction || !pendingAction.actionDetails) return;
+
     try {
       await executeAction({
         conversationId: pendingAction.conversationId,
         messageId: pendingAction.messageId,
-        actionType: pendingActionDetails.type,
-        params: pendingActionDetails.params,
+        actionType: pendingAction.actionDetails.type,
+        params: pendingAction.actionDetails.params,
       });
-      
+
       toast.success('Action executed successfully');
       setShowConfirmation(false);
       setPendingActionDetails(null);
