@@ -61,10 +61,28 @@ export async function POST(request: NextRequest) {
       .eq('id', params.invoiceId)
       .single();
 
-    if (invoiceError || !invoice) {
+    if (invoiceError) {
+      // Log unauthorized access attempt
+      console.warn('Invoice access denied:', {
+        userId,
+        invoiceId: params.invoiceId,
+        actionType,
+        error: invoiceError.code,
+      });
+
+      // Distinguish between not found and access denied
+      const status = invoiceError.code === 'PGRST116' ? 404 : 403;
+      const message = invoiceError.code === 'PGRST116'
+        ? 'Invoice not found'
+        : 'Access denied - you do not have permission to modify this invoice';
+
+      return NextResponse.json({ error: message }, { status });
+    }
+
+    if (!invoice) {
       return NextResponse.json(
-        { error: 'Invoice not found or access denied' },
-        { status: 403 }
+        { error: 'Invoice not found' },
+        { status: 404 }
       );
     }
 
