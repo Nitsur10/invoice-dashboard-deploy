@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-12T23:25:59.475Z",
+  "generated_at": "2025-11-13T10:58:42.565Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -46,7 +46,7 @@
       "sla_status": {
         "status": "on_track",
         "due_date": "2025-11-15T11:06:12.000Z",
-        "hours_remaining": 60,
+        "hours_remaining": 48,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -92,12 +92,12 @@
         "❌ Checks failing (-20)",
         "📝 Partial approvals: 0/1 (+0)",
         "📊 Small changeset: 0 files (+5)",
-        "⏰ Stale PR: 38 days old (-10)"
+        "⏰ Stale PR: 39 days old (-10)"
       ],
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-10T01:55:03.000Z",
-        "hours_remaining": -814,
+        "hours_remaining": -825,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -139,12 +139,12 @@
         "✅ All checks passing (+20)",
         "📝 Partial approvals: 0/1 (+0)",
         "📊 Small changeset: 0 files (+5)",
-        "⏰ Stale PR: 46 days old (-10)"
+        "⏰ Stale PR: 47 days old (-10)"
       ],
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T02:25:09.000Z",
-        "hours_remaining": -1005,
+        "hours_remaining": -1017,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -245,10 +245,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1645,
+    "execution_time_ms": 2156,
     "api_calls_made": 14,
     "api_calls_failed": 3,
-    "rate_limit_remaining": "4988",
+    "rate_limit_remaining": "4987",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -259,7 +259,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-12T23:25:58.615Z"
+        "timestamp": "2025-11-13T10:58:41.436Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -270,7 +270,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-12T23:25:59.079Z"
+        "timestamp": "2025-11-13T10:58:42.014Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -281,7 +281,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-12T23:25:59.373Z"
+        "timestamp": "2025-11-13T10:58:42.463Z"
       }
     ]
   },
@@ -313,7 +313,7 @@
           "sla_status": {
             "status": "on_track",
             "due_date": "2025-11-15T11:06:12.000Z",
-            "hours_remaining": 60,
+            "hours_remaining": 48,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -359,12 +359,12 @@
             "❌ Checks failing (-20)",
             "📝 Partial approvals: 0/1 (+0)",
             "📊 Small changeset: 0 files (+5)",
-            "⏰ Stale PR: 38 days old (-10)"
+            "⏰ Stale PR: 39 days old (-10)"
           ],
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-10T01:55:03.000Z",
-            "hours_remaining": -814,
+            "hours_remaining": -825,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -406,12 +406,12 @@
             "✅ All checks passing (+20)",
             "📝 Partial approvals: 0/1 (+0)",
             "📊 Small changeset: 0 files (+5)",
-            "⏰ Stale PR: 46 days old (-10)"
+            "⏰ Stale PR: 47 days old (-10)"
           ],
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T02:25:09.000Z",
-            "hours_remaining": -1005,
+            "hours_remaining": -1017,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -512,7 +512,7 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-11-12T23:25:59.374Z",
+        "processed_at": "2025-11-13T10:58:42.464Z",
         "pr_count": 3,
         "issue_count": 5
       }
