@@ -52,6 +52,38 @@ Thumbs.db
 
 # TypeScript cache
 *.tsbuildinfo
-next-env.d.tstestrigor-cli.jar
+next-env.d.ts
+testrigor-cli.jar
 test-results/
 *.jar
+
+# N8N & Migration Data (too large for git)
+# Keep documentation (.md), exclude execution data
+reports/*.sqlite*
+reports/*.db
+reports/execution-*.json
+reports/postal-migration-*.json
+reports/postal-excel-*.json
+reports/supabase-schema-validation-*.json
+reports/onedrive-reconciliation-*.json
+reports/n8n-database.*
+
+# Large Excel files (data snapshots)
+*.xlsx
+!docs/**/*.xlsx
+!migrations/**/*.xlsx
+
+# Temporary data directories
+data/
+.postal-tmp/
+
+# OneDrive/SharePoint sync conflicts
+*-conflict-*.json
+
+# Backup files
+*.bak
+*.backup
+.env.local.bak
+
+# Screenshots (keep in separate documentation)
+Screenshots/

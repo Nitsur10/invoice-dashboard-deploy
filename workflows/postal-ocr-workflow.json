@@ -1,0 +1,707 @@
+{
+  "name": "Postal Invoice Intake – OCR",
+  "settings": {},
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "node-manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": 3,
+          "unit": "hours"
+        },
+        "timezone": "Australia/Sydney"
+      },
+      "id": "node-cron",
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        200,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "values": [
+          {
+            "name": "driveId",
+            "value": "b!eiqu1iWPf0iNdIbe4yR3T25SssYW3mNNqp4GbZEDKHuCzdNUTpvRRKs2arBeCoIP"
+          },
+          {
+            "name": "folderId",
+            "value": "015B23OEWTPI4NF2PWV5BLAAHOHNJB66FR"
+          },
+          {
+            "name": "daysBack",
+            "value": 30
+          },
+          {
+            "name": "cutoffIso",
+            "value": "={{ new Date(Date.now() - (Number($json.daysBack || 30) * 24 * 60 * 60 * 1000)).toISOString() }}"
+          },
+          {
+            "name": "supabaseUrl",
+            "value": "https://YOUR-SUPABASE-PROJECT.supabase.co"
+          },
+          {
+            "name": "supabaseKey",
+            "value": "YOUR_SUPABASE_SERVICE_ROLE_KEY"
+          },
+          {
+            "name": "excelDriveId",
+            "value": "YOUR_EXCEL_DRIVE_ID"
+          },
+          {
+            "name": "excelWorkbookId",
+            "value": "YOUR_EXCEL_WORKBOOK_ID"
+          },
+          {
+            "name": "excelTableName",
+            "value": "Table_Postal"
+          }
+        ],
+        "options": {
+          "keepOnlySet": true
+        }
+      },
+      "id": "node-config",
+      "name": "10 – Config ⚙️",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        440,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{`https://graph.microsoft.com/v1.0/drives/${$json.driveId}/items/${$json.folderId}/children`}}",
+        "jsonParameters": true,
+        "queryParametersJson": "={\n  \"$filter\": \"createdDateTime ge ${$json.cutoffIso}\"\n}",
+        "responseFormat": "json"
+      },
+      "id": "node-list-files",
+      "name": "20 – List Postal Files",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        680,
+        220
+      ],
+      "notes": "Assign OneDrive Graph OAuth credential"
+    },
+    {
+      "parameters": {
+        "functionCode": "const items = $json.value || [];\nreturn items.map(item => ({ json: item }));"
+      },
+      "id": "node-flatten",
+      "name": "25 – Flatten Items",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        920,
+        220
+      ],
+      "notes": "Expands Graph response array into individual items"
+    },
+    {
+      "parameters": {
+        "batchSize": 1
+      },
+      "id": "node-split",
+      "name": "30 – Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const crypto = require('crypto');\nconst binary = this.helpers.binaryToBuffer($binary.data?.data || Buffer.from([]));\nconst checksum = crypto.createHash('sha256').update(binary).digest('hex');\nreturn [{\n  id: $json.id,\n  name: $json.name,\n  webUrl: $json.webUrl,\n  mimeType: $json.file?.mimeType || '',\n  fileChecksum: checksum\n}];"
+      },
+      "id": "node-prepare",
+      "name": "40 – Prepare Record",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{`${$json.supabaseUrl || $node['10 – Config ⚙️'].json.supabaseUrl}/rest/v1/invoice`}}",
+        "jsonParameters": true,
+        "queryParametersJson": "={\n  \"select\": \"id,invoice_number\",\n  \"or\": \"file_checksum.eq.${$json.fileChecksum},invoice_number.eq.${$json.invoice_number || 'NULL'}\"\n}",
+        "responseFormat": "json"
+      },
+      "id": "node-dup-check",
+      "name": "45 – Supabase Dup Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1640,
+        220
+      ],
+      "notes": "Assign Supabase Service Role credential",
+      "options": {
+        "headers": "={\n  \"apikey\": \"${$node['10 – Config ⚙️'].json.supabaseKey}\",\n  \"Authorization\": \"Bearer ${$node['10 – Config ⚙️'].json.supabaseKey}\"\n}",
+        "sendHeaders": true
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.length}}",
+              "operation": "larger"
+            }
+          ]
+        }
+      },
+      "id": "node-if-duplicate",
+      "name": "50 – Already Processed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1880,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{`${$node['10 – Config ⚙️'].json.supabaseUrl}/rest/v1/postal_ingest_log`}}",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\n  \"status\": \"skipped_duplicate\",\n  \"file_name\": \"${$node['40 – Prepare Record'].json.name}\",\n  \"file_checksum\": \"${$node['40 – Prepare Record'].json.fileChecksum}\"\n}"
+      },
+      "id": "node-log-duplicate",
+      "name": "55 – Log Duplicate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        2120,
+        80
+      ],
+      "options": {
+        "headers": "={\n  \"apikey\": \"${$node['10 – Config ⚙️'].json.supabaseKey}\",\n  \"Authorization\": \"Bearer ${$node['10 – Config ⚙️'].json.supabaseKey}\"\n}",
+        "sendHeaders": true
+      },
+      "notes": "Supabase Service Role credential"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{`https://graph.microsoft.com/v1.0/drives/${$node['10 – Config ⚙️'].json.driveId}/items/${$node['40 – Prepare Record'].json.id}/content`}}",
+        "responseFormat": "file",
+        "binaryProperty": "pdf"
+      },
+      "id": "node-download-pdf",
+      "name": "60 – Download PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        2120,
+        360
+      ],
+      "notes": "Assign OneDrive Graph credential"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{`https://graph.microsoft.com/v1.0/drives/${$node['10 – Config ⚙️'].json.driveId}/items/${$node['40 – Prepare Record'].json.id}/thumbnails/0/large`}}",
+        "responseFormat": "file",
+        "binaryProperty": "thumbnail"
+      },
+      "id": "node-get-thumbnail",
+      "name": "70 – Get Thumbnail",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        2360,
+        360
+      ],
+      "notes": "Assign OneDrive Graph credential"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineMode": "keepEverything"
+      },
+      "id": "node-merge-preview",
+      "name": "72 – Merge Preview",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        2580,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const hasThumbnail = $binary?.thumbnail;\nconst hasPdf = $binary?.pdf;\nif (!hasThumbnail && !hasPdf) {\n  throw new Error('No preview or PDF binary available');\n}\nconst output = {\n  json: {\n    ...$json,\n    imageMimeType: hasThumbnail ? ($binary.thumbnail.mimeType || 'image/png') : 'application/pdf'\n  },\n  binary: {}\n};\nif (hasThumbnail) {\n  output.binary.image = $binary.thumbnail;\n} else {\n  output.binary.image = $binary.pdf;\n}\nreturn [output];"
+      },
+      "id": "node-select-image",
+      "name": "75 – Select Image",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        360
+      ],
+      "notes": "Uses thumbnail if available, falls back to PDF buffer"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/files",
+        "sendBinaryData": true,
+        "binaryPropertyName": "image",
+        "bodyContentType": "multipart-form-data",
+        "jsonParameters": true,
+        "bodyParametersJson": "={ \"purpose\": \"vision\" }"
+      },
+      "id": "node-openai-upload",
+      "name": "80 – OpenAI Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        3020,
+        360
+      ],
+      "notes": "Attach OpenAiVision credential"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "jsonParameters": true,
+        "responseFormat": "json",
+        "bodyParametersJson": "={\n  \"model\": \"gpt-4.1-mini\",\n  \"input\": [{\n    \"role\": \"user\",\n    \"content\": [\n      {\n        \"type\": \"input_image\",\n        \"image_url\": { \"file_id\": \"${$json.id}\" }\n      },\n      {\n        \"type\": \"text\",\n        \"text\": \"You are processing an Australian business invoice. Return JSON matching this schema: { \\\"invoice_number\\\": string | null, \\\"invoice_date\\\": \\\"YYYY-MM-DD\\\" | null, \\\"due_date\\\": \\\"YYYY-MM-DD\\\" | null, \\\"currency\\\": string | null, \\\"subtotal\\\": number | null, \\\"gst_total\\\": number | null, \\\"total\\\": number, \\\"amount_due\\\": number | null, \\\"supplier\\\": { \\\"name\\\": string | null, \\\"abn\\\": string | null, \\\"email\\\": string | null }, \\\"customer\\\": { \\\"name\\\": string | null, \\\"abn\\\": string | null }, \\\"bank\\\": { \\\"bsb\\\": string | null, \\\"account\\\": string | null }, \\\"payment_reference\\\": string | null, \\\"line_items\\\": [{ \\\"description\\\": string, \\\"quantity\\\": number | null, \\\"unit_price\\\": number | null }], \\\"notes\\\": string | null, \\\"confidence\\\": { \\\"invoice_number\\\": number | null, \\\"supplier\\\": number | null, \\\"totals\\\": number | null }, \\\"message_id\\\": string | null }\\nReturn null where information is not present.\"\n      }\n    ]\n  }],\n  \"response_format\": { \"type\": \"json_object\" },\n  \"max_output_tokens\": 1024\n}"
+      },
+      "id": "node-openai-vision",
+      "name": "85 – OpenAI Vision",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        3240,
+        360
+      ],
+      "notes": "Attach OpenAiVision credential"
+    },
+    {
+      "parameters": {
+        "functionCode": "const text = $json.output_text || ($json.output?.[0]?.content?.[0]?.text) || '{}';\nreturn [{ vision: JSON.parse(text) }];"
+      },
+      "id": "node-parse-vision",
+      "name": "90 – Parse Vision JSON",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        3460,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = items[0].json.vision || {};\nconst issues = [];\nif (!data.total || data.total <= 0) issues.push('Missing total');\nif (!data.supplier?.name) issues.push('Missing supplier name');\nconst conf = data.confidence || {};\nconst values = [conf.invoice_number, conf.supplier, conf.totals].filter((n) => typeof n === 'number');\nconst ocrConfidence = values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : null;\nreturn [{\n  validationStatus: issues.length ? 'exception' : 'ok',\n  issues,\n  supabasePayload: {\n    invoice_number: data.invoice_number || null,\n    invoice_date: data.invoice_date || null,\n    due_date: data.due_date || null,\n    currency: data.currency || null,\n    subtotal: data.subtotal || null,\n    gst_total: data.gst_total || null,\n    total: data.total || null,\n    amount_due: data.amount_due || null,\n    supplier_name: data.supplier?.name || null,\n    supplier_abn: data.supplier?.abn || null,\n    supplier_email: data.supplier?.email || null,\n    customer_name: data.customer?.name || null,\n    customer_abn: data.customer?.abn || null,\n    bank_bsb: data.bank?.bsb || null,\n    bank_account: data.bank?.account || null,\n    payment_reference: data.payment_reference || null,\n    line_1_desc: data.line_items?.[0]?.description || null,\n    line_1_qty: data.line_items?.[0]?.quantity || null,\n    line_1_unit_price: data.line_items?.[0]?.unit_price || null,\n    notes: data.notes || null,\n    ocr_confidence: ocrConfidence,\n    source: 'postal_ocr',\n    file_checksum: $item().$node['40 – Prepare Record'].json.fileChecksum,\n    ocr_model: 'gpt-4.1-mini',\n    message_id: data.message_id || null,\n    created_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "node-validate-map",
+      "name": "95 – Validate & Map",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        3680,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.validationStatus}}",
+              "operation": "equal",
+              "value2": "ok"
+            }
+          ]
+        }
+      },
+      "id": "node-if-valid",
+      "name": "100 – Validation OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        3900,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{`${$node['10 – Config ⚙️'].json.supabaseUrl}/rest/v1/invoice?on_conflict=invoice_number`}}",
+        "jsonParameters": true,
+        "bodyParametersJson": "={{$json.supabasePayload}}",
+        "responseFormat": "json"
+      },
+      "id": "node-supabase-upsert",
+      "name": "110 – Supabase Upsert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        4120,
+        280
+      ],
+      "options": {
+        "headers": "={\n  \"apikey\": \"${$node['10 – Config ⚙️'].json.supabaseKey}\",\n  \"Authorization\": \"Bearer ${$node['10 – Config ⚙️'].json.supabaseKey}\",\n  \"Prefer\": \"return=representation\"\n}",
+        "sendHeaders": true
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{`${$node['10 – Config ⚙️'].json.supabaseUrl}/rest/v1/postal_ingest_log`}}",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\n  \"status\": \"processed\",\n  \"file_name\": \"${$node['40 – Prepare Record'].json.name}\",\n  \"file_checksum\": \"${$node['40 – Prepare Record'].json.fileChecksum}\",\n  \"invoice_number\": \"${$json.supabasePayload.invoice_number}\",\n  \"supabase_id\": \"{{$json[0]?.id || null}}\"\n}"
+      },
+      "id": "node-log-processed",
+      "name": "115 – Log Processed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        4340,
+        280
+      ],
+      "options": {
+        "headers": "={\n  \"apikey\": \"${$node['10 – Config ⚙️'].json.supabaseKey}\",\n  \"Authorization\": \"Bearer ${$node['10 – Config ⚙️'].json.supabaseKey}\"\n}",
+        "sendHeaders": true
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{\n  values: [[\n    $json.supabasePayload.invoice_number,\n    $json.supabasePayload.invoice_date,\n    $json.supabasePayload.due_date,\n    $json.supabasePayload.supplier_name,\n    $json.supabasePayload.total,\n    $json.supabasePayload.gst_total,\n    $json.supabasePayload.bank_bsb,\n    $json.supabasePayload.bank_account,\n    $json.supabasePayload.source,\n    $json.supabasePayload.file_checksum,\n    $json[0]?.id || null\n  ]]\n}];"
+      },
+      "id": "node-format-excel",
+      "name": "120 – Format Excel Row",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        4560,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{`https://graph.microsoft.com/v1.0/drives/${$node['10 – Config ⚙️'].json.excelDriveId}/items/${$node['10 – Config ⚙️'].json.excelWorkbookId}/workbook/tables/${$node['10 – Config ⚙️'].json.excelTableName}/rows/add`}}",
+        "jsonParameters": true,
+        "bodyParametersJson": "={{$json.values}}"
+      },
+      "id": "node-excel-append",
+      "name": "125 – Excel Append",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        4780,
+        280
+      ],
+      "notes": "Assign Excel Graph credential"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{`${$node['10 – Config ⚙️'].json.supabaseUrl}/rest/v1/postal_ingest_log`}}",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\n  \"status\": \"exception\",\n  \"reason\": \"${$json.issues.join(', ')}\",\n  \"file_name\": \"${$node['40 – Prepare Record'].json.name}\",\n  \"file_checksum\": \"${$node['40 – Prepare Record'].json.fileChecksum}\"\n}"
+      },
+      "id": "node-log-exception",
+      "name": "130 – Log Exception",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        4120,
+        520
+      ],
+      "options": {
+        "headers": "={\n  \"apikey\": \"${$node['10 – Config ⚙️'].json.supabaseKey}\",\n  \"Authorization\": \"Bearer ${$node['10 – Config ⚙️'].json.supabaseKey}\"\n}",
+        "sendHeaders": true
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "10 – Config ⚙️",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron": {
+      "main": [
+        [
+          {
+            "node": "10 – Config ⚙️",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10 – Config ⚙️": {
+      "main": [
+        [
+          {
+            "node": "20 – List Postal Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "20 – List Postal Files": {
+      "main": [
+        [
+          {
+            "node": "25 – Flatten Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "25 – Flatten Items": {
+      "main": [
+        [
+          {
+            "node": "30 – Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "30 – Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "40 – Prepare Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "30 – Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "40 – Prepare Record": {
+      "main": [
+        [
+          {
+            "node": "45 – Supabase Dup Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "45 – Supabase Dup Check": {
+      "main": [
+        [
+          {
+            "node": "50 – Already Processed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "50 – Already Processed?": {
+      "main": [
+        [
+          {
+            "node": "60 – Download PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "55 – Log Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "60 – Download PDF": {
+      "main": [
+        [
+          {
+            "node": "70 – Get Thumbnail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "72 – Merge Preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "70 – Get Thumbnail": {
+      "main": [
+        [
+          {
+            "node": "72 – Merge Preview",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "72 – Merge Preview": {
+      "main": [
+        [
+          {
+            "node": "75 – Select Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "75 – Select Image": {
+      "main": [
+        [
+          {
+            "node": "80 – OpenAI Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "80 – OpenAI Upload": {
+      "main": [
+        [
+          {
+            "node": "85 – OpenAI Vision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "85 – OpenAI Vision": {
+      "main": [
+        [
+          {
+            "node": "90 – Parse Vision JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "90 – Parse Vision JSON": {
+      "main": [
+        [
+          {
+            "node": "95 – Validate & Map",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "95 – Validate & Map": {
+      "main": [
+        [
+          {
+            "node": "100 – Validation OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "100 – Validation OK?": {
+      "main": [
+        [
+          {
+            "node": "110 – Supabase Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "130 – Log Exception",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "110 – Supabase Upsert": {
+      "main": [
+        [
+          {
+            "node": "115 – Log Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "115 – Log Processed": {
+      "main": [
+        [
+          {
+            "node": "120 – Format Excel Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "120 – Format Excel Row": {
+      "main": [
+        [
+          {
+            "node": "125 – Excel Append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
