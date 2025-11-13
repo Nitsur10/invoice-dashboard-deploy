@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-13T11:54:35.609Z",
+  "generated_at": "2025-11-13T21:21:51.562Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -34,7 +34,7 @@
       "classification_confidence": 0.9,
       "classification_details": "Checks are running: 2 pending",
       "linked_issues": [],
-      "updated_at": "2025-11-13T11:53:49Z",
+      "updated_at": "2025-11-13T21:21:08Z",
       "created_at": "2025-11-10T11:06:12Z",
       "author": "Nitsur10",
       "labels": [],
@@ -47,7 +47,7 @@
       "sla_status": {
         "status": "on_track",
         "due_date": "2025-11-15T11:06:12.000Z",
-        "hours_remaining": 47,
+        "hours_remaining": 38,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -98,7 +98,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-10T01:55:03.000Z",
-        "hours_remaining": -826,
+        "hours_remaining": -835,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -127,7 +127,7 @@
       "draft": false,
       "status_bucket": "stale",
       "classification_confidence": 1,
-      "classification_details": "No updates for 47 days",
+      "classification_details": "No updates for 48 days",
       "linked_issues": [],
       "updated_at": "2025-09-27T02:26:46Z",
       "created_at": "2025-09-27T02:25:09Z",
@@ -145,7 +145,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T02:25:09.000Z",
-        "hours_remaining": -1017,
+        "hours_remaining": -1027,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -246,10 +246,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1582,
+    "execution_time_ms": 1919,
     "api_calls_made": 14,
     "api_calls_failed": 3,
-    "rate_limit_remaining": "4930",
+    "rate_limit_remaining": "4988",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -260,7 +260,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-13T11:54:34.797Z"
+        "timestamp": "2025-11-13T21:21:50.565Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -271,7 +271,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-13T11:54:35.230Z"
+        "timestamp": "2025-11-13T21:21:51.086Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -282,7 +282,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-13T11:54:35.508Z"
+        "timestamp": "2025-11-13T21:21:51.460Z"
       }
     ]
   },
@@ -301,7 +301,7 @@
           "classification_confidence": 0.9,
           "classification_details": "Checks are running: 2 pending",
           "linked_issues": [],
-          "updated_at": "2025-11-13T11:53:49Z",
+          "updated_at": "2025-11-13T21:21:08Z",
           "created_at": "2025-11-10T11:06:12Z",
           "author": "Nitsur10",
           "labels": [],
@@ -314,7 +314,7 @@
           "sla_status": {
             "status": "on_track",
             "due_date": "2025-11-15T11:06:12.000Z",
-            "hours_remaining": 47,
+            "hours_remaining": 38,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -365,7 +365,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-10T01:55:03.000Z",
-            "hours_remaining": -826,
+            "hours_remaining": -835,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -394,7 +394,7 @@
           "draft": false,
           "status_bucket": "stale",
           "classification_confidence": 1,
-          "classification_details": "No updates for 47 days",
+          "classification_details": "No updates for 48 days",
           "linked_issues": [],
           "updated_at": "2025-09-27T02:26:46Z",
           "created_at": "2025-09-27T02:25:09Z",
@@ -412,7 +412,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T02:25:09.000Z",
-            "hours_remaining": -1017,
+            "hours_remaining": -1027,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -513,7 +513,7 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-11-13T11:54:35.509Z",
+        "processed_at": "2025-11-13T21:21:51.461Z",
         "pr_count": 3,
         "issue_count": 5
       }
