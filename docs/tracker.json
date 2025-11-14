@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-13T23:25:22.377Z",
+  "generated_at": "2025-11-14T02:01:07.288Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -13,8 +13,9 @@
       "ci_failed": 1,
       "stale": 1
     },
-    "total_issues": 5,
+    "total_issues": 6,
     "issues_by_classification": {
+      "enhancement": 1,
       "stale": 5,
       "bug": 1
     },
@@ -48,12 +49,12 @@
         "❌ Checks failing (-20)",
         "📝 Partial approvals: 0/1 (+0)",
         "📊 Small changeset: 0 files (+5)",
-        "⏰ Stale PR: 39 days old (-10)"
+        "⏰ Stale PR: 40 days old (-10)"
       ],
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-10T01:55:03.000Z",
-        "hours_remaining": -838,
+        "hours_remaining": -840,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -100,7 +101,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T02:25:09.000Z",
-        "hours_remaining": -1029,
+        "hours_remaining": -1032,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -120,6 +121,23 @@
     }
   ],
   "issues": [
+    {
+      "repo": "Nitsur10/invoice-dashboard-deploy",
+      "number": 28,
+      "title": "Tech Debt: Chat Assistant Post-Merge Improvements",
+      "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/28",
+      "labels": [
+        "enhancement"
+      ],
+      "assignees": [],
+      "classification": "enhancement",
+      "classification_confidence": 0.9,
+      "is_stale": false,
+      "days_since_update": 0,
+      "updated_at": "2025-11-14T02:00:25Z",
+      "created_at": "2025-11-14T02:00:25Z",
+      "author": "Nitsur10"
+    },
     {
       "repo": "Nitsur10/invoice-dashboard-deploy",
       "number": 25,
@@ -201,10 +219,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1140,
+    "execution_time_ms": 1136,
     "api_calls_made": 10,
     "api_calls_failed": 2,
-    "rate_limit_remaining": "4981",
+    "rate_limit_remaining": "4991",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -215,7 +233,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-13T23:25:21.905Z"
+        "timestamp": "2025-11-14T02:01:06.923Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -226,7 +244,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-13T23:25:22.276Z"
+        "timestamp": "2025-11-14T02:01:07.187Z"
       }
     ]
   },
@@ -260,12 +278,12 @@
             "❌ Checks failing (-20)",
             "📝 Partial approvals: 0/1 (+0)",
             "📊 Small changeset: 0 files (+5)",
-            "⏰ Stale PR: 39 days old (-10)"
+            "⏰ Stale PR: 40 days old (-10)"
           ],
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-10T01:55:03.000Z",
-            "hours_remaining": -838,
+            "hours_remaining": -840,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -312,7 +330,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T02:25:09.000Z",
-            "hours_remaining": -1029,
+            "hours_remaining": -1032,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -332,6 +350,23 @@
         }
       ],
       "issues": [
+        {
+          "repo": "Nitsur10/invoice-dashboard-deploy",
+          "number": 28,
+          "title": "Tech Debt: Chat Assistant Post-Merge Improvements",
+          "html_url": "https://github.com/Nitsur10/invoice-dashboard-deploy/issues/28",
+          "labels": [
+            "enhancement"
+          ],
+          "assignees": [],
+          "classification": "enhancement",
+          "classification_confidence": 0.9,
+          "is_stale": false,
+          "days_since_update": 0,
+          "updated_at": "2025-11-14T02:00:25Z",
+          "created_at": "2025-11-14T02:00:25Z",
+          "author": "Nitsur10"
+        },
         {
           "repo": "Nitsur10/invoice-dashboard-deploy",
           "number": 25,
@@ -413,9 +448,9 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-11-13T23:25:22.277Z",
+        "processed_at": "2025-11-14T02:01:07.188Z",
         "pr_count": 2,
-        "issue_count": 5
+        "issue_count": 6
       }
     }
   ]

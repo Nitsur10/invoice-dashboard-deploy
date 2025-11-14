@@ -1,14 +1,14 @@
 <!-- tracker:summary:start -->
 # Issues & PRs Control Board
 
-_Last updated: 11/13/2025, 11:25:22 PM (execution: 1s)_
+_Last updated: 11/14/2025, 2:01:07 AM (execution: 1s)_
 
 **At a glance**
 - **Repos**: 1 (1 success, 0 failed)
 - **Open PRs**: 2 | Ready: 0 | Needs review: 0 | Failing: 1 | Blocked: 0 | Draft: 0 | Stale: 1
-- **Open Issues**: 5 | Features: 0 | Bugs: 1 | Stale: 5
+- **Open Issues**: 6 | Features: 1 | Bugs: 1 | Stale: 5
 
-**Health Status**: 🟡 2 API failures | Rate limit: 4981 remaining
+**Health Status**: 🟡 2 API failures | Rate limit: 4991 remaining
 <!-- tracker:summary:end -->
 
 <!-- tracker:charts:start -->
@@ -29,7 +29,7 @@ pie title Open PRs by Status
 ### Issue Classification
 ```mermaid
 pie title Open Issues by Type
-    
+    "Features (1)" : 1
     "Bugs (1)" : 1
     "Stale (5)" : 5
     
@@ -111,9 +111,11 @@ _No items found_
 <!-- tracker:staleprs:end -->
 
 <!-- tracker:features:start -->
-## ✨ Feature requests / Enhancements (0)
+## ✨ Feature requests / Enhancements (1)
 
-_No items found_
+| Issue | Repo | Title | Labels | Updated |
+|:----:|:---:|:----:|:-----:|:------:|
+| [#28](https://github.com/Nitsur10/invoice-dashboard-deploy/issues/28) | invoice-dashboard-deploy | Tech Debt: Chat Assistant Post-Merge Improvements | enhancement | 11/14/2025 |
 
 <!-- tracker:features:end -->
 
