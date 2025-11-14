@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-14T22:26:18.575Z",
+  "generated_at": "2025-11-14T23:24:51.819Z",
   "config_version": "1.0",
   "repos": [
     "Nitsur10/invoice-dashboard-deploy"
@@ -101,7 +101,7 @@
       "sla_status": {
         "status": "overdue",
         "due_date": "2025-10-02T02:25:09.000Z",
-        "hours_remaining": -1052,
+        "hours_remaining": -1053,
         "priority": "p2",
         "sla_hours": 120
       },
@@ -167,7 +167,7 @@
       "classification": "bug",
       "classification_confidence": 0.9,
       "is_stale": true,
-      "days_since_update": 41,
+      "days_since_update": 42,
       "updated_at": "2025-10-04T10:29:45Z",
       "created_at": "2025-10-04T10:29:45Z",
       "author": "github-actions[bot]"
@@ -219,10 +219,10 @@
     }
   ],
   "metadata": {
-    "execution_time_ms": 1258,
+    "execution_time_ms": 1574,
     "api_calls_made": 10,
     "api_calls_failed": 2,
-    "rate_limit_remaining": "4991",
+    "rate_limit_remaining": "4981",
     "errors": [
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -233,7 +233,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-14T22:26:18.127Z"
+        "timestamp": "2025-11-14T23:24:51.325Z"
       },
       {
         "message": "API call failed: Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
@@ -244,7 +244,7 @@
           "message": "Resource not accessible by integration - https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
           "retries": 0
         },
-        "timestamp": "2025-11-14T22:26:18.474Z"
+        "timestamp": "2025-11-14T23:24:51.717Z"
       }
     ]
   },
@@ -330,7 +330,7 @@
           "sla_status": {
             "status": "overdue",
             "due_date": "2025-10-02T02:25:09.000Z",
-            "hours_remaining": -1052,
+            "hours_remaining": -1053,
             "priority": "p2",
             "sla_hours": 120
           },
@@ -396,7 +396,7 @@
           "classification": "bug",
           "classification_confidence": 0.9,
           "is_stale": true,
-          "days_since_update": 41,
+          "days_since_update": 42,
           "updated_at": "2025-10-04T10:29:45Z",
           "created_at": "2025-10-04T10:29:45Z",
           "author": "github-actions[bot]"
@@ -448,7 +448,7 @@
         }
       ],
       "metadata": {
-        "processed_at": "2025-11-14T22:26:18.475Z",
+        "processed_at": "2025-11-14T23:24:51.718Z",
         "pr_count": 2,
         "issue_count": 6
       }
