@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { analytics, trackLandingPageView } from '@/lib/analytics'
 import { LandingHero } from '@/components/landing/landing-hero'
@@ -66,13 +66,15 @@ export default function LandingPage() {
     return <LandingPageFallback />
   }
 
-  // Initialize analytics (no async operations that cause redirects)
-  try {
-    analytics.init()
-    trackLandingPageView()
-  } catch (error) {
-    console.warn('Analytics initialization failed:', error)
-  }
+  useEffect(() => {
+    // Initialize analytics (no async operations that cause redirects)
+    try {
+      analytics.init()
+      trackLandingPageView()
+    } catch (error) {
+      console.warn('Analytics initialization failed:', error)
+    }
+  }, [])
 
   return (
     <ErrorBoundary>
