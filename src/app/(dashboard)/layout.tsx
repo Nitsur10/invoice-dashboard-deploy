@@ -1,5 +1,6 @@
 import { ResponsiveSidebar } from '@/components/layout/responsive-sidebar'
 import { Header } from '@/components/layout/header'
+import { ChatWidget } from '@/components/chat/chat-widget'
 import { getSupabaseServerComponentClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
@@ -41,13 +42,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
       <div className="flex flex-col flex-1 pl-0 md:pl-72">
         {/* Header */}
-        <header 
+        <header
           role="banner"
           className="sticky top-0 z-40 glass-header"
         >
           <Header />
         </header>
-        
+
         {/* Main Content */}
         <main
           id="main-content"
@@ -59,6 +60,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
         </main>
       </div>
+
+      {/* Floating Chat Assistant Widget */}
+      <ChatWidget />
     </div>
   )
 }
